@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warrant Wire — every warrant financing, as it is filed</title>
+<meta name="description" content="A daily record of every SEC filing that carries warrant financing language — price resets, cashless exercise, ownership blockers. A match is not a finding. It means the filing is worth reading.">
+<link rel="canonical" href="https://warrantwire.com/">
+<meta property="og:title" content="Warrant Wire">
+<meta property="og:description" content="Every warrant financing, as it is filed. We read the documents, not the press releases.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://warrantwire.com/">
+<style>
+:root{
+  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
+  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+
+/* masthead */
+header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#191b13,#14150f)}
+.mast{display:flex;align-items:center;gap:16px;padding:16px 0;flex-wrap:wrap}
+.logo{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:.16em}
+.logo i{font-style:normal;color:var(--hot)}
+.logo small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.18em;
+  color:var(--ink3);font-weight:400;margin-top:3px;text-transform:uppercase}
+.live{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cool);
+  box-shadow:0 0 0 3px rgba(111,168,140,.16)}
+
+/* hero */
+.hero{padding:34px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.12;margin:0 0 14px;
+  letter-spacing:-.015em;max-width:20ch}
+.lede{font-size:17px;color:var(--ink2);max-width:62ch;margin:0 0 6px;line-height:1.62}
+.lede b{color:var(--ink);font-weight:600}
+.caveat{margin:20px 0 0;padding:13px 17px;background:var(--panel);border-left:3px solid var(--warm);
+  font-size:14px;line-height:1.6;color:var(--ink2);max-width:74ch}
+.caveat b{color:var(--warm);font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;display:block;margin-bottom:5px}
+
+/* controls */
+.bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:16px 0 12px}
+.bar button{font:11.5px var(--mono);letter-spacing:.08em;border:1px solid var(--line);
+  background:transparent;color:var(--ink2);padding:6px 13px;border-radius:2px;cursor:pointer}
+.bar button:hover{border-color:var(--ink3);color:var(--ink)}
+.bar button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.bar .ct{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink3)}
+
+/* the wire */
+.row{border-bottom:1px solid var(--line2);padding:14px 0;display:grid;
+  grid-template-columns:88px 66px minmax(0,1fr) auto;gap:16px;align-items:start}
+.row:hover{background:#181a12}
+.row.heavy .tk{color:var(--hot)}
+.dt{font-family:var(--mono);font-size:11.5px;color:var(--ink3);padding-top:2px}
+.tk{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.03em;color:var(--ink)}
+.tk small{display:block;font-size:10px;font-weight:400;color:var(--ink3);letter-spacing:.06em;margin-top:2px}
+.co{font-size:14.5px;line-height:1.4;margin:0}
+.acc{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin:3px 0 0}
+.marks{margin:7px 0 0}
+.m{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;
+  border:1px solid var(--line);color:var(--ink2);padding:2px 7px;border-radius:2px;margin:0 4px 4px 0}
+.m.h{border-color:#4a2a24;background:#241a17;color:var(--hot)}
+.go{text-align:right;white-space:nowrap}
+.go a{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
+  border:1px solid var(--line);color:var(--ink2);padding:5px 10px;border-radius:2px;
+  text-decoration:none;margin:0 0 5px}
+.go a:hover{border-color:var(--cool);color:var(--cool)}
+.go a.buy{border-color:#3d4a34;color:var(--cool)}
+.go a.doc{border-color:#4a2a24;color:var(--hot)}
+.go a.doc:hover{border-color:var(--hot);color:var(--hot)}
+.go a.dive{border-color:#4a4230;color:var(--warm)}
+.go a.dive:hover{border-color:var(--warm);color:var(--warm)}
+.quiet{padding:26px 0;color:var(--ink3);font-size:14px;text-align:center}
+
+.sell{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;
+  margin:0 0 16px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sell div{font-size:13px;color:var(--ink2);line-height:1.5}
+.sell b{display:block;font-family:var(--mono);font-size:15px;color:var(--ink);margin-bottom:3px}
+.sell b span{font-size:11px;color:var(--cool);font-weight:400}
+
+/* sections */
+.band{border-top:1px solid var(--line);padding:34px 0}
+h2{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 12px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.cols h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--hot);margin:0 0 6px}
+.cols p{margin:0;font-size:14px;color:var(--ink2);line-height:1.6}
+
+/* alerts */
+.alerts{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:24px 26px}
+.alerts h2{margin-top:0}
+.alerts p{color:var(--ink2);max-width:60ch}
+.form{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 0}
+.form input{flex:1;min-width:190px;background:#101208;border:1px solid var(--line);
+  color:var(--ink);padding:11px 13px;border-radius:3px;font:14px var(--sans)}
+.form input:focus{outline:none;border-color:var(--cool)}
+.form button{background:var(--cool);border:1px solid var(--cool);color:#0f1a14;
+  padding:11px 20px;border-radius:3px;font:14px var(--sans);font-weight:600;cursor:pointer}
+.fine{font-size:12.5px;color:var(--ink3);margin:11px 0 0;line-height:1.55}
+.ok{color:var(--cool);font-size:14px;margin:12px 0 0}
+
+/* sisters */
+.sis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.sis a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  padding:17px 19px;text-decoration:none}
+.sis a:hover{border-color:var(--ink3)}
+.sis b{display:block;font-family:var(--mono);font-size:14px;letter-spacing:.05em;margin-bottom:5px}
+.sis span{font-size:13.5px;color:var(--ink2);line-height:1.55}
+
+footer{border-top:1px solid var(--line);padding:22px 0 60px;font-size:12.5px;color:var(--ink3);
+  line-height:1.7}
+footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
+@media(max-width:720px){
+  h1{font-size:27px}
+  .row{grid-template-columns:1fr;gap:5px}
+  .go{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<header><div class="wrap mast">
+  <div class="logo">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></div>
+  <div class="live"><span class="dot"></span><span id="live">Reading EDGAR</span></div>
+</div></header>
+
+<div class="wrap hero">
+  <h1>They are at it again.</h1>
+  <p class="lede">Every day, companies file financings whose real terms sit in an exhibit nobody
+  opens — a price that resets downward, shares that issue without cash, a holder capped just below
+  the level that would require them to file. <b>This is the list, as it is filed.</b></p>
+  <p class="lede">We read the documents, not the press releases.</p>
+
+  <div class="caveat"><b>Read this before the list</b>
+    A match is not a finding. This language is ordinary and lawful, and most of these deals are
+    unremarkable. A filing appears here because the document is worth reading —
+    <b style="display:inline;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">nothing
+    on this page says any company or any person did anything wrong.</b>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="bar">
+    <button class="on" data-d="7">7 days</button>
+    <button data-d="14">14 days</button>
+    <button data-d="30">30 days</button>
+    <button data-d="90">90 days</button>
+    <button data-h="1">Heavy terms only</button>
+    <span class="ct" id="ct"></span>
+  </div>
+  <div class="sell" id="sell"></div>
+  <div id="rows"><div class="quiet">Reading the wire…</div></div>
+</div>
+
+<div class="wrap band">
+  <h2>What we look for</h2>
+  <div class="cols">
+    <div><h3>Price reset</h3><p>The exercise price falls if the company later sells stock cheaper.
+      Every cheap issuance makes the existing paper convert into more shares at a lower price.</p></div>
+    <div><h3>Cashless exercise</h3><p>Shares issue without the holder paying the exercise price.
+      The company receives no cash and the shares still reach the market.</p></div>
+    <div><h3>Ownership blocker</h3><p>Usually 4.99%, raisable on 61 days' notice. A holder can own
+      paper convertible into a great deal of a company and never appear in an ownership filing.</p></div>
+    <div><h3>Warrant inducement</h3><p>Existing holders are offered a lower price to exercise early,
+      typically in exchange for new warrants — often more than they exercised.</p></div>
+  </div>
+  <p style="margin:20px 0 0"><a href="https://triggeredshort.com/how-it-works.html"
+    style="color:var(--cool);font-family:var(--mono);font-size:12.5px">How this can work, drawn step
+    by step →</a></p>
+</div>
+
+<div class="wrap band">
+  <div class="alerts">
+    <h2>Be told when it is your company</h2>
+    <p>The wire is public and it is free. What is not free is being told the morning it happens —
+    your companies, the filing, and what the document actually contains, before anyone summarises it
+    for you.</p>
+    <div class="form" id="form">
+      <input id="em" type="email" placeholder="your email" autocomplete="email">
+      <input id="tk" type="text" placeholder="tickers you hold — TOVX WGRX IBM">
+      <button onclick="signup()">Put me on the list</button>
+    </div>
+    <p class="fine" id="fine">No charge yet and no card. We are building the list first and will
+    write to you before anything costs anything. Your tickers are used to decide what to send you and
+    are never published or sold.</p>
+  </div>
+</div>
+
+<div class="wrap band">
+  <h2>The rest of it</h2>
+  <div class="sis">
+    <a href="https://8k10q.com"><b>8K10Q.COM</b><span>Any filing or exhibit, read into plain English
+      with the sections that matter marked. Look up your own company.</span></a>
+    <a href="https://triggeredshort.com"><b>TRIGGEREDSHORT.COM</b><span>The research docket — what we
+      have already found, the ten questions, and what happened after each finding.</span></a>
+  </div>
+</div>
+
+<div class="wrap"><footer>
+  <em>"It's never as it seems." — Mark Nejmeh</em><br><br>
+  Warrant Wire reads the full text of SEC filings, exhibits included, and records those that carry
+  warrant financing language. Nothing here is investment advice, nothing here is a recommendation to
+  buy or sell any security, and nothing here alleges that anyone broke any law.<br>
+  Published by the Foundation for Job Creation · <a href="https://triggeredshort.com/method.html"
+  style="color:var(--ink2)">Method and corrections</a>
+</footer></div>
+
+<script>
+(function(){
+  var API = "https://triggeredshort-wire.realroofers.workers.dev";
+  var days = 7, heavy = 0;
+  var HEAVY = ["Price reset","Cashless exercise","Warrant inducement","Inducement agreement",
+               "Reduced exercise price","Variable rate transaction","Equity line"];
+
+  document.querySelectorAll(".bar button").forEach(function(b){
+    b.onclick = function(){
+      if (b.dataset.d){
+        days = +b.dataset.d;
+        document.querySelectorAll(".bar button[data-d]").forEach(function(x){x.classList.remove("on")});
+        b.classList.add("on");
+      } else { heavy = heavy ? 0 : 1; b.classList.toggle("on"); }
+      load();
+    };
+  });
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function load(){
+    document.getElementById("rows").innerHTML = '<div class="quiet">Reading…</div>';
+    fetch(API + "?wire=1&days=" + days + (heavy ? "&heavy=1" : ""))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d.ok) throw new Error("no data");
+        var rows = d.rows || [];
+        document.getElementById("ct").textContent = rows.length + " filings since " + d.since;
+        var already = d.already_screened || 0;
+        document.getElementById("sell").innerHTML =
+            '<div><b>' + rows.length + '</b>filings carrying warrant terms in this window</div>'
+          + '<div><b>' + already + ' <span>on the docket</span></b>already screened at triggeredshort.com</div>'
+          + '<div><b>' + (rows.length - already) + ' <span>unread</span></b>nobody has looked at these yet</div>'
+          + '<div><b>$11 <span>a filing</span></b>any one of them, in plain English, at 8k10q.com</div>';
+        document.getElementById("live").textContent = rows.length ? "Wire is live" : "Wire is quiet";
+        document.getElementById("rows").innerHTML = rows.length
+          ? rows.map(card).join("")
+          : '<div class="quiet">Nothing on the wire in this window. That is the record as it stands.</div>';
+      })
+      .catch(function(){
+        document.getElementById("rows").innerHTML =
+          '<div class="quiet">The wire is not reachable right now.</div>'; });
+  }
+
+  function card(f){
+    var labels = (f.labels||"").split(" | ")
+      .filter(function(x,i,a){ return x && a.indexOf(x)===i; });
+    var marks = labels.map(function(l){
+      return '<span class="m'+(HEAVY.indexOf(l)>-1?' h':'')+'">'+esc(l)+'</span>'; }).join("");
+    var t = (f.ticker||"").toUpperCase();
+
+    return '<div class="row'+(f.heavy?' heavy':'')+'">'
+      + '<div class="dt">'+esc(f.filed_on||"")+'</div>'
+      + '<div class="tk">'+(t?esc(t):'—')+'<small>'+esc(f.form||"")+'</small></div>'
+      + '<div><p class="co">'+esc(f.company||"")+'</p>'
+      +   '<p class="acc">'+esc(f.accession||"")+'</p>'
+      +   '<div class="marks">'+marks+'</div></div>'
+      + '<div class="go">'
+      +   (f.doc_url?'<a href="'+esc(f.doc_url)+'" target="_blank" rel="noopener">The filing ↗</a><br>':'')
+      +   '<a class="buy" href="https://8k10q.com/?ticker='+encodeURIComponent(t)
+      +     '&accession='+encodeURIComponent(f.accession||'')+'">Read it in English · $11</a>'
+      +   (f.on_docket
+          ? '<br><a class="doc" href="https://triggeredshort.com/company.html?ticker='
+            + encodeURIComponent(t) + '">Already screened · '
+            + f.on_docket.yes + ' of ' + f.on_docket.total + ' →</a>'
+          : '<br><a class="dive" href="https://8k10q.com/?ticker='+encodeURIComponent(t)
+            +'&deep=1">Nobody has screened it · $149</a>')
+      + '</div></div>';
+  }
+
+  window.signup = function(){
+    var em = document.getElementById("em").value.trim();
+    var tk = document.getElementById("tk").value.trim();
+    if (!em || em.indexOf("@") < 1){ document.getElementById("fine").textContent =
+      "An email address, please — that is the only part we need."; return; }
+    document.getElementById("form").innerHTML =
+      '<p class="ok">On the list. We will write before anything costs anything.</p>';
+    document.getElementById("fine").textContent =
+      "Nothing has been charged and no card was asked for.";
+    fetch(API + "?alert=1&email=" + encodeURIComponent(em) +
+                "&tickers=" + encodeURIComponent(tk)).catch(function(){});
+  };
+
+  load();
+})();
+</script>
+</body>
+</html>
