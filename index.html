@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-01 16:52 ET  |  logo nudged right 24px -->
+<!-- BUILT 2026-09-01 18:29 ET  |  army panel wording -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,6 +68,19 @@ a{color:inherit}
   color:var(--ink2);text-decoration:none;margin-top:8px}
 .railbox a.ghost:hover{border-color:#C9A227;color:#C9A227}
 
+.army{display:block;text-decoration:none;margin:18px 0 0;padding:18px 16px;
+  border:2px solid #C9A227;border-radius:8px;background:rgba(201,162,39,.10)}
+.army:hover{background:rgba(201,162,39,.17)}
+.armymark{display:block;font-family:var(--mono);font-weight:800;font-size:19px;
+  letter-spacing:.05em;line-height:1.15;color:#EBD98A}
+.armymark i{font-style:normal;display:block;color:#C9A227}
+.armymark b{font-weight:800;font-size:12px;color:#FF6A32;letter-spacing:.02em}
+.armyline{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:#A29B79;margin-top:7px}
+.army p{margin:11px 0 13px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+.armybtn{display:block;text-align:center;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-radius:3px;
+  background:#C9A227;color:#17170F;font-weight:700}
 .railslot{padding:16px 0 0;min-height:60px}
 .k8 .mark{font-family:var(--mono);font-weight:800;font-size:26px;letter-spacing:.06em;
   color:var(--ink);line-height:1}
@@ -276,20 +289,21 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   </div>
 
   <div class="railbox">
-    <h4>The 8K10Q Army</h4>
-    <p>Shareholders who read the filing, vote the proxy and show up.
-       Free to join. There are rules.</p>
-    <a class="btn" href="https://8k10q.com/army.html">Enlist</a>
-    <a class="ghost" href="https://8k10q.com/army.html">What the rules are</a>
-  </div>
-
-  <div class="railbox">
     <h4>Read one</h4>
     <p>Any filing on this list, in plain English, with the sections that
        matter marked. <b style="color:var(--ink)">$20</b>.</p>
     <a class="ghost" href="https://8k10q.com">8k10q.com &rarr;</a>
     <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
   </div>
+
+  <a class="army" href="https://8k10q.com/army.html">
+    <span class="armymark">JOIN THE 8K10Q<b>.com</b><i>ARMY</i></span>
+    <p>Shareholders who attend the stockholders meetings and keep up with the
+       filings, to make a better and more transparent market. We cannot be led
+       to slaughter any longer. The equity markets are too important for jobs
+       and our future.</p>
+    <span class="armybtn">Enlist &mdash; it is free</span>
+  </a>
 
   <div class="railslot" data-ad="rail"></div>
 
@@ -307,26 +321,29 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
            autocapitalize="characters" autocorrect="off" spellcheck="false">
     <button id="go" type="button">Search the wire</button>
   </div>
-  <p class="fnote"><b>$8 a search</b> &mdash; every filing we hold on that company,
-  every year. Or <b>$60 for the year</b> and search as often as you like &mdash;
-  five dollars a month, paid once.
+  <p class="fnote">Type in a company and we go back five years &mdash; every filing
+  that carries warrant language, with the exhibits, listed.
+  <b>$8 a search. Or $60 for the year and search as often as you like.</b>
   <span class="fre">The five most recent from today's scan are free below</span> &mdash;
   they change every day, so a particular company is rarely among them.</p>
+  <p class="fnote">Want it in plain English? Our partner
+  <a href="https://8k10q.com" style="color:var(--cool)">8k10q.com</a> reads any filing
+  on this list.</p>
 
   <div class="pair">
     <div>
       <span class="w">This site</span>
-      <b>Where the paper is</b>
+      <b>Who filed, and when</b>
       <p>Which companies filed warrant language, on what day, in what form. A list
       you can work from &mdash; useful if you trade around warrant paper coming out.</p>
       <span class="pp">$8 a search &middot; $60 the year, paid once</span>
     </div>
     <div class="o">
       <span class="w">8K10Q.com</span>
-      <b>What the paper says</b>
+      <b>What it says</b>
       <p>Somebody reads the filing and the exhibit and tells you in plain English
       what the terms actually are. <b>The wire does not do this and never will.</b></p>
-      <a class="pp go8" href="https://8k10q.com">$20 a filing &mdash; have one read &rarr;</a>
+      <a class="pp go8" href="https://8k10q.com">$20 plain clear read for you &rarr;</a>
     </div>
   </div>
 
