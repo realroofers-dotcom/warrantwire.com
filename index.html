@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-01 16:04 ET -->
+<!-- BUILT 2026-09-01 16:09 ET -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,16 +45,16 @@ a{color:inherit}
 /* THE COLUMN SITS BEHIND THE PAGE, not beside it. A warm grey with a
    little mustard in it — enough to read as a separate surface, not
    enough to compete with the wire. */
-.rail{background:#1B1B16;border:1px solid #26261D;border-radius:10px;
+.rail{background:#23241C;border:1px solid #303124;border-radius:10px;
   padding:18px 16px}
 
-.k8{display:block;text-decoration:none;padding:0 0 15px;border-bottom:1px solid #2E2E22}
+.k8{display:block;text-decoration:none;padding:0 0 15px;border-bottom:1px solid #3A3B2C}
 .k8 svg{width:100%;height:auto;max-width:170px}
 .k8:hover{opacity:.92}
 .k8 .why{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
   text-transform:uppercase;color:#8A8467;margin-top:9px;line-height:1.5}
 
-.railbox{border-bottom:1px solid #2E2E22;padding:16px 0}
+.railbox{border-bottom:1px solid #3A3B2C;padding:16px 0}
 .railbox h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;
   text-transform:uppercase;color:#A39A70;margin:0 0 8px}
 .railbox p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--ink2)}
@@ -64,7 +64,7 @@ a{color:inherit}
   font-weight:700}
 .railbox a.btn:hover{opacity:.9}
 .railbox a.ghost{display:block;text-align:center;font-family:var(--mono);font-size:11px;
-  letter-spacing:.06em;padding:9px 12px;border:1px solid #343426;border-radius:3px;
+  letter-spacing:.06em;padding:9px 12px;border:1px solid #43442F;border-radius:3px;
   color:var(--ink2);text-decoration:none;margin-top:8px}
 .railbox a.ghost:hover{border-color:#C9A227;color:#C9A227}
 
@@ -80,11 +80,18 @@ a{color:inherit}
 
 /* masthead */
 header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#191b13,#14150f)}
-.mast{display:flex;align-items:center;gap:16px;padding:16px 0;flex-wrap:wrap}
-.logo{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:.16em}
+.masthead{padding:26px 0 22px}
+.mastgap{display:none}
+@media(min-width:1101px){
+  .mastgap{display:block}
+}
+.mast{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.logo{font-family:var(--mono);font-size:clamp(26px,4.4vw,40px);font-weight:700;
+  letter-spacing:.1em;line-height:1;color:var(--ink)}
 .logo i{font-style:normal;color:var(--hot)}
-.logo small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.18em;
-  color:var(--ink3);font-weight:400;margin-top:3px;text-transform:uppercase}
+.logo small{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.2em;
+  color:var(--ink3);font-weight:400;margin-top:9px;text-transform:uppercase}
+.mast .live{margin-left:auto;padding-bottom:4px}
 .live{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);
   font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--cool);
@@ -244,9 +251,12 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 </head>
 <body>
 
-<header><div class="wrap mast">
-  <div class="logo">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></div>
-  <div class="live"><span class="dot"></span><span id="live">Reading EDGAR</span></div>
+<header><div class="shell masthead">
+  <div class="mastgap"></div>
+  <div class="mast">
+    <div class="logo">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></div>
+    <div class="live"><span class="dot"></span><span id="live">Reading EDGAR</span></div>
+  </div>
 </div></header>
 
 <div class="shell">
