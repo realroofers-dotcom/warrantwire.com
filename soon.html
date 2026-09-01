@@ -1,0 +1,150 @@
+<!-- BUILT 2026-09-01 15:43 ET -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Not open yet</title>
+<meta name="description" content="We are not taking payment yet. Leave your email and you will be the first told when we are.">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0C1220;--wash:#F2F4F8;--rule:#D5DAE4;--muted:#5A6478;
+  --hot:#FF4A00;--good:#0A7A3C;--gold:#8A6A1C;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:#fff;
+  font:400 17px/1.6 Rubik,system-ui,sans-serif;display:flex;flex-direction:column}
+.wrap{max-width:640px;margin:0 auto;padding:0 22px;width:100%}
+h1{font:900 clamp(30px,6.4vw,50px)/1.05 Rubik;letter-spacing:-.03em;margin:0}
+p{margin:0 0 1em}
+main{flex:1;display:flex;align-items:center;padding:44px 0}
+
+.eyebrow{font:900 10.5px/1 Rubik;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--hot);margin:0 0 12px}
+.lede{color:#B9C2D6;font-size:18px;margin-top:15px}
+
+.what{background:rgba(255,255,255,.05);border-radius:12px;padding:20px 22px;margin:26px 0 0}
+.what .k{font:700 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:#7E8BA6;display:block;margin-bottom:7px}
+.what b{font-size:19px;display:block;margin-bottom:4px}
+.what .pz{font:700 15px var(--mono);color:var(--gold)}
+
+form{margin:26px 0 0}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+input{flex:1;min-width:210px;font:17px Rubik;padding:16px 17px;border:0;
+  border-radius:10px;background:#fff;color:var(--ink)}
+input:focus{outline:3px solid var(--hot);outline-offset:1px}
+button{font:700 17px Rubik;background:var(--hot);border:0;color:#180B05;
+  padding:16px 26px;border-radius:10px;cursor:pointer;white-space:nowrap}
+button:hover{opacity:.92}
+.fine{font-size:14px;color:#7E8BA6;margin:13px 0 0}
+.done{background:rgba(10,122,60,.16);border:1px solid #1E6B44;border-radius:12px;
+  padding:22px 24px;margin:26px 0 0}
+.done b{display:block;font-size:20px;color:#7FD8A6;margin-bottom:7px}
+.done p{color:#C9D1E2;margin:0}
+.err{color:#FF8A5C;font-size:15px;margin:11px 0 0}
+
+.back{display:inline-block;margin-top:26px;color:#9FAAC6;text-decoration:none;
+  font-size:15px;border-bottom:1px solid #2C3450;padding-bottom:2px}
+.back:hover{color:#fff}
+
+footer{padding:22px 0 34px;color:#5C6580;font-size:13.5px}
+footer a{color:#5C6580}
+</style>
+</head>
+<body>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Not open yet</p>
+    <h1>We cannot take your money.<br>We are not done building the service.</h1>
+    <p class="lede">The prices are real and they are not going to change. The service
+    behind them is not finished, and taking money for something half built is how
+    people get a bad name.</p>
+
+    <div class="what" id="what">
+      <span class="k">What you were about to buy</span>
+      <b id="item">A subscription</b>
+      <span class="pz" id="price"></span>
+    </div>
+
+    <form id="f" onsubmit="return false">
+      <div class="row">
+        <input id="em" type="email" placeholder="your email"
+               autocapitalize="off" autocorrect="off" spellcheck="false"
+               onkeydown="if(event.key==='Enter')go()">
+        <button onclick="go()">Tell me when</button>
+      </div>
+      <p class="fine">One email, when it opens. Nothing else, ever, and it is not
+      sold or passed to anybody.</p>
+      <p id="e" class="err"></p>
+    </form>
+
+    <div id="ok" class="done" style="display:none">
+      <b>You are on the list.</b>
+      <p>You will hear from a person, not a system, and only once &mdash; the day it
+      opens.</p>
+    </div>
+
+    <a class="back" href="/">&larr; Back</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p id="who">Triggered Short &middot; Warrant Wire &middot; 8K10Q</p>
+  </div>
+</footer>
+
+<script>
+var API = "https://adhotbox.realroofers.workers.dev";
+
+var ITEMS = {
+  wire_search:  ["One search of the wire", "$8"],
+  wire_year:    ["Warrant Wire, one year", "$60 &mdash; five dollars a month, paid once"],
+  read:         ["One filing read in plain English", "$20"],
+  opinion:      ["One agent opinion", "$16"],
+  opinion_10:   ["Ten agent opinions", "$129"],
+  deep_dive:    ["A deep dive on one company", "$149"],
+  watch:        ["Watch a company", "$66 a month"],
+  reader:       ["Reader &mdash; three companies", "$134 a month"],
+  pro:          ["Professional &mdash; twenty-five companies", "$399 a month"],
+  placement:    ["An advertising placement", "$20 a month"],
+  placement_video: ["A video placement", "$50 a month"],
+  placement_political: ["A political placement", "$110 a month"]
+};
+
+var q = new URLSearchParams(location.search);
+var want = q.get("buy") || q.get("plan") || "";
+var it = ITEMS[want];
+
+if (it) {
+  document.getElementById("item").innerHTML = it[0];
+  document.getElementById("price").innerHTML = it[1];
+} else {
+  document.getElementById("what").style.display = "none";
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[<>&"]/g,""); }
+
+function go(){
+  var em = (document.getElementById("em").value || "").trim();
+  var e = document.getElementById("e");
+  if (!em || em.indexOf("@") < 1) { e.textContent = "An email address, please."; return; }
+  e.textContent = "";
+
+  var p = new URLSearchParams({
+    start: "1", email: em,
+    domain: location.hostname,
+    source: "soon:" + (want || "general")
+  });
+  fetch(API + "?" + p.toString()).catch(function(){});
+
+  document.getElementById("f").style.display = "none";
+  document.getElementById("ok").style.display = "block";
+}
+</script>
+</body>
+</html>
