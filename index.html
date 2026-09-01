@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-01 12:55 ET -->
+<!-- BUILT 2026-09-01 15:32 ET -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -264,7 +264,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <div class="railbox">
     <h4>Read one</h4>
     <p>Any filing on this list, in plain English, with the sections that
-       matter marked. <b style="color:var(--ink)">$11</b>.</p>
+       matter marked. <b style="color:var(--ink)">$20</b>.</p>
     <a class="ghost" href="https://8k10q.com">8k10q.com &rarr;</a>
     <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
   </div>
@@ -426,10 +426,18 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
             '<div><b>' + rows.length + '</b>filings carrying warrant terms in this window</div>'
           + '<div><b>' + already + ' <span>on the docket</span></b>already screened at triggeredshort.com</div>'
           + '<div><b>' + (rows.length - already) + ' <span>unread</span></b>nobody has looked at these yet</div>'
-          + '<div><b>$11 <span>a filing</span></b>any one of them, in plain English, at 8k10q.com</div>';
+          + '<div><b>$20 <span>a filing</span></b>any one of them, in plain English, at 8k10q.com</div>';
         document.getElementById("live").textContent = rows.length ? "Wire is live" : "Wire is quiet";
+
+        /* FIVE. NOT ALL OF THEM.
+           The five most recent from the scan are the free part of this
+           site. Everything past five is the thing people pay for, and
+           dumping the lot on the page gives the product away. */
+        var free = rows.slice(0, 5);
+        var rest = rows.length - free.length;
+
         document.getElementById("rows").innerHTML = rows.length
-          ? rows.map(card).join("")
+          ? free.map(card).join("") + (rest > 0 ? gate(rest, "") : "")
           : '<div class="quiet">Nothing on the wire in this window. That is the record as it stands.</div>';
       })
       .catch(function(){
@@ -455,7 +463,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
       + '<div class="go">'
       +   (f.doc_url?'<a href="'+esc(f.doc_url)+'" target="_blank" rel="noopener">The filing ↗</a><br>':'')
       +   '<a class="buy" href="https://8k10q.com/?ticker='+encodeURIComponent(t)
-      +     '&accession='+encodeURIComponent(f.accession||'')+'">Read it in English · $11</a>'
+      +     '&accession='+encodeURIComponent(f.accession||'')+'">Read it in English · $20</a>'
       +   (f.on_docket
           ? '<br><a class="doc" href="https://triggeredshort.com/company.html?ticker='
             + encodeURIComponent(t) + '">Already screened · '
@@ -487,8 +495,8 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   /* THE GATE. Five free everywhere on this site, then this. */
   function gate(n, t){
     return '<div class="gate">'
-      + '<p class="g1">' + n + ' more filing' + (n === 1 ? "" : "s") + ' for '
-      + esc(t) + '.</p>'
+      + '<p class="g1">' + n + ' more filing' + (n === 1 ? "" : "s")
+      + (t ? ' for ' + esc(t) : ' in this window') + '.</p>'
       + '<p class="g2">The five above are the most recent from today\'s scan, free, '
       + 'and they change every day. <b>Searching a company you name &mdash; every '
       + 'filing, every year &mdash; is the service.</b></p>'
