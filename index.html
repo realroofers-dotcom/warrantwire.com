@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-01 16:17 ET -->
+<!-- BUILT 2026-09-01 16:20 ET -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +88,11 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .mast{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .logo{font-family:var(--mono);font-size:clamp(26px,4.4vw,40px);font-weight:700;
   letter-spacing:.1em;line-height:1;color:var(--ink);
-  margin-left:0}
+  /* ---- THE ONE NUMBER TO NUDGE ----
+     Moves WARRANTWIRE sideways so the W sits above the E of "Every".
+     Bigger  = further RIGHT.   Smaller/negative = further LEFT.
+     Change it here and nowhere else. */
+  margin-left:5px}
 .logo i{font-style:normal;color:var(--hot)}
 .logo small{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.2em;
   color:var(--ink3);font-weight:400;margin-top:9px;text-transform:uppercase;
