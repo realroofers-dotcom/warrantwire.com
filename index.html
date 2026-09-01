@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-01 15:40 ET -->
+<!-- BUILT 2026-09-01 16:04 ET -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +28,7 @@ a{color:inherit}
 
 /* the shell — content column with a rail either side on wide screens */
 .shell{max-width:1400px;margin:0 auto;padding:0 22px;display:grid;
-  grid-template-columns:230px minmax(0,1fr);gap:34px;align-items:start}
+  grid-template-columns:238px minmax(0,1fr);gap:32px;align-items:start}
 .rail{position:sticky;top:20px;padding:22px 0 40px}
 @media(max-width:1100px){
   .shell{grid-template-columns:1fr;gap:0}
@@ -42,11 +42,33 @@ a{color:inherit}
 }
 
 /* the 8K10Q block, reversed for a dark background */
-.k8{display:block;text-decoration:none;padding:0 0 16px;border-bottom:1px solid var(--line)}
-.k8 svg{width:100%;height:auto;max-width:210px}
+/* THE COLUMN SITS BEHIND THE PAGE, not beside it. A warm grey with a
+   little mustard in it — enough to read as a separate surface, not
+   enough to compete with the wire. */
+.rail{background:#1B1B16;border:1px solid #26261D;border-radius:10px;
+  padding:18px 16px}
+
+.k8{display:block;text-decoration:none;padding:0 0 15px;border-bottom:1px solid #2E2E22}
+.k8 svg{width:100%;height:auto;max-width:170px}
 .k8:hover{opacity:.92}
-.k8 .why{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink3);margin-top:9px;line-height:1.5}
+.k8 .why{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:#8A8467;margin-top:9px;line-height:1.5}
+
+.railbox{border-bottom:1px solid #2E2E22;padding:16px 0}
+.railbox h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;color:#A39A70;margin:0 0 8px}
+.railbox p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--ink2)}
+.railbox a.btn{display:block;text-align:center;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-radius:3px;
+  text-decoration:none;background:#C9A227;border:1px solid #C9A227;color:#17170F;
+  font-weight:700}
+.railbox a.btn:hover{opacity:.9}
+.railbox a.ghost{display:block;text-align:center;font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;padding:9px 12px;border:1px solid #343426;border-radius:3px;
+  color:var(--ink2);text-decoration:none;margin-top:8px}
+.railbox a.ghost:hover{border-color:#C9A227;color:#C9A227}
+
+.railslot{padding:16px 0 0;min-height:60px}
 .k8 .mark{font-family:var(--mono);font-weight:800;font-size:26px;letter-spacing:.06em;
   color:var(--ink);line-height:1}
 .k8 .mark i{font-style:normal;color:var(--hot)}
@@ -55,23 +77,6 @@ a{color:inherit}
   text-transform:uppercase;color:var(--ink3);margin-top:7px;line-height:1.5}
 .k8:hover .mark{color:#fff}
 
-.railbox{border-bottom:1px solid var(--line);padding:18px 0}
-.railbox h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--ink3);margin:0 0 8px}
-.railbox p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--ink2)}
-.railbox a.btn{display:block;text-align:center;font-family:var(--mono);font-size:11.5px;
-  letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;border-radius:3px;
-  text-decoration:none;background:var(--hot);border:1px solid var(--hot);color:#140f0d;
-  font-weight:700}
-.railbox a.btn:hover{opacity:.9}
-.railbox a.ghost{display:block;text-align:center;font-family:var(--mono);font-size:11px;
-  letter-spacing:.06em;padding:9px 12px;border:1px solid var(--line);border-radius:3px;
-  color:var(--ink2);text-decoration:none;margin-top:8px}
-.railbox a.ghost:hover{border-color:var(--cool);color:var(--cool)}
-.railslot{padding:18px 0;min-height:60px}
-.railslot .ph{border:1px dashed var(--line);border-radius:3px;padding:16px 12px;text-align:center;
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink3);line-height:1.7}
 
 /* masthead */
 header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#191b13,#14150f)}
@@ -269,9 +274,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
   </div>
 
-  <div class="railslot">
-    <div class="ph">Reserved<br>&mdash;<br>Counsel and advisers</div>
-  </div>
+  <div class="railslot" data-ad="rail"></div>
 
 </aside>
 
@@ -599,5 +602,6 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 
 })();
 </script>
+<script src="https://adhotbox.com/box.js"></script>
 </body>
 </html>
