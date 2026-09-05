@@ -158,6 +158,10 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .who .tick i{font-style:normal;opacity:.55;margin:0 6px}
 .who .biz{font-size:13.5px;color:var(--ink2);margin:4px 0 0}
 .who a.edg{color:var(--cool);text-decoration:none;border-bottom:1px solid currentColor}
+.who .flag{color:var(--hot,#FF4A00);font-weight:700}
+.stnote{font-size:12.5px;line-height:1.45;color:var(--ink2);margin:8px 0 0;
+  border-left:2px solid var(--hot,#FF4A00);padding-left:10px}
+.stnote b{color:var(--ink)}
 .about .n{display:flex;gap:26px;flex-wrap:wrap;margin:0 0 14px}
 .about .n div{min-width:70px}
 .about .n b{display:block;font:700 24px/1 var(--mono);color:var(--ink)}
@@ -590,7 +594,20 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         if (c.exchange) bits.push(esc(c.exchange));
         if (c.business) bits.push(esc(c.business));
         else if (c.sector) bits.push(esc(c.sector));
-        if (c.state_inc) bits.push('incorporated in ' + esc(c.state_inc));
+        var SPLIT = {
+          NV: ['Nevada', 'NRS 78.207 &mdash; a reverse split can be done by board resolution, '
+             + 'with no stockholder vote at all. NRS 78.037 goes further: the charter may let the '
+             + 'board split without reducing authorized shares in proportion.'],
+          DE: ['Delaware', 'DGCL 242(d)(2), changed August 2023 &mdash; the vote is a majority of '
+             + 'the votes CAST, not of shares outstanding. The vote survived; winning it got easy '
+             + 'at retail turnout.'],
+          TX: ['Texas', 'Adopted the Delaware standard in 2025 &mdash; a majority of votes cast '
+             + 'rather than shares outstanding.']
+        };
+        var st = String(c.state_inc || '').toUpperCase();
+        var flagged = SPLIT[st] || null;
+        if (c.state_inc) bits.push('incorporated in '
+          + (flagged ? '<span class="flag">' + esc(flagged[0]) + '</span>' : esc(c.state_inc)));
         if (c.cik) bits.push('CIK ' + esc(c.cik));
 
         found('<div class="about">'
@@ -598,6 +615,8 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           + '<div class="who">'
           +   '<span class="tick">' + esc((c.ticker || t).toUpperCase()) + '</span>'
           +   (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join('<i>&middot;</i>') + '</span>' : '')
+          +   (flagged ? '<p class="stnote"><b>Incorporated in ' + esc(flagged[0]) + '.</b> '
+                + flagged[1] + ' Everywhere else still requires a majority of shares outstanding.</p>' : '')
           +   (c.edgar ? '<p class="biz">Everything this company has filed: '
                 + '<a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">'
                 + 'its EDGAR page &rarr;</a></p>' : '')
