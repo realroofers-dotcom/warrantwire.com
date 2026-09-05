@@ -162,6 +162,9 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .stnote{font-size:12.5px;line-height:1.45;color:var(--ink2);margin:8px 0 0;
   border-left:2px solid var(--hot,#FF4A00);padding-left:10px}
 .stnote b{color:var(--ink)}
+.about .clean{font-size:15.5px;color:var(--ink);background:rgba(255,255,255,.04);
+  border-radius:8px;padding:12px 14px;margin:0 0 10px}
+.about .clean b{color:var(--good,#7FD8A6)}
 .about .n{display:flex;gap:26px;flex-wrap:wrap;margin:0 0 14px}
 .about .n div{min-width:70px}
 .about .n b{display:block;font:700 24px/1 var(--mono);color:var(--ink)}
@@ -571,29 +574,11 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
       .then(function(r){ return r.json(); })
       .then(function(d){
         var a = d.about;
+        var T = t.toUpperCase();
 
-        /* ---- nothing on file ---- */
-        if (!a || !d.rows || !d.rows.length) {
-          found('<div class="about">'
-            + '<h3>Nothing for &ldquo;' + esc(t) + '&rdquo;</h3>'
-            + '<p>No filing we have read carries this language for that company. '
-            + 'That is not a clean bill of health &mdash; it means the words we watch '
-            + 'for are not in what we have scanned.</p>'
-            + '<p class="none">The wire only knows what it has read, and it only '
-            + 'watches for warrant language. <a href="https://8k10q.com/?ticker='
-            + encodeURIComponent(t) + '" style="color:var(--cool)">8K10Q will read any '
-            + 'filing and tell you what is in it &mdash; $20 &rarr;</a></p>'
-            + '</div>');
-          return;
-        }
-
-        /* ---- it is on the wire. The ANSWER is free; the LIST is the $8. ---- */
+        /* who this is - shown whether or not the wire has anything on them */
         var c = d.company || {};
-        var nm = c.name || a.company || t.toUpperCase();
-        var bits = [];
-        if (c.exchange) bits.push(esc(c.exchange));
-        if (c.business) bits.push(esc(c.business));
-        else if (c.sector) bits.push(esc(c.sector));
+        var nm = c.name || (a && a.company) || T;
         var SPLIT = {
           NV: ['Nevada', 'NRS 78.207 &mdash; a reverse split can be done by board resolution, '
              + 'with no stockholder vote at all. NRS 78.037 goes further: the charter may let the '
@@ -606,22 +591,52 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         };
         var st = String(c.state_inc || '').toUpperCase();
         var flagged = SPLIT[st] || null;
+        var bits = [];
+        if (c.exchange) bits.push(esc(c.exchange));
+        if (c.business) bits.push(esc(c.business));
+        else if (c.sector) bits.push(esc(c.sector));
         if (c.state_inc) bits.push('incorporated in '
           + (flagged ? '<span class="flag">' + esc(flagged[0]) + '</span>' : esc(c.state_inc)));
         if (c.cik) bits.push('CIK ' + esc(c.cik));
 
-        found('<div class="about">'
-          + '<h3>' + esc(nm) + '</h3>'
+        var who = '<h3>' + esc(nm) + '</h3>'
           + '<div class="who">'
-          +   '<span class="tick">' + esc((c.ticker || t).toUpperCase()) + '</span>'
+          +   '<span class="tick">' + esc((c.ticker || T)) + '</span>'
           +   (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join('<i>&middot;</i>') + '</span>' : '')
+          +   (c.website ? '<p class="biz">' + esc(String(c.website).replace(/^https?:\/\//i,''))
+                + (c.city ? ' &middot; ' + esc(c.city) + (c.state_loc ? ', ' + esc(c.state_loc) : '') : '')
+                + '</p>' : '')
+          +   ((c.former_names && c.former_names.length)
+                ? '<p class="biz">Formerly ' + c.former_names.map(esc).join('; ') + '</p>' : '')
           +   (flagged ? '<p class="stnote"><b>Incorporated in ' + esc(flagged[0]) + '.</b> '
                 + flagged[1] + ' Everywhere else still requires a majority of shares outstanding.</p>' : '')
           +   (c.edgar ? '<p class="biz">Everything this company has filed: '
                 + '<a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">'
                 + 'its EDGAR page &rarr;</a></p>' : '')
-          + '</div>'
-          + '<p><b style="color:var(--ink)">' + esc((c.ticker || t).toUpperCase())
+          + '</div>';
+
+        var cov = d.coverage && d.coverage.from
+          ? 'every filing on record from ' + esc(d.coverage.from) + ' to ' + esc(d.coverage.to)
+          : 'every filing we hold';
+
+        /* ---- searched, and there is nothing ---- */
+        if (!a || !d.rows || !d.rows.length) {
+          found('<div class="about">'
+            + (c.name ? who : '<h3>' + esc(T) + '</h3>')
+            + '<p class="clean"><b>Nothing on the wire.</b> We searched ' + cov
+            + ' for this company. None of them carries the language of a warrant financing.</p>'
+            + '<p class="none">The wire watches for warrant language and nothing else. '
+            + '<a href="https://8k10q.com/?ticker=' + encodeURIComponent(T)
+            + '" style="color:var(--cool)">8K10Q reads any filing and tells you what is in it '
+            + '&mdash; $20 &rarr;</a></p>'
+            + '</div>');
+          return;
+        }
+
+        /* ---- it is on the wire. The ANSWER is free; the LIST is the $8. ---- */
+        found('<div class="about">'
+          + who
+          + '<p><b style="color:var(--ink)">' + esc(c.ticker || T)
           + ' is on the wire.</b></p>'
           + '<div class="n">'
           +   '<div><b>' + a.filings + '</b><span>Filings</span></div>'
@@ -652,7 +667,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
           + 'is.</b> It does not tell you what the terms are, because reading a filing '
           + 'is a different job. '
-          + '<a href="https://8k10q.com/?ticker=' + encodeURIComponent(t) + '" '
+          + '<a href="https://8k10q.com/?ticker=' + encodeURIComponent(T) + '" '
           + 'style="color:var(--cool)">8K10Q reads one for $20 and says what it means '
           + 'in plain English &rarr;</a></p>'
 
