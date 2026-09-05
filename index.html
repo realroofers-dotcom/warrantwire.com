@@ -152,7 +152,12 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 #found{margin-top:20px}
 .about{border:1px solid var(--line);border-radius:10px;padding:20px 22px;
   background:rgba(255,255,255,.03)}
-.about h3{font:700 21px/1.15 inherit;margin:0 0 12px;color:var(--ink)}
+.about h3{font:700 21px/1.15 inherit;margin:0 0 4px;color:var(--ink)}
+.who{margin:0 0 14px}
+.who .tick{font:700 13px var(--mono);letter-spacing:.06em;color:var(--cool)}
+.who .tick i{font-style:normal;opacity:.55;margin:0 6px}
+.who .biz{font-size:13.5px;color:var(--ink2);margin:4px 0 0}
+.who a.edg{color:var(--cool);text-decoration:none;border-bottom:1px solid currentColor}
 .about .n{display:flex;gap:26px;flex-wrap:wrap;margin:0 0 14px}
 .about .n div{min-width:70px}
 .about .n b{display:block;font:700 24px/1 var(--mono);color:var(--ink)}
@@ -579,8 +584,26 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         }
 
         /* ---- it is on the wire. The ANSWER is free; the LIST is the $8. ---- */
+        var c = d.company || {};
+        var nm = c.name || a.company || t.toUpperCase();
+        var bits = [];
+        if (c.exchange) bits.push(esc(c.exchange));
+        if (c.business) bits.push(esc(c.business));
+        else if (c.sector) bits.push(esc(c.sector));
+        if (c.state_inc) bits.push('incorporated in ' + esc(c.state_inc));
+        if (c.cik) bits.push('CIK ' + esc(c.cik));
+
         found('<div class="about">'
-          + '<h3>' + esc(t) + ' &mdash; it is on the wire.</h3>'
+          + '<h3>' + esc(nm) + '</h3>'
+          + '<div class="who">'
+          +   '<span class="tick">' + esc((c.ticker || t).toUpperCase()) + '</span>'
+          +   (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join('<i>&middot;</i>') + '</span>' : '')
+          +   (c.edgar ? '<p class="biz">Everything this company has filed: '
+                + '<a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">'
+                + 'its EDGAR page &rarr;</a></p>' : '')
+          + '</div>'
+          + '<p><b style="color:var(--ink)">' + esc((c.ticker || t).toUpperCase())
+          + ' is on the wire.</b></p>'
           + '<div class="n">'
           +   '<div><b>' + a.filings + '</b><span>Filings</span></div>'
           +   '<div><b>' + a.heavy + '</b><span>Heavy terms</span></div>'
