@@ -1,0 +1,283 @@
+<!-- BUILT 2026-09-08 12:35 ET · sample-read-1a · 8k10q.com/sample.html -->
+<!--
+   ⚠ MARK — READ THIS BEFORE YOU UPLOAD IT.
+
+   This page shows a CUSTOMER what a $20 read looks like, using the
+   TOVX deal. The layout, the fields and the audio player are built.
+
+   THE FIGURES IN IT ARE THE ONES ALREADY IN YOUR PUBLISHED WORK —
+   the October 2025 inducement, the replacement warrants at 200%, the
+   accumulated deficit, the market value. NOTHING HERE IS INVENTED.
+
+   BUT THREE THINGS ARE MARKED [[ ]] AND THEY ARE YOURS:
+     1. the plain-English summary paragraph
+     2. the "what it means for a holder" line under each term
+     3. the audio id, once the recording exists
+
+   They will show on the live page if you upload it as it stands.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What a read looks like — 8K10Q</title>
+<meta name="description" content="A worked example of an 8K10Q read: the filing, the exhibit, the terms, what each does to a shareholder, and what we could not check.">
+<link rel="canonical" href="https://8k10q.com/sample.html">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;900&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --navy:#00208B; --navy-d:#001348; --hot:#FF4A00; --paper:#F4F3EE;
+  --ink:#12141C; --ink-2:#5A6072; --line:rgba(255,255,255,.16); --line-d:#D8D6CD;
+  --disp:Rubik,system-ui,sans-serif; --body:"Public Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--navy);color:#EAECF5;font:17px/1.62 var(--body);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+a{color:#8FE3B5}
+
+header{border-bottom:1px solid var(--line);padding:22px 0}
+.bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font:900 26px/1 var(--disp);letter-spacing:-.01em;text-decoration:none;color:#fff}
+.logo i{font-style:normal;color:var(--hot);font-weight:600;font-size:15px}
+.back{margin-left:auto;font:600 13px var(--body);color:#B9C3E8;text-decoration:none}
+#nyc{color:#9FABD8;width:100%}
+
+.lede-band{padding:44px 0 30px;border-bottom:1px solid var(--line)}
+h1{font:900 clamp(30px,5vw,46px)/1.06 var(--disp);letter-spacing:-.025em;margin:0 0 14px;max-width:18ch}
+.sub{font-size:18.5px;color:#C4CCEA;max-width:56ch;margin:0 0 26px}
+.tag{display:inline-block;font:700 11px var(--mono);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--hot);border:1px solid var(--hot);
+  border-radius:3px;padding:5px 10px;margin:0 0 18px}
+
+/* ---------- the audio, first, because people are short on time ---------- */
+.listen{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;
+  padding:20px 22px;margin:26px 0 0}
+.listen h3{margin:0 0 6px;font:700 18px var(--disp)}
+.listen p{margin:0 0 14px;color:#C4CCEA;font-size:15px}
+.player{background:var(--navy-d);border:1px dashed rgba(255,255,255,.3);border-radius:6px;
+  padding:26px 20px;text-align:center;color:#8E9BCD;font:500 14.5px var(--body)}
+.mins{font:600 12px var(--mono);color:#9FABD8;letter-spacing:.08em;margin-top:10px}
+
+.doc{background:var(--paper);color:var(--ink);border-radius:10px;
+  padding:34px 34px 40px;margin:34px 0}
+.doc h2{font:700 clamp(22px,3.2vw,30px)/1.18 var(--disp);margin:0 0 6px;color:var(--navy)}
+.doc .meta{font:500 12.5px var(--mono);color:var(--ink-2);margin:0 0 26px;
+  padding-bottom:18px;border-bottom:1px solid var(--line-d)}
+.doc h3{font:700 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-2);margin:30px 0 12px}
+.doc h3:first-of-type{margin-top:0}
+.doc p{margin:0 0 14px}
+.slot{border:1px dashed #B9B4A6;border-radius:5px;padding:16px 18px;color:var(--ink-2);
+  background:#EDEBE3}
+
+.terms{display:grid;gap:10px}
+.term{border:1px solid var(--line-d);border-radius:6px;padding:18px 20px;background:#fff}
+.term.heavy{border-left:4px solid var(--hot)}
+.term .nm{font:700 17px var(--disp);margin:0 0 4px}
+.term .hv{float:right;font:700 10px var(--mono);letter-spacing:.14em;color:var(--hot)}
+.term blockquote{margin:10px 0;padding:10px 14px;background:var(--paper);
+  border-left:3px solid var(--line-d);font:400 15px/1.6 var(--mono)}
+.term .where{font:400 12px var(--mono);color:var(--ink-2);margin:0 0 10px}
+.term .does{margin:0;font-size:15.5px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.box{border:1px solid var(--line-d);border-radius:6px;padding:16px 18px;background:#fff}
+.box h4{margin:0 0 8px;font:700 14px var(--body)}
+.box ul{margin:0;padding-left:18px;font-size:15px;color:var(--ink-2)}
+.box li{margin:0 0 6px}
+.box.notrun{background:#FBF6EE;border-color:#E4D5BA}
+
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.num{border:1px solid var(--line-d);border-radius:6px;padding:14px 16px;background:#fff}
+.num b{display:block;font:900 24px/1 var(--disp);color:var(--navy)}
+.num span{font-size:13.5px;color:var(--ink-2)}
+
+ol.q{margin:0;padding-left:20px}
+ol.q li{margin:0 0 8px}
+
+.buy{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;
+  padding:26px 28px;margin:0 0 40px;display:grid;grid-template-columns:1fr auto;
+  gap:24px;align-items:center}
+@media(max-width:700px){.buy{grid-template-columns:1fr}}
+.buy h3{margin:0 0 6px;font:700 21px var(--disp)}
+.buy p{margin:0;color:#C4CCEA;font-size:15.5px;max-width:52ch}
+.btn{display:inline-block;background:var(--hot);color:#fff;text-decoration:none;
+  border:0;border-radius:5px;padding:15px 26px;font:700 16px var(--body);cursor:pointer}
+.btn:hover{background:#E03F00}
+.price{font:900 32px/1 var(--disp);display:block;margin:0 0 10px}
+
+footer{border-top:1px solid var(--line);padding:30px 0 50px;font-size:13.5px;color:#9FABD8}
+.disc{font-size:12.5px;line-height:1.6;color:#8290BD;max-width:80ch;margin:16px 0 0}
+</style>
+</head>
+<body>
+
+<header><div class="wrap"><div class="bar">
+  <a class="logo" href="/">8K10Q<i>.com</i></a>
+  <a class="back" href="/">&larr; Back to 8K10Q</a>
+  <div id="nyc"></div>
+</div></div></header>
+
+<div class="wrap">
+  <section class="lede-band">
+    <span class="tag">A worked example &middot; free</span>
+    <h1>This is what a read looks like.</h1>
+    <p class="sub">One filing, read the way every read is done: the exhibit first, the
+    terms named, what each does to somebody holding the stock, and — the part nobody
+    else prints — what we could not check.</p>
+
+    <div class="listen">
+      <h3>Rather listen?</h3>
+      <p>Every read comes as audio as well as text. Most people are reading this
+      between other things.</p>
+      <!-- ===== SLOT 3: the Cloudflare Stream player. Drop the id in and this
+           becomes the real player. Until then it says what it is. ===== -->
+      <div class="player">[[ AUDIO NOT RECORDED YET &mdash; the Stream player goes here ]]</div>
+      <div class="mins">USUALLY 4 TO 6 MINUTES</div>
+    </div>
+  </section>
+
+  <article class="doc">
+    <h2>Theriva Biologics — the October 2025 warrant inducement</h2>
+    <p class="meta">NYSE American: TOVX &middot; SEC CIK 0000894158 &middot;
+      Form 8-K and its exhibit &middot; read by 8K10Q</p>
+
+    <h3>In plain English</h3>
+    <!-- ===== SLOT 1: your words. This is the paragraph a buyer reads first. ===== -->
+    <p class="slot">[[ YOUR WORDS HERE. Three or four sentences saying what this deal
+    was, for somebody who has never read a filing. No jargon. This is the paragraph
+    that sells the next read. ]]</p>
+
+    <h3>The money</h3>
+    <div class="nums">
+      <div class="num"><b>$4.0M</b><span>raised in the October 2025 inducement</span></div>
+      <div class="num"><b>$0.54</b><span>the price existing holders were offered</span></div>
+      <div class="num"><b>200%</b><span>replacement warrant coverage</span></div>
+      <div class="num"><b>at least $107M</b><span>raised from investors since 2017</span></div>
+    </div>
+
+    <h3>The terms we found</h3>
+    <div class="terms">
+
+      <div class="term heavy">
+        <span class="hv">HEAVY</span>
+        <p class="nm">Warrant inducement</p>
+        <p class="where">In the exhibit, not in the 8-K summary</p>
+        <p class="does">Existing warrant holders were offered a lower exercise price to
+        exercise early, and received new warrants in exchange &mdash; at 200% of what
+        they exercised.
+        <br><br><em>[[ YOUR LINE: what this does to somebody holding the stock. ]]</em></p>
+      </div>
+
+      <div class="term heavy">
+        <span class="hv">HEAVY</span>
+        <p class="nm">Issuing below the Minimum Price</p>
+        <blockquote>&ldquo;at a price per share less than the Minimum Price&rdquo;</blockquote>
+        <p class="where">The phrase appears verbatim in the company's proxy</p>
+        <p class="does">&ldquo;Minimum Price&rdquo; is the NYSE American rule at
+        &sect;713(a) &mdash; the floor below which a company needs shareholder approval
+        to issue shares.
+        <br><br><em>[[ YOUR LINE: what this does to somebody holding the stock. ]]</em></p>
+      </div>
+
+      <div class="term">
+        <p class="nm">Customary adjustments</p>
+        <blockquote>&ldquo;subject to customary adjustments&rdquo;</blockquote>
+        <p class="where">8-K summary language</p>
+        <p class="does">Three words in the summary. The adjustments themselves are in
+        the exhibit, and they are where the terms actually live. <b>This phrase is the
+        reason the exhibit gets read first on every job.</b></p>
+      </div>
+
+    </div>
+
+    <h3>Where the company stands</h3>
+    <div class="nums">
+      <div class="num"><b>~$364M</b><span>accumulated deficit at 30 June 2026</span></div>
+      <div class="num"><b>~$10.3M</b><span>the whole company's market value</span></div>
+      <div class="num"><b>3</b><span>reverse splits on the record</span></div>
+    </div>
+    <p style="font-size:14.5px;color:var(--ink-2);margin-top:12px">The company's own
+    sentence, from its Form 10-Q: since inception it has financed its activities
+    principally from the proceeds of the issuance of equity securities.</p>
+
+    <h3>What we checked, and what we did not</h3>
+    <div class="grid2">
+      <div class="box">
+        <h4>Checks run</h4>
+        <ul>
+          <li>The exhibit read in full, not the 8-K summary of it</li>
+          <li>The inducement price against the market price on the date</li>
+          <li>Replacement warrant coverage, from the exhibit</li>
+          <li>The company's own accumulated deficit, from its 10-Q</li>
+          <li>Reverse splits on the record, with dates</li>
+        </ul>
+      </div>
+      <div class="box notrun">
+        <h4>Checks NOT run</h4>
+        <ul>
+          <li>What the authorized share count was left at after each split</li>
+          <li>Whether the registration statement had gone effective</li>
+          <li>Any private agreement not filed as an exhibit</li>
+          <li>Anything the company has not filed</li>
+        </ul>
+      </div>
+    </div>
+    <p style="font-size:14.5px;color:var(--ink-2);margin-top:12px"><b>Every read prints
+    both lists.</b> A finding that hides its own gaps is worth nothing the moment
+    somebody finds the gap.</p>
+
+    <h3>Five questions to ask this company</h3>
+    <ol class="q">
+      <li>How many shares are authorized today, and how many are outstanding?</li>
+      <li>What was the authorized count left at after each reverse split?</li>
+      <li>Who bought the replacement warrants, and are they the same parties as last time?</li>
+      <li>What was paid to the placement agent, in cash and in warrants?</li>
+      <li>What does the company expect to fund from here, and for how long?</li>
+    </ol>
+    <p style="font-size:14.5px;color:var(--ink-2);margin-top:12px">Every read ends with
+    five questions aimed at that company &mdash; <b>because we may have missed
+    something, and the holder often knows something the filing does not hold yet.</b></p>
+
+    <h3>Disclosure</h3>
+    <p style="font-size:14.5px;color:var(--ink-2)">The author holds shares of Theriva
+    Biologics, Inc. and has held them for more than four years. Nothing in this read is
+    investment advice. No statement here alleges that any person or firm broke any law.
+    Any person named may answer, and the answer publishes in full and unedited.</p>
+  </article>
+
+  <div class="buy">
+    <div>
+      <h3>Read one of your own</h3>
+      <p>Put in a ticker and we read the filing and its exhibit the same way. Every
+      figure carries the accession number it came from.</p>
+    </div>
+    <div>
+      <span class="price">$20</span>
+      <a class="btn" href="/#pricing">Read a filing</a>
+    </div>
+  </div>
+</div>
+
+<footer><div class="wrap">
+  <b style="color:#fff">Mark Nejmeh</b> &middot;
+  <a href="https://jobcreation.us">JobCreation.us</a> &middot;
+  <a href="mailto:realroofers@gmail.com">realroofers@gmail.com</a> &middot; 732-995-3914
+  <p class="disc">Nothing on this site is investment advice or a recommendation to buy
+  or sell any security. SEC EDGAR filer information — CIK 0001860507 · SEC File
+  No. 150-11431 · LTID 71743954.</p>
+</div></footer>
+
+<script src="https://adhotbox.com/box.js" data-auto
+  data-not=".doc, .terms, .nums, .listen, .disc, .buy"></script>
+<script src="/clock.js"></script>
+</body>
+</html>
