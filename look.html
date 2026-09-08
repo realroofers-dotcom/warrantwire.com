@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 15:40 ET · lookatthis-1c · warrantwire.com/look.html
+<!-- BUILT 2026-09-10 15:40 ET · lookatthis-2a · warrantwire.com/look.html
      ==========================================================================
      WHAT THIS IS
 
@@ -149,22 +149,72 @@ footer a{color:var(--dim)}
 @media (prefers-reduced-motion: reduce){
   .wwlight{animation:none;opacity:1;box-shadow:none}
 }
+
+/* ================= NAVIGATION =================
+   ⚠ THE LEFT RAIL IS INVENTORY, NOT NAVIGATION. His ruling. Nothing
+   that helps a reader get around the site belongs in a column that
+   is sold. So the site is navigated two ways and only two:
+
+     · the three bars, top right, on every page
+     · the same links written out in the footer
+
+   The footer copy is the one that always works — it is plain links
+   in the HTML, so it survives with JavaScript off, on a screen
+   reader, and in a printout. The menu is the convenience on top.
+   ============================================== */
+.navbtn{position:fixed;top:14px;right:14px;z-index:60;width:44px;height:44px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:5px;background:rgba(20,21,15,.92);border:1px solid var(--line,#2e3125);
+  border-radius:5px;cursor:pointer;padding:0}
+.navbtn span{display:block;width:20px;height:2px;background:var(--text,#eceae0);
+  transition:transform .18s ease, opacity .18s ease}
+.navbtn[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.navbtn[aria-expanded="true"] span:nth-child(2){opacity:0}
+.navbtn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.navbtn:focus-visible{outline:2px solid var(--text,#eceae0);outline-offset:2px}
+
+.navpanel{position:fixed;top:0;right:0;bottom:0;width:min(310px,86vw);z-index:59;
+  background:#1c1e16;border-left:1px solid var(--line,#2e3125);
+  padding:76px 0 24px;transform:translateX(100%);transition:transform .22s ease;
+  overflow-y:auto}
+.navpanel[data-open="1"]{transform:translateX(0)}
+.navpanel a{display:block;padding:14px 24px;color:#eceae0;text-decoration:none;
+  font:400 16px/1.3 inherit;border-bottom:1px solid rgba(46,49,37,.7)}
+.navpanel a:hover{background:rgba(255,255,255,.04)}
+.navpanel a small{display:block;margin-top:3px;font-size:13px;color:#767a68}
+.navscrim{position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .22s ease}
+.navscrim[data-open="1"]{opacity:1;pointer-events:auto}
+
+.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 16px;
+  padding:0 0 14px;border-bottom:1px solid var(--line,#2e3125)}
+.footnav a{color:#a8aa9a;text-decoration:none;padding:5px 0;font-size:14px}
+.footnav a:hover{color:#eceae0}
+
+@media (prefers-reduced-motion: reduce){
+  .navpanel,.navscrim,.navbtn span{transition:none}
+}
 </style>
 </head>
 <body>
+
+<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="navscrim" id="navscrim"></div>
+<nav class="navpanel" id="navpanel" aria-label="Site">
+  <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this<small>A company's whole record, as it filed it</small></a>
+  <a href="/cost.html">What the raising costs<small>A running total, from the filings</small></a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
+  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
+  <a href="https://triggeredshort.com">The research docket<small>The screened cases</small></a>
+  <a href="/about.html">Who runs the wire</a>
+</nav>
 
 <div class="wrap"><header><div class="bar">
   <a class="logo" href="/">WARRANT<i>WIRE</i></a>
 </div></header></div>
 
-<nav class="wwnav"><div class="wrap">
-  <a href="/">The wire</a>
-  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this</a>
-  <a href="/cost.html">What the raising costs</a>
-  <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
-  <a href="https://8k10q.com">Read a filing</a>
-  <a href="/about.html">Who runs the wire</a>
-</div></nav>
+
 
 <div class="wrap">
   <section class="top">
@@ -186,6 +236,15 @@ footer a{color:var(--dim)}
 </div>
 
 <footer><div class="wrap">
+<div class="footnav">
+  <a href="/">The wire</a>
+  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this</a>
+  <a href="/cost.html">What the raising costs</a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
+  <a href="https://8k10q.com">Read a filing</a>
+  <a href="https://triggeredshort.com">The research docket</a>
+  <a href="/about.html">Who runs the wire</a>
+</div>
   Mark Nejmeh &middot; <a href="https://jobcreation.us">JobCreation.us</a>
   &middot; <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>
   &middot; 732-995-3914
@@ -408,6 +467,27 @@ footer a{color:var(--dim)}
     if (i >= CURATED.length) return;
     load(CURATED[i], i > 0).then(function () { chain(i + 1); });
   })(0);
+})();
+</script>
+
+<script>
+(function () {
+  var b = document.getElementById("navbtn"),
+      p = document.getElementById("navpanel"),
+      s = document.getElementById("navscrim");
+  if (!b || !p) return;
+  function set(open) {
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+    p.setAttribute("data-open", open ? "1" : "0");
+    if (s) s.setAttribute("data-open", open ? "1" : "0");
+  }
+  b.addEventListener("click", function () {
+    set(b.getAttribute("aria-expanded") !== "true");
+  });
+  if (s) s.addEventListener("click", function () { set(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") set(false);
+  });
 })();
 </script>
 </body>
