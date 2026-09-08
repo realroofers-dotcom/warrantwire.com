@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 15:40 ET · lookatthis-1a · warrantwire.com/look.html
+<!-- BUILT 2026-09-10 15:40 ET · lookatthis-1c · warrantwire.com/look.html
      ==========================================================================
      WHAT THIS IS
 
@@ -118,14 +118,53 @@ summary{cursor:pointer;color:var(--dim);font:400 15px var(--serif);padding:6px 0
 footer{border-top:1px solid var(--line);padding:26px 0 50px;font:400 13.5px var(--mono);color:var(--faint)}
 footer a{color:var(--dim)}
 .disc{margin:14px 0 0;line-height:1.7;max-width:80ch}
+
+/* ---------------- the nav, the same on every page ---------------- */
+.wwnav{border-bottom:1px solid var(--line);background:var(--ink)}
+.wwnav .wrap{display:flex;gap:0;flex-wrap:wrap;padding-top:0;padding-bottom:0}
+.wwnav a{font:400 14px/1 var(--mono);color:var(--dim);text-decoration:none;
+  padding:13px 16px 13px 0;margin-right:2px;border-bottom:2px solid transparent}
+.wwnav a:hover{color:var(--text)}
+.wwnav a[aria-current]{color:var(--text);border-bottom-color:var(--cut,#c65a4a)}
+@media(max-width:620px){.wwnav a{padding:10px 12px 10px 0;font-size:13px}}
+
+/* ---------------- the light on "Look at this" ----------------
+   ⚠ ONE blinking thing on the site, and only on this link. It is
+   there because that page is where the record is laid out, and a
+   still nav gives no reason to look. Two more and it is a fruit
+   machine.
+
+   ⚠ IT STOPS FOR ANYONE WHO ASKS IT TO. prefers-reduced-motion is
+   not a nicety — a blinking element can trigger migraine and, in
+   the wrong range, seizure. The dot stays, lit and still. */
+.wwlight{display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#c65a4a;margin-right:7px;vertical-align:middle;position:relative;
+  top:-1px;box-shadow:0 0 0 0 rgba(198,90,74,.65);
+  animation:wwpulse 1.9s ease-out infinite}
+@keyframes wwpulse{
+  0%   {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  55%  {opacity:.35; box-shadow:0 0 0 6px rgba(198,90,74,0)}
+  100% {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .wwlight{animation:none;opacity:1;box-shadow:none}
+}
 </style>
 </head>
 <body>
 
 <div class="wrap"><header><div class="bar">
   <a class="logo" href="/">WARRANT<i>WIRE</i></a>
-  <a class="back" href="/">Back to the wire</a>
 </div></header></div>
+
+<nav class="wwnav"><div class="wrap">
+  <a href="/">The wire</a>
+  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this</a>
+  <a href="/cost.html">What the raising costs</a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
+  <a href="https://8k10q.com">Read a filing</a>
+  <a href="/about.html">Who runs the wire</a>
+</div></nav>
 
 <div class="wrap">
   <section class="top">

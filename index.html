@@ -313,6 +313,28 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   .row{grid-template-columns:1fr;gap:5px}
   .go{text-align:left}
 }
+
+/* ---------------- the light on "Look at this" ----------------
+   ⚠ ONE blinking thing on the site, and only on this link. It is
+   there because that page is where the record is laid out, and a
+   still nav gives no reason to look. Two more and it is a fruit
+   machine.
+
+   ⚠ IT STOPS FOR ANYONE WHO ASKS IT TO. prefers-reduced-motion is
+   not a nicety — a blinking element can trigger migraine and, in
+   the wrong range, seizure. The dot stays, lit and still. */
+.wwlight{display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#c65a4a;margin-right:7px;vertical-align:middle;position:relative;
+  top:-1px;box-shadow:0 0 0 0 rgba(198,90,74,.65);
+  animation:wwpulse 1.9s ease-out infinite}
+@keyframes wwpulse{
+  0%   {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  55%  {opacity:.35; box-shadow:0 0 0 6px rgba(198,90,74,0)}
+  100% {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .wwlight{animation:none;opacity:1;box-shadow:none}
+}
 </style>
 </head>
 <body>
@@ -341,6 +363,8 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     <a class="ghost" href="https://8k10q.com">8k10q.com &rarr;</a>
     <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
     <a class="ghost" href="https://triggeredshort.com/glossary.html">What the words mean &rarr;</a>
+    <a class="ghost" href="/look.html"><span class="wwlight" aria-hidden="true"></span>Look at this &rarr;</a>
+    <a class="ghost" href="/cost.html">What the raising costs &rarr;</a>
     <a class="ghost" href="/about.html">Who runs the wire &rarr;</a>
   </div>
 
