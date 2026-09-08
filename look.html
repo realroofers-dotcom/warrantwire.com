@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 15:40 ET · lookatthis-2a · warrantwire.com/look.html
+<!-- BUILT 2026-09-10 15:40 ET · lookatthis-2c · warrantwire.com/look.html
      ==========================================================================
      WHAT THIS IS
 
@@ -128,46 +128,7 @@ footer a{color:var(--dim)}
 .wwnav a[aria-current]{color:var(--text);border-bottom-color:var(--cut,#c65a4a)}
 @media(max-width:620px){.wwnav a{padding:10px 12px 10px 0;font-size:13px}}
 
-/* ---------------- the light on "Look at this" ----------------
-   ⚠ ONE blinking thing on the site, and only on this link. It is
-   there because that page is where the record is laid out, and a
-   still nav gives no reason to look. Two more and it is a fruit
-   machine.
 
-   ⚠ IT STOPS FOR ANYONE WHO ASKS IT TO. prefers-reduced-motion is
-   not a nicety — a blinking element can trigger migraine and, in
-   the wrong range, seizure. The dot stays, lit and still. */
-.wwlight{display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:#c65a4a;margin-right:7px;vertical-align:middle;position:relative;
-  top:-1px;box-shadow:0 0 0 0 rgba(198,90,74,.65);
-  animation:wwpulse 1.9s ease-out infinite}
-@keyframes wwpulse{
-  0%   {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,.6)}
-  55%  {opacity:.35; box-shadow:0 0 0 6px rgba(198,90,74,0)}
-  100% {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,0)}
-}
-@media (prefers-reduced-motion: reduce){
-  .wwlight{animation:none;opacity:1;box-shadow:none}
-}
-
-/* ================= NAVIGATION =================
-   ⚠ THE LEFT RAIL IS INVENTORY, NOT NAVIGATION. His ruling. Nothing
-   that helps a reader get around the site belongs in a column that
-   is sold. So the site is navigated two ways and only two:
-
-     · the three bars, top right, on every page
-     · the same links written out in the footer
-
-   The footer copy is the one that always works — it is plain links
-   in the HTML, so it survives with JavaScript off, on a screen
-   reader, and in a printout. The menu is the convenience on top.
-   ============================================== */
-.navbtn{position:fixed;top:14px;right:14px;z-index:60;width:44px;height:44px;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
-  gap:5px;background:rgba(20,21,15,.92);border:1px solid var(--line,#2e3125);
-  border-radius:5px;cursor:pointer;padding:0}
-.navbtn span{display:block;width:20px;height:2px;background:var(--text,#eceae0);
-  transition:transform .18s ease, opacity .18s ease}
 .navbtn[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .navbtn[aria-expanded="true"] span:nth-child(2){opacity:0}
 .navbtn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -194,15 +155,53 @@ footer a{color:var(--dim)}
 @media (prefers-reduced-motion: reduce){
   .navpanel,.navscrim,.navbtn span{transition:none}
 }
+
+/* ---------------- the flag, top right, left of the bars ----------------
+   ⚠ THE DOT SITS OVER THE WORD, not beside it. It hangs above "Look",
+   the way a light hangs over a door — the eye goes to the light and
+   lands on the word underneath it.
+
+   It is a LINK, not decoration — the dot and the words go to the page
+   together, so it works with a mouse, a finger and a keyboard.
+
+   ⚠ IT STOPS FOR ANYONE WHOSE DEVICE ASKS. A blinking element can
+   trigger migraine and, in the wrong range, seizure. Reduced motion
+   leaves the dot red and lit, and the flag still says what it is. */
+.wwflag{position:fixed;top:14px;right:66px;z-index:60;display:flex;
+  align-items:center;height:44px;padding:0 15px;
+  background:rgba(20,21,15,.92);border:1px solid var(--line,#2e3125);
+  border-radius:5px;text-decoration:none;color:var(--text,#eceae0);
+  font:500 14px/1 var(--mono,ui-monospace,monospace);white-space:nowrap}
+.wwflag:hover{border-color:#c65a4a}
+.wwflag:focus-visible{outline:2px solid var(--text,#eceae0);outline-offset:2px}
+
+/* the label carries the dot above its first word */
+.wwflag .label{position:relative;display:inline-block;padding-top:2px}
+.wwflag .dot{position:absolute;top:-7px;left:11px;width:7px;height:7px;
+  border-radius:50%;background:#c65a4a;
+  animation:wwpulse 1.6s ease-out infinite}
+@keyframes wwpulse{
+  0%   {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,.65)}
+  55%  {opacity:.3;  box-shadow:0 0 0 6px rgba(198,90,74,0)}
+  100% {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .wwflag .dot{animation:none;opacity:1;box-shadow:none}
+}
+@media(max-width:560px){
+  .wwflag{padding:0 12px;font-size:13px;right:62px}
+  .wwflag .dot{left:9px}
+}
 </style>
 </head>
 <body>
 
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
 <button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
 <div class="navscrim" id="navscrim"></div>
 <nav class="navpanel" id="navpanel" aria-label="Site">
   <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
-  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this<small>A company's whole record, as it filed it</small></a>
+  <a href="/look.html" aria-current="page">Look at this<small>A company's whole record, as it filed it</small></a>
   <a href="/cost.html">What the raising costs<small>A running total, from the filings</small></a>
   <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
   <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
@@ -238,7 +237,7 @@ footer a{color:var(--dim)}
 <footer><div class="wrap">
 <div class="footnav">
   <a href="/">The wire</a>
-  <a href="/look.html" aria-current="page"><span class="wwlight" aria-hidden="true"></span>Look at this</a>
+  <a href="/look.html" aria-current="page">Look at this</a>
   <a href="/cost.html">What the raising costs</a>
   <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
   <a href="https://8k10q.com">Read a filing</a>
