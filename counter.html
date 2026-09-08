@@ -1,0 +1,359 @@
+<!-- BUILT 2026-09-10 04:30 ET · counter-1a · warrantwire.com/cost.html
+     ==========================================================================
+     WHAT THIS IS
+
+     A running total of what these offerings cost the people who already own
+     the shares — the placement agent fees, the agent expenses, and the legal
+     and offering expenses, taken from the filings themselves.
+
+     ⚠ THE COUNTER TICKS FROM A CALCULATED RATE, NOT AN INVENTED ONE.
+     It reads the tally endpoint, takes the disclosed total and the number of
+     days it covers, and ticks at that per-second rate between refreshes. The
+     rate is printed on the page. That is the difference between a counter and
+     a slot machine: anyone can check the arithmetic.
+
+     ⚠ DISCLOSED AND ESTIMATED ARE NEVER ADDED TOGETHER IN THE BIG NUMBER.
+     The big number is what filings STATE. The estimate sits beneath it,
+     labelled, with its method and sample size, and a reader can ignore it.
+
+     ⚠ IF THERE IS NO DATA, THE PAGE SAYS SO. It never shows a zero dressed up
+     as a finding, and it never invents a rate to keep the digits moving.
+     ========================================================================== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What the raising costs — Warrant Wire</title>
+<meta name="description" content="A running total of the disclosed cost of small-cap share offerings: placement agent fees, agent expenses, and legal and offering expenses, taken from the filings.">
+<link rel="canonical" href="https://warrantwire.com/cost.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --ink:#14150f;         /* the site's paper-dark */
+  --panel:#1c1e16;
+  --line:#2e3125;
+  --text:#eceae0;
+  --dim:#a8aa9a;
+  --faint:#767a68;
+  --lit:#e8c547;         /* the counter's own colour — warm, filament-like */
+  --cool:#6fa88c;
+  --hot:#c65a4a;
+  --mono:"Roboto Mono",ui-monospace,monospace;
+  --serif:Spectral,Georgia,serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--text);
+  font:400 17px/1.65 var(--serif)}
+.wrap{max-width:920px;margin:0 auto;padding:0 26px}
+a{color:var(--cool)}
+
+/* ---------------- the masthead ---------------- */
+header{border-bottom:1px solid var(--line);padding:22px 0}
+.bar{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.logo{font:700 22px/1 var(--mono);letter-spacing:.02em;text-decoration:none;color:var(--text)}
+.logo i{font-style:normal;color:var(--hot)}
+.back{margin-left:auto;font:400 14px var(--serif);color:var(--dim);text-decoration:none}
+
+/* ---------------- the counter is the whole hero ---------------- */
+.hero{padding:58px 0 40px;border-bottom:1px solid var(--line)}
+.standfirst{font-size:19px;color:var(--dim);max-width:54ch;margin:0 0 34px}
+.standfirst b{color:var(--text);font-weight:600}
+
+.odometer{font:700 clamp(34px,10.5vw,104px)/1 var(--mono);
+  letter-spacing:-.02em;color:var(--lit);
+  display:flex;align-items:baseline;gap:.06em;flex-wrap:nowrap;
+  text-shadow:0 0 42px rgba(232,197,71,.22)}
+.odometer .dollar{font-size:.52em;color:var(--dim);text-shadow:none}
+.digit{display:inline-block;min-width:.62em;text-align:center;
+  transition:color .18s linear}
+.digit.roll{color:#fff}
+.comma{opacity:.42}
+
+.under{margin:18px 0 0;font:400 15px/1.55 var(--mono);color:var(--faint);max-width:66ch}
+.rate{color:var(--dim)}
+
+/* ---------------- the split ---------------- */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+  border:1px solid var(--line);margin:38px 0 0}
+@media(max-width:720px){.split{grid-template-columns:1fr}}
+.half{background:var(--ink);padding:24px 26px}
+.half h2{margin:0 0 4px;font:600 15px/1.3 var(--mono);color:var(--dim);
+  letter-spacing:.01em}
+.half .big{font:500 clamp(24px,4.4vw,34px)/1.1 var(--mono);margin:6px 0 10px}
+.half.stated .big{color:var(--cool)}
+.half.reckoned .big{color:var(--dim)}
+.half p{margin:0;font-size:14.5px;color:var(--faint);line-height:1.6}
+.half.reckoned{background:#191a13}
+
+/* ---------------- the rest ---------------- */
+main{padding:44px 0 60px}
+h3{font:600 22px/1.25 var(--serif);margin:38px 0 12px}
+h3:first-child{margin-top:0}
+p.body{max-width:66ch;color:var(--dim);margin:0 0 16px}
+p.body b{color:var(--text);font-weight:600}
+
+table{width:100%;border-collapse:collapse;margin:18px 0 0;font:400 15px var(--mono)}
+th{text-align:left;font-weight:500;color:var(--faint);padding:9px 10px;
+  border-bottom:1px solid var(--line);font-size:13px}
+td{padding:10px;border-bottom:1px solid rgba(46,49,37,.55);color:var(--text)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+
+.method{border-left:2px solid var(--line);padding:2px 0 2px 20px;margin:26px 0 0;
+  color:var(--faint);font-size:15px;max-width:68ch}
+.method b{color:var(--dim);font-weight:600}
+
+.empty{border:1px dashed var(--line);padding:26px 24px;color:var(--dim);
+  font-size:16px;max-width:64ch}
+.empty b{color:var(--text)}
+
+footer{border-top:1px solid var(--line);padding:26px 0 48px;font:400 14px var(--mono);
+  color:var(--faint)}
+footer a{color:var(--dim)}
+.disc{margin:14px 0 0;font-size:13px;line-height:1.65;max-width:78ch}
+
+@media (prefers-reduced-motion: reduce){
+  .digit{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap"><header><div class="bar">
+  <a class="logo" href="/">WARRANT<i>WIRE</i></a>
+  <a class="back" href="/">Back to the wire</a>
+</div></header></div>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="standfirst">Every one of these offerings is paid for out of the
+    company the shareholders already own. This is what the raising has cost
+    them so far — <b>counting only what the filings actually state</b>.</p>
+
+    <div class="odometer" id="odo" aria-live="off">
+      <span class="dollar">$</span><span id="digits">—</span>
+    </div>
+
+    <p class="under" id="under">Reading the filings&hellip;</p>
+
+    <div class="split">
+      <div class="half stated">
+        <h2>Stated in the filings</h2>
+        <div class="big" id="disclosed">—</div>
+        <p id="disclosedNote">Placement agent fees, agent expenses, and legal
+        and offering expenses, exactly as each filing gives them. Every figure
+        is a floor: costs a document does not disclose are not in it.</p>
+      </div>
+      <div class="half reckoned">
+        <h2>Calculated on top</h2>
+        <div class="big" id="estimate">—</div>
+        <p id="estimateNote">Filings that do state their offering expenses give
+        a ratio to the money raised. The middle of those ratios is applied to
+        the filings that state nothing. Method and sample size below.</p>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <div id="body"></div>
+  </main>
+</div>
+
+<footer><div class="wrap">
+  Mark Nejmeh &middot; <a href="https://jobcreation.us">JobCreation.us</a>
+  &middot; <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>
+  &middot; 732-995-3914
+  <p class="disc">Nothing here is investment advice or a recommendation to buy or
+  sell any security. Every stated figure is taken from a filing and can be
+  checked against it. Calculated figures are shown separately, with their
+  method, and are not claims about any company. No statement here alleges that
+  any person or firm broke any law. SEC EDGAR filer information — CIK
+  0001860507 · SEC File No. 150-11431 · LTID 71743954.</p>
+</div></footer>
+
+<script>
+(function () {
+  /* ⚠ ONE LINE TO CHECK if the read worker ever moves. */
+  var READ = "https://read.realroofers.workers.dev";
+  var KEY  = "";   /* the tally is admin-only today; leave empty for the public
+                      page and put a public wrapper in front of it later */
+
+  var digitsEl = document.getElementById("digits");
+  var underEl  = document.getElementById("under");
+  var bodyEl   = document.getElementById("body");
+
+  var total = 0, perSecond = 0, started = 0, base = 0, running = false;
+
+  function commas(n) {
+    var s = Math.floor(n).toString();
+    var out = "", c = 0;
+    for (var i = s.length - 1; i >= 0; i--) {
+      out = s[i] + out;
+      if (++c % 3 === 0 && i > 0) out = "," + out;
+    }
+    return out;
+  }
+
+  /* the digits are individual spans so a changing one can be lit briefly —
+     one small motion, and only where something actually changed */
+  var lastStr = "";
+  function paint(n) {
+    var str = commas(n);
+    if (str === lastStr) return;
+    var prev = lastStr;
+    lastStr = str;
+    var html = "";
+    for (var i = 0; i < str.length; i++) {
+      var ch = str[i];
+      if (ch === ",") { html += '<span class="comma">,</span>'; continue; }
+      var changed = prev.length !== str.length || prev[i] !== ch;
+      html += '<span class="digit' + (changed ? " roll" : "") + '">' + ch + "</span>";
+    }
+    digitsEl.innerHTML = html;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setTimeout(function () {
+      var lit = digitsEl.querySelectorAll(".digit.roll");
+      for (var k = 0; k < lit.length; k++) lit[k].classList.remove("roll");
+    }, 180);
+  }
+
+  function tick() {
+    if (!running) return;
+    var elapsed = (Date.now() - started) / 1000;
+    paint(base + perSecond * elapsed);
+    requestAnimationFrame(tick);
+  }
+
+  function money(n) { return "$" + commas(n || 0); }
+
+  function nothingYet(why) {
+    digitsEl.textContent = "0";
+    underEl.textContent = "";
+    document.getElementById("disclosed").textContent = "—";
+    document.getElementById("estimate").textContent = "—";
+    bodyEl.innerHTML =
+      '<div class="empty"><b>No filings have been read yet for this period.</b>' +
+      '<br><br>The counter runs on reads, not on the wire. A filing has to be ' +
+      'read before its costs are known, because the fee is in the document and ' +
+      'nowhere else. ' + (why ? "<br><br>" + why : "") + '</div>';
+  }
+
+  function render(d) {
+    var dis = d.disclosed || {};
+    var est = d.estimated || {};
+    var days = (d.by_day || []).length;
+
+    if (!dis.filings_counted) { nothingYet(""); return; }
+
+    total = dis.total_disclosed_cost || 0;
+    base = total;
+
+    /* THE RATE IS CALCULATED, NOT CHOSEN: the disclosed total divided by the
+       days it covers. Printed on the page so it can be checked. */
+    var perDay = days ? total / days : 0;
+    perSecond = perDay / 86400;
+    started = Date.now();
+    running = perSecond > 0;
+    paint(total);
+    if (running) requestAnimationFrame(tick);
+
+    underEl.innerHTML =
+      "Counting " + dis.filings_counted + " filings read so far" +
+      (days ? " across " + days + (days === 1 ? " day" : " days") : "") +
+      ". <span class='rate'>The counter advances at " + money(Math.round(perDay)) +
+      " a day &mdash; that total divided by those days, and nothing else.</span>";
+
+    document.getElementById("disclosed").textContent = money(dis.total_disclosed_cost);
+    document.getElementById("disclosedNote").innerHTML =
+      "Out of " + money(dis.gross_raised) + " raised, that is <b>" +
+      (dis.cost_as_pct_of_gross !== null ? dis.cost_as_pct_of_gross + "%" : "—") +
+      "</b>. Placement agent fees " + money(dis.placement_agent_cash_fees) +
+      ", agent expenses " + money(dis.placement_agent_expenses) +
+      ", legal and offering expenses " + money(dis.offering_and_legal_expenses) +
+      ". Every figure is a floor.";
+
+    if (est.possible) {
+      document.getElementById("estimate").textContent =
+        "+ " + money(est.estimated_additional_legal_and_expenses);
+      document.getElementById("estimateNote").innerHTML =
+        "From " + est.sample_size + " filings that state both, the middle ratio " +
+        "of expenses to money raised is <b>" + est.median_ratio_pct + "%</b> " +
+        "(lowest " + est.lowest_ratio_pct + "%, highest " + est.highest_ratio_pct +
+        "%). Applied to " + est.filings_with_no_expense_figure +
+        " filings that state nothing, covering " + money(est.their_gross) +
+        " raised. This is calculated, not stated. It is not added to the counter.";
+    } else {
+      document.getElementById("estimate").textContent = "not yet";
+      document.getElementById("estimateNote").textContent =
+        est.reason || "Nothing to calculate from yet.";
+    }
+
+    var html = "";
+
+    if (d.by_agent && d.by_agent.length) {
+      html += "<h3>Who was paid</h3>" +
+        "<p class='body'>Placement agents, by the fees their filings disclose.</p>" +
+        "<table><thead><tr><th>Agent</th><th class='n'>Deals</th>" +
+        "<th class='n'>Raised</th><th class='n'>Fees</th><th class='n'>Rate</th>" +
+        "</tr></thead><tbody>";
+      for (var i = 0; i < d.by_agent.length; i++) {
+        var a = d.by_agent[i];
+        html += "<tr><td>" + a.agent + "</td><td class='n'>" + a.deals +
+          "</td><td class='n'>" + money(a.gross) + "</td><td class='n'>" +
+          money(a.disclosed_fees) + "</td><td class='n'>" +
+          (a.fee_pct !== null ? a.fee_pct + "%" : "—") + "</td></tr>";
+      }
+      html += "</tbody></table>";
+    }
+
+    if (d.by_day && d.by_day.length) {
+      html += "<h3>Day by day</h3><table><thead><tr><th>Day</th>" +
+        "<th class='n'>Filings</th><th class='n'>Raised</th>" +
+        "<th class='n'>Cost that day</th><th class='n'>Running</th>" +
+        "</tr></thead><tbody>";
+      var rows = d.by_day.slice(-30).reverse();
+      for (var j = 0; j < rows.length; j++) {
+        var r = rows[j];
+        html += "<tr><td>" + r.day + "</td><td class='n'>" + r.filings +
+          "</td><td class='n'>" + money(r.gross) + "</td><td class='n'>" +
+          money(r.disclosed_cost) + "</td><td class='n'>" +
+          money(r.running_disclosed_cost) + "</td></tr>";
+      }
+      html += "</tbody></table>";
+    }
+
+    html += '<div class="method"><b>How this is worked out.</b> Every stated ' +
+      'figure comes from a filing that has been read, and can be checked against ' +
+      'the document it came from. Registrations that only re-register shares ' +
+      'already sold are excluded, because they raise nothing and counting them ' +
+      'would count the same money twice. The calculated figure uses the middle ' +
+      'ratio of disclosed expenses to money raised, drawn from this same set of ' +
+      'filings — not from an outside estimate — and it is never added into the ' +
+      'stated total. Undisclosed costs are in neither figure, so both are ' +
+      'floors.</div>';
+
+    bodyEl.innerHTML = html;
+  }
+
+  fetch(READ + "/?action=tally" + (KEY ? "&key=" + encodeURIComponent(KEY) : ""))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || d.ok === false) {
+        nothingYet(d && d.error ? "The wire said: " + d.error : "");
+        return;
+      }
+      render(d);
+    })
+    .catch(function () {
+      nothingYet("Could not reach the wire just now. Nothing is wrong with the " +
+                 "figures; the page simply could not load them.");
+    });
+})();
+</script>
+</body>
+</html>
