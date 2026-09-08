@@ -1,0 +1,375 @@
+<!-- BUILT 2026-09-10 15:40 ET · lookatthis-1a · warrantwire.com/look.html
+     ==========================================================================
+     WHAT THIS IS
+
+     One company's whole arc, drawn from the figures it tagged in its own
+     10-K filings: shares outstanding, shares authorized, money raised,
+     money spent, revenue.
+
+     ⚠ NOTHING ON THIS PAGE IS OURS. Every number comes from the SEC's XBRL
+     company-facts service, which is free and public, and can be checked
+     against the filing it came from. The page adds arithmetic and nothing
+     else — no rating, no verdict, no claim about anyone's conduct.
+
+     ⚠ IT REFUSES TO SUM ACROSS A BREAK IN THE RECORD. If a company's
+     accumulated deficit falls, the earlier years belong to a different
+     entity — a predecessor in a reverse merger, usually. The worker
+     detects that and the page shows the totals from AFTER the break, and
+     says why.
+
+     THE HERO IS THE SAWTOOTH. The share count collapsing and climbing,
+     drawn as one line, is the whole argument in a shape. Everything else
+     on the page is quiet.
+     ========================================================================== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Look at this — Warrant Wire</title>
+<meta name="description" content="One company's whole record, drawn from the figures it filed itself: shares outstanding, shares authorized, money raised, money spent, revenue.">
+<link rel="canonical" href="https://warrantwire.com/look.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --ink:#14150f; --panel:#1c1e16; --line:#2e3125;
+  --text:#eceae0; --dim:#a8aa9a; --faint:#767a68;
+  --cut:#c65a4a;      /* the collapse */
+  --climb:#6fa88c;    /* the climb back */
+  --room:#e8c547;     /* the ceiling */
+  --mono:"Roboto Mono",ui-monospace,monospace;
+  --serif:Spectral,Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font:400 17px/1.65 var(--serif)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 26px}
+a{color:var(--climb)}
+
+header{border-bottom:1px solid var(--line);padding:22px 0}
+.bar{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.logo{font:700 22px/1 var(--mono);text-decoration:none;color:var(--text)}
+.logo i{font-style:normal;color:var(--cut)}
+.back{margin-left:auto;font-size:14px;color:var(--dim);text-decoration:none}
+
+.top{padding:48px 0 30px}
+h1{font:600 clamp(30px,5vw,50px)/1.08 var(--serif);letter-spacing:-.02em;margin:0 0 16px;max-width:20ch}
+.stand{font-size:19px;color:var(--dim);max-width:58ch;margin:0 0 26px}
+.stand b{color:var(--text);font-weight:600}
+
+.find{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.find input{flex:1 1 200px;background:var(--panel);border:1px solid var(--line);
+  border-radius:4px;padding:13px 15px;color:var(--text);
+  font:400 16px var(--mono);text-transform:uppercase}
+.find input::placeholder{text-transform:none;color:var(--faint)}
+.find button{background:var(--cut);color:#fff;border:0;border-radius:4px;
+  padding:13px 26px;font:600 16px var(--serif);cursor:pointer}
+.find button:hover{background:#b04d3e}
+.hint{font-size:14px;color:var(--faint);margin:0 0 40px}
+
+.co{border-top:1px solid var(--line);padding:38px 0 10px}
+.co h2{font:600 27px/1.2 var(--serif);margin:0 0 2px}
+.co .who{font:400 14px var(--mono);color:var(--faint);margin:0 0 22px}
+
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:20px 18px 12px;margin:0 0 20px;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:520px}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font:400 13px var(--mono);
+  color:var(--faint);padding:10px 2px 0}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;
+  margin-right:6px;vertical-align:baseline}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 20px}
+.facts div{background:var(--ink);padding:15px 17px}
+.facts b{display:block;font:500 22px/1.15 var(--mono);margin:0 0 3px}
+.facts span{font-size:13.5px;color:var(--faint);line-height:1.45;display:block}
+.facts .zero b{color:var(--cut)}
+
+.events{margin:0 0 20px;border-left:2px solid var(--line);padding-left:20px}
+.ev{margin:0 0 16px}
+.ev .yr{font:500 15px var(--mono);color:var(--dim)}
+.ev .what{font-weight:600}
+.ev .det{font:400 14.5px var(--mono);color:var(--faint);display:block;margin-top:2px}
+.ev.cut .what{color:var(--cut)}
+.ev.room .what{color:var(--room)}
+
+.broke{border:1px solid var(--cut);border-radius:6px;padding:17px 19px;
+  margin:0 0 20px;background:rgba(198,90,74,.07);font-size:15.5px;color:var(--dim)}
+.broke b{color:var(--text)}
+
+table{width:100%;border-collapse:collapse;font:400 14.5px var(--mono);margin:6px 0 0}
+th{text-align:right;font-weight:500;color:var(--faint);padding:8px 9px;
+  border-bottom:1px solid var(--line);font-size:12.5px}
+th:first-child{text-align:left}
+td{padding:8px 9px;border-bottom:1px solid rgba(46,49,37,.5);text-align:right;
+  font-variant-numeric:tabular-nums}
+td:first-child{text-align:left;color:var(--dim)}
+tr.pre td{opacity:.4}
+tr.split td{background:rgba(198,90,74,.09)}
+details{margin:0 0 10px}
+summary{cursor:pointer;color:var(--dim);font:400 15px var(--serif);padding:6px 0}
+
+.msg{border:1px dashed var(--line);padding:24px;color:var(--dim);max-width:62ch}
+.msg b{color:var(--text)}
+
+footer{border-top:1px solid var(--line);padding:26px 0 50px;font:400 13.5px var(--mono);color:var(--faint)}
+footer a{color:var(--dim)}
+.disc{margin:14px 0 0;line-height:1.7;max-width:80ch}
+</style>
+</head>
+<body>
+
+<div class="wrap"><header><div class="bar">
+  <a class="logo" href="/">WARRANT<i>WIRE</i></a>
+  <a class="back" href="/">Back to the wire</a>
+</div></header></div>
+
+<div class="wrap">
+  <section class="top">
+    <h1>Look at this.</h1>
+    <p class="stand">A company's whole record, drawn from the figures it filed
+    itself. How many shares there were. How many it was allowed to issue. What
+    it raised, what it spent, and what it sold.
+    <b>Nothing here is our number.</b></p>
+
+    <div class="find">
+      <input id="t" placeholder="Type a ticker — TOVX, PDSB, GWAV" autocomplete="off" spellcheck="false">
+      <button id="go" type="button">Look it up</button>
+    </div>
+    <p class="hint">Straight from the SEC's own tagged filings. Free, and it
+    always will be.</p>
+  </section>
+
+  <div id="out"></div>
+</div>
+
+<footer><div class="wrap">
+  Mark Nejmeh &middot; <a href="https://jobcreation.us">JobCreation.us</a>
+  &middot; <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>
+  &middot; 732-995-3914
+  <p class="disc">Every figure on this page is taken from the company's own
+  filings with the Securities and Exchange Commission and can be checked against
+  them. This page performs arithmetic on those figures and nothing else. It
+  makes no claim about any company, any person or any firm, and nothing here
+  alleges that anyone broke any law. Nothing here is investment advice or a
+  recommendation to buy or sell any security. SEC EDGAR filer information —
+  CIK 0001860507 · SEC File No. 150-11431 · LTID 71743954.</p>
+</div></footer>
+
+<script>
+(function () {
+  var READ = "https://read.realroofers.workers.dev";
+  var CURATED = ["TOVX", "PDSB"];
+
+  var out = document.getElementById("out");
+  var box = document.getElementById("t");
+
+  function n(x) { return (x === null || x === undefined) ? "—" : Number(x).toLocaleString(); }
+  function money(x) {
+    if (x === null || x === undefined) return "—";
+    var v = Math.abs(Number(x));
+    if (v >= 1e9) return "$" + (v / 1e9).toFixed(2) + "bn";
+    if (v >= 1e6) return "$" + (v / 1e6).toFixed(1) + "m";
+    return "$" + Math.round(v).toLocaleString();
+  }
+
+  /* ---------- THE SAWTOOTH ----------
+     One line for the share count, one for the ceiling above it. Drawn on a
+     log scale, because a count that goes from 158 million to 686 thousand
+     and back cannot be read any other way. */
+  function chart(rows, breakYear) {
+    var pts = rows.filter(function (r) { return r.shares_outstanding > 0; });
+    if (pts.length < 2) return "";
+
+    var W = 900, H = 260, L = 68, R = 18, T = 16, B = 30;
+    var lo = Infinity, hi = 0;
+    pts.forEach(function (r) {
+      lo = Math.min(lo, r.shares_outstanding);
+      hi = Math.max(hi, r.shares_authorized || r.shares_outstanding);
+    });
+    lo = Math.max(1, lo * 0.7); hi = hi * 1.15;
+    var lgLo = Math.log10(lo), lgHi = Math.log10(hi);
+
+    function x(i) { return L + (W - L - R) * (i / (pts.length - 1)); }
+    function y(v) {
+      if (!v || v <= 0) return H - B;
+      var f = (Math.log10(v) - lgLo) / (lgHi - lgLo);
+      return T + (H - T - B) * (1 - Math.max(0, Math.min(1, f)));
+    }
+
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="shares outstanding and shares authorized, by year">';
+
+    /* the ceiling, as a stepped area */
+    var ceil = "";
+    pts.forEach(function (r, i) {
+      var yy = y(r.shares_authorized);
+      ceil += (i ? "L" : "M") + x(i) + "," + yy;
+      if (i < pts.length - 1) ceil += "L" + x(i + 1) + "," + yy;
+    });
+    s += '<path d="' + ceil + '" fill="none" stroke="var(--room)" ' +
+         'stroke-width="1.5" stroke-dasharray="4 4" opacity=".75"/>';
+
+    /* the count */
+    var line = "";
+    pts.forEach(function (r, i) { line += (i ? "L" : "M") + x(i) + "," + y(r.shares_outstanding); });
+    s += '<path d="' + line + '" fill="none" stroke="var(--climb)" stroke-width="2.5"/>';
+
+    /* mark every collapse in red, on the segment where it happens */
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i - 1].shares_outstanding / pts[i].shares_outstanding >= 1.8) {
+        s += '<path d="M' + x(i - 1) + ',' + y(pts[i - 1].shares_outstanding) +
+             'L' + x(i) + ',' + y(pts[i].shares_outstanding) +
+             '" fill="none" stroke="var(--cut)" stroke-width="3.5"/>';
+        s += '<circle cx="' + x(i) + '" cy="' + y(pts[i].shares_outstanding) +
+             '" r="4.5" fill="var(--cut)"/>';
+      }
+    }
+
+    /* years, and the break if there is one */
+    pts.forEach(function (r, i) {
+      var every = pts.length > 11 ? 2 : 1;
+      if (i % every === 0 || i === pts.length - 1)
+        s += '<text x="' + x(i) + '" y="' + (H - 9) + '" fill="var(--faint)" ' +
+             'font-size="11" font-family="var(--mono)" text-anchor="middle">' +
+             r.year + '</text>';
+      if (breakYear && r.year === breakYear)
+        s += '<line x1="' + x(i) + '" y1="' + T + '" x2="' + x(i) + '" y2="' + (H - B) +
+             '" stroke="var(--cut)" stroke-width="1" stroke-dasharray="2 4" opacity=".8"/>';
+    });
+
+    /* two labels only — the highest and the lowest count */
+    var hiR = pts.reduce(function (a, b) { return b.shares_outstanding > a.shares_outstanding ? b : a; });
+    var loR = pts.reduce(function (a, b) { return b.shares_outstanding < a.shares_outstanding ? b : a; });
+    [[hiR, "start"], [loR, "start"]].forEach(function (p) {
+      var i = pts.indexOf(p[0]);
+      s += '<text x="' + (x(i) + 7) + '" y="' + (y(p[0].shares_outstanding) + 4) +
+           '" fill="var(--dim)" font-size="11.5" font-family="var(--mono)">' +
+           n(p[0].shares_outstanding) + '</text>';
+    });
+
+    return s + "</svg>";
+  }
+
+  function render(d, ticker) {
+    if (!d || d.ok === false) {
+      return '<div class="co"><div class="msg"><b>' + (ticker || "That one") +
+             ' is not on file.</b><br><br>' +
+             ((d && d.note) || "The SEC has no tagged company facts for it.") +
+             '</div></div>';
+    }
+
+    var rows = d.rows || [];
+    var st = d.safe_totals || {};
+    var br = d.discontinuity;
+    var breakYear = br ? Number(String(br.between).split(" and ")[1]) : null;
+
+    var h = '<div class="co">';
+    h += '<h2>' + (d.company || ticker) + '</h2>';
+    h += '<p class="who">' + (ticker ? ticker + ' &middot; ' : '') +
+         'CIK ' + d.cik + ' &middot; ' + rows.length + ' years of filings on record</p>';
+
+    h += '<div class="chart">' + chart(rows, breakYear) + '</div>';
+    h += '<div class="legend">' +
+         '<span><i style="background:var(--climb)"></i>shares outstanding</span>' +
+         '<span><i style="background:var(--room)"></i>shares the company may issue</span>' +
+         '<span><i style="background:var(--cut)"></i>the count collapses</span>' +
+         '<span style="color:var(--faint)">drawn on a log scale</span></div>';
+
+    if (br) {
+      h += '<div class="broke"><b>The record breaks between ' + br.between + '.</b> ' +
+           'The accumulated deficit falls from ' + money(br.deficit_was) + ' to ' +
+           money(br.deficit_became) + ', and a deficit cannot fall. The years ' +
+           'before that line belong to a different company — usually a ' +
+           'predecessor in a reverse merger. <b>Everything counted below starts ' +
+           'after the break.</b></div>';
+    }
+
+    h += '<div class="facts">' +
+      '<div><b>' + money(st.financing_raised) + '</b><span>raised from financing' +
+        (st.from_year ? ', since ' + st.from_year : '') + '</span></div>' +
+      '<div><b>' + money(st.operating_cash_used) + '</b><span>cash used running the business</span></div>' +
+      '<div class="' + (st.revenue ? '' : 'zero') + '"><b>' + money(st.revenue) +
+        '</b><span>revenue, the whole period</span></div>' +
+      '<div><b>' + n(st.years_with_no_revenue) + ' of ' + n(st.years) +
+        '</b><span>years with no revenue at all</span></div>' +
+      '</div>';
+
+    if ((d.arc || []).length) {
+      h += '<div class="events">';
+      d.arc.forEach(function (a) {
+        var cls = a.event === "share count collapses" ? "cut"
+                : a.event === "authorized ceiling raised" ? "room" : "";
+        h += '<div class="ev ' + cls + '"><span class="yr">' + a.year + '</span> &nbsp; ' +
+             '<span class="what">' + a.event + '</span>' +
+             (a.in_effect ? ' &nbsp; <span class="yr">' + a.in_effect + '</span>' : '') +
+             '<span class="det">' + (a.detail || '') +
+             (a.authorized_became !== undefined && a.authorized_became !== null
+               ? ' &nbsp;·&nbsp; ceiling ' + n(a.authorized_was) + ' to ' + n(a.authorized_became)
+               : '') +
+             (a.room_created ? ' &nbsp;·&nbsp; room for ' + n(a.room_created) + ' more' : '') +
+             '</span></div>';
+      });
+      h += '</div>';
+    }
+
+    h += '<details><summary>Every year, as filed</summary><table><thead><tr>' +
+         '<th>Year</th><th>Outstanding</th><th>May issue</th><th>Raised</th>' +
+         '<th>Spent running it</th><th>Revenue</th><th>Deficit</th>' +
+         '</tr></thead><tbody>';
+    rows.forEach(function (r, i) {
+      var pre = breakYear && r.year < breakYear ? " pre" : "";
+      var isCut = i > 0 && rows[i-1].shares_outstanding &&
+                  rows[i-1].shares_outstanding / r.shares_outstanding >= 1.8;
+      h += '<tr class="' + pre + (isCut ? " split" : "") + '"><td>' + r.year + '</td>' +
+        '<td>' + n(r.shares_outstanding) + '</td>' +
+        '<td>' + n(r.shares_authorized) + '</td>' +
+        '<td>' + money(r.cash_from_financing) + '</td>' +
+        '<td>' + money(r.cash_from_operations) + '</td>' +
+        '<td>' + (r.revenue ? money(r.revenue) : '—') + '</td>' +
+        '<td>' + money(r.accumulated_deficit) + '</td></tr>';
+    });
+    h += '</tbody></table>' +
+         '<p class="hint" style="margin-top:12px">Faded rows are before the break ' +
+         'in the record and are not counted. Shaded rows are years the share count ' +
+         'collapsed.</p></details>';
+
+    return h + '</div>';
+  }
+
+  function load(ticker, append) {
+    var url = READ + "/?action=substance&ticker=" + encodeURIComponent(ticker);
+    return fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var html = render(d, ticker.toUpperCase());
+        if (append) out.insertAdjacentHTML("beforeend", html);
+        else out.innerHTML = html;
+      })
+      .catch(function () {
+        out.innerHTML = '<div class="co"><div class="msg"><b>Could not reach the ' +
+          'filings just now.</b><br><br>Nothing is wrong with the figures; the ' +
+          'page could not load them. Try again in a moment.</div></div>';
+      });
+  }
+
+  document.getElementById("go").addEventListener("click", function () {
+    var t = box.value.trim();
+    if (t) load(t, false);
+  });
+  box.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { var t = box.value.trim(); if (t) load(t, false); }
+  });
+
+  /* the curated pair, loaded in order so the page reads the same every time */
+  (function chain(i) {
+    if (i >= CURATED.length) return;
+    load(CURATED[i], i > 0).then(function () { chain(i + 1); });
+  })(0);
+})();
+</script>
+</body>
+</html>
