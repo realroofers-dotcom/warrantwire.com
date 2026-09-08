@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-07 22:19 ET · warrantwire index-p · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-q · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -186,6 +186,32 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
   text-transform:uppercase;color:var(--hot,#E1573A);margin:0 0 5px}
 .wake{font:700 clamp(13px,2.1vw,16px)/1.2 var(--mono);letter-spacing:.14em;
   text-transform:uppercase;color:var(--hot,#E1573A);margin:0 0 10px}
+.pintro{max-width:68ch;color:var(--ink2);margin:0 0 22px}
+.ptable{display:grid;gap:10px;max-width:860px}
+.prow{display:grid;grid-template-columns:120px 1fr auto;gap:20px;align-items:center;
+  border:1px solid var(--line);border-radius:6px;padding:18px 20px;background:var(--panel)}
+.prow.hi{border-color:var(--warm)}
+.prow>b{font:700 30px/1 var(--mono);color:var(--ink)}
+.prow h4{margin:0 0 4px;font:600 16px var(--sans);color:var(--ink)}
+.prow p{margin:0;font-size:14.5px;color:var(--ink2);max-width:56ch}
+@media(max-width:720px){.prow{grid-template-columns:1fr;gap:10px}}
+.wbuy{background:transparent;border:1.5px solid var(--hot);color:var(--hot);
+  border-radius:5px;padding:11px 18px;font:600 14.5px var(--sans);cursor:pointer;
+  white-space:nowrap;text-decoration:none;display:inline-block}
+.wbuy:hover{background:var(--hot);color:#fff}
+.wbuy.ghost{border-color:var(--line);color:var(--ink2)}
+.wbuy.ghost:hover{background:transparent;border-color:var(--ink2);color:var(--ink)}
+.pnote{max-width:66ch;color:var(--ink3);font-size:14px;margin:18px 0 0}
+.pnote b{color:var(--ink)}
+#wbuymsg{color:var(--ink2);font-size:14.5px;margin:14px 0 0;min-height:20px}
+#wbuymsg.bad{color:var(--hot)}
+.ladder{display:grid;gap:10px;margin:18px 0 0}
+.rung{border:1px solid var(--line);border-radius:6px;padding:16px 18px;background:var(--panel)}
+.rung>b{font:700 22px/1 var(--mono);color:var(--ink);margin-right:10px}
+.rung>span{font:600 15px var(--sans);color:var(--ink)}
+.rung p{margin:8px 0 12px;font-size:14.5px;color:var(--ink2);max-width:60ch}
+.ladnote{font-size:14px;color:var(--ink3);margin:14px 0 0}
+.ladnote b{color:var(--warm)}
 .prices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:0 0 14px}
 .prices .pr{display:block;text-decoration:none;border:1.5px solid var(--line);
   border-radius:9px;padding:14px 26px;min-width:130px}
@@ -398,6 +424,52 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     <b style="display:inline;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">nothing
     on this page says any company or any person did anything wrong.</b>
   </div>
+</div>
+
+<div class="wrap band" style="padding-left:0;padding-right:0;max-width:none">
+  <h2>What it costs</h2>
+  <p class="pintro">The wire is the list &mdash; which companies filed warrant paper,
+  on what day, in what form, back to 2001. <b>Reading it is priced separately, every
+  time.</b> The year buys the list, not the reading.</p>
+
+  <div class="ptable">
+    <div class="prow">
+      <b>$12</b>
+      <div><h4>One search</h4><p>Every warrant filing on one company, every year we
+      hold. <b>A search that finds nothing costs you nothing.</b></p></div>
+      <button class="wbuy" data-sku="wire_search">Buy a search</button>
+    </div>
+    <div class="prow hi">
+      <b>$480</b>
+      <div><h4>The year</h4><p>Search as often as you like, every company, every day.
+      One payment, nothing to cancel.</p></div>
+      <button class="wbuy" data-sku="wire_year">Take the year</button>
+    </div>
+    <div class="prow">
+      <b>$20</b>
+      <div><h4>Read the warrant</h4><p>The filing and its exhibit in plain English,
+      with 8K10Q, on this page. <b>Not included in the year.</b></p></div>
+      <button class="wbuy" data-sku="wire_read">Buy a read</button>
+    </div>
+    <div class="prow">
+      <b>$40</b>
+      <div><h4>An agent's opinion</h4><p>One of six reads it in character and says what
+      it makes of the terms. An opinion, never advice.</p></div>
+      <button class="wbuy" data-sku="wire_opinion">Buy an opinion</button>
+    </div>
+    <div class="prow">
+      <b>Their price</b>
+      <div><h4>A named human</h4><p>A verified professional or holder reads it, or gives
+      an opinion on it, under their own name. They set the price.</p></div>
+      <a class="wbuy ghost" href="/readers.html">See who is reading</a>
+    </div>
+  </div>
+
+  <p class="pnote"><b>Pay from your bank and take 5% off.</b> Card or bank &mdash; bank
+  runs through our own ACHplug, with no processor in the middle.</p>
+  <p class="pnote">Alerts on the tickers you hold are free and always will be. Seeing
+  the filing is what the money is for.</p>
+  <p id="wbuymsg"></p>
 </div>
 
 <div class="wrap band" style="padding-left:0;padding-right:0;max-width:none">
@@ -679,11 +751,36 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           + '</div>'
 
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
-          + 'is.</b> It does not tell you what the terms are, because reading a filing '
-          + 'is a different job. '
-          + '<a href="https://8k10q.com/?ticker=' + encodeURIComponent(T) + '" '
-          + 'style="color:var(--cool)">8K10Q reads one for $20 and says what it means '
-          + 'in plain English &rarr;</a></p>'
+          + 'is.</b> Reading it is a different job, and it happens here, with 8K10Q.</p>'
+
+          /* THE LADDER. Each rung appears only because the one before it landed —
+             the read is offered on a HIT, never on an empty search. */
+          + '<div class="ladder">'
+          +   '<div class="rung">'
+          +     '<b>$20</b>'
+          +     '<span>Read it in plain English.</span>'
+          +     '<p>The warrant paper and its exhibit, with the sections that matter '
+          +       'marked. With 8K10Q, on this page &mdash; you do not leave.</p>'
+          +     '<button class="wbuy" data-sku="wire_read" data-t="' + esc(T) + '">Buy the read</button>'
+          +   '</div>'
+          +   '<div class="rung">'
+          +     '<b>$40</b>'
+          +     '<span>An opinion. Not advice.</span>'
+          +     '<p>One of six agents reads it in character and says what it makes of '
+          +       'the terms. Every disposition is published.</p>'
+          +     '<button class="wbuy" data-sku="wire_opinion" data-t="' + esc(T) + '">Buy an opinion</button>'
+          +   '</div>'
+          +   '<div class="rung">'
+          +     '<b>Their price</b>'
+          +     '<span>A named human.</span>'
+          +     '<p>A verified person &mdash; a professional or a holder who knows '
+          +       'something &mdash; reads it and puts their own name on it. Nobody here '
+          +       'is anonymous.</p>'
+          +     '<a class="wbuy ghost" href="/readers.html?ticker=' + encodeURIComponent(T) + '">See who is reading</a>'
+          +   '</div>'
+          + '</div>'
+          + '<p class="ladnote">Pay from your bank and take <b>5% off</b> anything on '
+          +   'this page.</p>'
 
           + (a.on_docket
             ? '<p><b style="color:var(--ink)">This one has already been screened.</b> '
@@ -698,6 +795,41 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         found('<div class="about"><p class="none">Could not search just now.</p></div>');
       });
   }
+
+  /* ---------------------------------------------------------------
+     CHECKOUT. The amount is never sent from this page — the pay
+     worker holds every price and builds the charge from its table.
+     ⚠ CHECK THIS ADDRESS. One line.
+     --------------------------------------------------------------- */
+  var PAY = "https://pay.realroofers.workers.dev";
+
+  function wmsg(t, bad){
+    var m = document.getElementById("wbuymsg");
+    if (!m) return;
+    m.textContent = t; m.className = bad ? "bad" : "";
+  }
+  function wbuy(sku, ticker){
+    var email = prompt("Your email address — the receipt and your access go here.");
+    if (!email) return;
+    if (email.indexOf("@") < 1) { wmsg("That does not look like an email address.", true); return; }
+    wmsg("Opening checkout…");
+    var t = ticker || (document.getElementById("q").value || "").trim().toUpperCase();
+    fetch(PAY + "/?buy=" + encodeURIComponent(sku)
+              + "&email=" + encodeURIComponent(email)
+              + "&on=wire"
+              + (t ? "&ticker=" + encodeURIComponent(t) : ""))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.ok && d.url) { location.href = d.url; }
+        else { wmsg((d && d.error) ? d.error : "Could not start the checkout.", true); }
+      })
+      .catch(function(){ wmsg("Could not reach the payment desk. Try again in a moment.", true); });
+  }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("button.wbuy") : null;
+    if (!b) return;
+    wbuy(b.getAttribute("data-sku"), b.getAttribute("data-t"));
+  });
 
   document.getElementById("go").addEventListener("click", search);
   document.getElementById("q").addEventListener("keydown", function(e){
