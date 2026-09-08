@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-r · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-s · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -304,6 +304,14 @@ h2{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 12px}
 .sis a:hover{border-color:var(--ink3)}
 .sis b{display:block;font-family:var(--mono);font-size:14px;letter-spacing:.05em;margin-bottom:5px}
 .sis span{font-size:13.5px;color:var(--ink2);line-height:1.55}
+
+/* a price tile is a button now — same look, but it can be pressed */
+button.pr{font-family:inherit;cursor:pointer;border:1px solid var(--line);
+  background:transparent;color:inherit;text-align:center}
+button.pr:hover{border-color:var(--gold,#C9A227)}
+button.pr.best{border-color:var(--gold,#C9A227)}
+button.pr b{display:block}
+button.pr span{display:block}
 
 /* ---------------- the ask, under the search box ---------------- */
 .topbuy{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 4px}
@@ -782,12 +790,13 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
       + 'and they change every day. <b>Searching a company you name &mdash; every '
       + 'filing, every year &mdash; is the service.</b></p>'
       + '<div class="prices">'
-      +   '<span class="pr"><b>$12</b><span>one search</span></span>'
-      +   '<span class="pr best"><b>$480</b><span>a year, unlimited</span></span>'
+      +   '<button class="pr wbuy" data-sku="wire_search"><b>$12</b>'
+      +     '<span>one search</span></button>'
+      +   '<button class="pr best wbuy" data-sku="wire_year"><b>$480</b>'
+      +     '<span>a year, unlimited</span></button>'
       + '</div>'
       + '<p class="g3">Forty dollars a month, paid once. No monthly billing, nothing '
-      + 'to cancel. <b>Not open yet</b> &mdash; leave an email below and you will be '
-      + 'the first told when it is.</p>'
+      + 'to cancel. <b>A search that finds nothing costs you nothing.</b></p>'
       + '<p class="g4">Or leave an email and be told when a company you follow turns '
       + 'up &mdash; <a href="#alerts">the box at the bottom of this page</a>.</p>'
       + '</div>';
@@ -883,14 +892,18 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           + '<div class="buy">'
           +   '<p class="b1">See all ' + a.filings + ' &mdash; the dates, the forms, '
           +     'the accession numbers, every year we hold.</p>'
+          /* ⚠ THE PRICES ARE BUTTONS. They used to be text tiles sitting under
+             the words "Not open yet", at the exact moment somebody had just
+             been shown that a company IS on the wire. That is the moment they
+             would buy, and there was nothing to press. */
           +   '<div class="prices">'
-          +     '<span class="pr"><b>$12</b><span>this search</span></span>'
-          +     '<span class="pr best"><b>$480</b><span>the year, unlimited</span></span>'
+          +     '<button class="pr wbuy" data-sku="wire_search" data-t="' + esc(T) + '">'
+          +       '<b>$12</b><span>this search</span></button>'
+          +     '<button class="pr best wbuy" data-sku="wire_year" data-t="' + esc(T) + '">'
+          +       '<b>$480</b><span>the year, unlimited</span></button>'
           +   '</div>'
           +   '<p class="b3">Forty dollars a month, paid once. No monthly billing, '
-          +     'nothing to cancel.</p>'
-          +   '<p class="b2"><b>Not open yet</b> &mdash; leave an email at the bottom '
-          +     'of this page and you will be the first told when it is.</p>'
+          +     'nothing to cancel. <b>A search that finds nothing costs you nothing.</b></p>'
           + '</div>'
 
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
