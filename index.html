@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 00:05 ET · warrantwire index-as · ar + "The screw" moved up beside "See a typical report" -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-au · at + the gate under the free list rebuilt to match the board, three tiles, and the contradiction in its fine print cut -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -256,6 +256,50 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .wbuy:hover{background:var(--hot);color:#fff}
 .wbuy.ghost{border-color:var(--line);color:var(--ink2)}
 .wbuy.ghost:hover{background:transparent;border-color:var(--ink2);color:var(--ink)}
+
+/* ============================================================
+   ⚠ THE BOARD REBUILT, 10 Sep 2026. The band carried five of the
+   eight products — the free search, the daily summary, the deep
+   read and the reads year were all missing, and the $149 only
+   ever appeared as a link on a filing row.
+
+   TIGHTER BY GROUPING, NOT BY CUTTING. Nine rows in one column is
+   a wall. Two columns — what the wire sells, and what the reading
+   costs — is the same information a reader can scan, and it shows
+   the split at a glance instead of explaining it in a paragraph.
+   ============================================================ */
+.pbfree{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;
+  border:1px solid var(--cool);border-radius:6px;padding:16px 20px;
+  background:var(--panel);max-width:860px;margin:0 0 18px}
+.pbfree b{font:700 22px/1 var(--mono);color:var(--cool);white-space:nowrap}
+.pbfree p{margin:0;font-size:14.5px;color:var(--ink2)}
+.pbcols{display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:940px}
+@media(max-width:820px){.pbcols{grid-template-columns:1fr;gap:20px}}
+.pbcol h3{margin:0 0 3px;font:600 15px var(--sans);color:var(--ink)}
+.pbcol .who{margin:0 0 12px;font-size:13px;color:var(--ink3);max-width:44ch}
+.pbrow{display:grid;grid-template-columns:78px 1fr;gap:14px;align-items:baseline;
+  padding:12px 0;border-top:1px solid var(--line)}
+.pbrow b{font:700 19px/1.1 var(--mono);color:var(--ink);white-space:nowrap}
+.pbrow b small{display:block;font:400 11px/1.4 var(--sans);color:var(--ink3);margin-top:4px}
+.pbrow h4{margin:0 0 3px;font:600 14.5px var(--sans);color:var(--ink)}
+.pbrow p{margin:0 0 9px;font-size:13.5px;line-height:1.55;color:var(--ink2)}
+.pbrow .wbuy{padding:8px 13px;font-size:13px}
+.pbeven{color:var(--ink3);font-size:12.5px;margin:0 0 9px}
+
+/* the daily summary gets its own block because nobody knows what it is */
+.pbsum{border:1px solid var(--warm);border-radius:6px;background:var(--panel);
+  padding:20px 22px;margin:26px 0 0;max-width:940px}
+.pbsum h3{margin:0 0 6px;font:600 17px var(--sans);color:var(--ink)}
+.pbsum p{margin:0 0 14px;font-size:14.5px;color:var(--ink2);max-width:62ch}
+.pbsamp{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px}
+.pbsamp th,.pbsamp td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right}
+.pbsamp th:first-child,.pbsamp td:first-child{text-align:left}
+.pbsamp th{color:var(--ink3);font:400 12px var(--sans);white-space:nowrap}
+.pbsamp td{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.pbsamp td:first-child{font-family:var(--sans);font-size:13px}
+.pbsamp .big{color:var(--hot)}
+.pbcap{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
+.pbbuy{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pnote{max-width:66ch;color:var(--ink3);font-size:14px;margin:18px 0 0}
 .pnote b{color:var(--ink)}
 #wbuymsg{color:var(--ink2);font-size:14.5px;margin:14px 0 0;min-height:20px}
@@ -276,6 +320,11 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .prices .pr.best b,.prices .pr.best span{color:#14150f}
 .prices .pr:hover{border-color:var(--ink2)}
 .gate .g3{font-size:14px;color:var(--ink3);margin:0 0 10px}
+/* ⚠ THE YEAR IS A LINK, NOT A THIRD LOUD TILE. It is the professional's tier —
+   a holder with six stocks pays $72 and should not be pushed at it. It stays
+   on the page, one line down, for the man it is actually for. */
+.gate .gyear{background:none;border:0;padding:0;font:inherit;color:var(--warm);
+  cursor:pointer;text-decoration:underline}
 .gate .g4{font-size:13.5px;color:var(--ink3);margin:0}
 .gate .g4 a{color:var(--cool)}
 h2.filed{font:700 26px/1.1 inherit;margin:0 0 6px}
@@ -854,38 +903,168 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <h2>What it costs</h2>
   <p class="pintro">The wire is the list &mdash; which companies filed warrant paper,
   on what day, in what form, back to 2001. <b>Reading it is priced separately, every
-  time.</b> The year buys the list, not the reading.</p>
+  time.</b> One payment each. No monthly billing and nothing to cancel.</p>
 
-  <div class="ptable">
-    <div class="prow">
-      <b>$12</b>
-      <div><h4>One search</h4><p>Every warrant filing on one company, every year we
-      hold. <b>A search that finds nothing costs you nothing.</b></p></div>
-      <button class="wbuy" data-sku="wire_search">Buy a search</button>
+  <!-- ⚠ THE FREE ROW GOES FIRST. The band used to open at $12, so a stranger
+       read the page as though nothing was free — and the free search is the
+       first rung of the whole ladder. -->
+  <div class="pbfree">
+    <b>Free</b>
+    <p><b style="color:var(--ink)">Search any company, five times a day.</b>
+       A search that finds nothing costs you nothing.</p>
+    <a class="wbuy ghost" href="#top">Search the wire</a>
+  </div>
+
+  <div class="pbcols">
+
+    <div class="pbcol">
+      <h3>The list &mdash; Warrant Wire</h3>
+      <p class="who">Where the paper is. Warrants and nothing else.</p>
+
+      <div class="pbrow">
+        <b>$12<small>one company</small></b>
+        <div>
+          <h4>One company, five years</h4>
+          <p>Every warrant filing on one company, every year we hold &mdash; the
+             dates, the forms, and every term marked.</p>
+          <button class="wbuy" data-sku="wire_search">Buy a search</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$5<small>for the day</small></b>
+        <div>
+          <h4>The daily summary</h4>
+          <p>Every offering filed that day, in plain English. Explained below.</p>
+          <button class="wbuy" data-sku="daily_chart">Buy today's</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$310<small>the year</small></b>
+        <div>
+          <h4>The daily summary, every day</h4>
+          <p>The same thing every trading day, for a year.</p>
+          <p class="pbeven">Even at sixty-two days.</p>
+          <button class="wbuy" data-sku="daily_chart_year">Take the year</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$480<small>the year</small></b>
+        <div>
+          <h4>The whole list, a year</h4>
+          <p>Search as often as you like, every company, every day.</p>
+          <p class="pbeven">Even at forty searches. This is the professional's
+             tier &mdash; a holder with six stocks pays $72 and should not buy it.</p>
+          <button class="wbuy" data-sku="wire_year">Take the year</button>
+        </div>
+      </div>
     </div>
-    <div class="prow hi">
-      <b>$480</b>
-      <div><h4>The year</h4><p>Search as often as you like, every company, every day.
-      One payment, nothing to cancel.</p></div>
-      <button class="wbuy" data-sku="wire_year">Take the year</button>
+
+    <div class="pbcol">
+      <h3>The reading &mdash; 8K10Q</h3>
+      <p class="who">What it says. Bought here; the receipt and the name on your
+         card statement are 8K10Q's.</p>
+
+      <div class="pbrow">
+        <b>$20<small>one filing</small></b>
+        <div>
+          <h4>Read the warrant</h4>
+          <p>The filing and its exhibit in plain English, with the sections that
+             matter marked. <b>Not included in any year.</b></p>
+          <button class="wbuy" data-sku="wire_read">Buy a read</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$40<small>one opinion</small></b>
+        <div>
+          <h4>An agent's opinion</h4>
+          <p>An agent reads the warrant paper, explains every term as he reaches
+             it, and says what the combination could mean. He also says when he
+             could be wrong. An opinion, never advice.</p>
+          <button class="wbuy" data-sku="wire_opinion">Buy an opinion</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$149<small>one company</small></b>
+        <div>
+          <h4>One company, five years, read</h4>
+          <p>Every filing that company made in five years, read rather than
+             listed &mdash; the arc, the share count each year, what changed.</p>
+          <p class="pbeven">Even at seven reads.</p>
+          <button class="wbuy" data-sku="deep_dive">Buy a deep read</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$1,200<small>the year</small></b>
+        <div>
+          <h4>Reads, a year</h4>
+          <p>Any filing read, all year. Capped at twenty-five a month.</p>
+          <p class="pbeven">Even at sixty reads.</p>
+          <button class="wbuy" data-sku="read_year">Take the year</button>
+        </div>
+      </div>
+
+      <div class="pbrow">
+        <b>$200<small>one filing</small></b>
+        <div>
+          <h4>A named human &mdash; Mark Nejmeh</h4>
+          <p>Reads it himself and says what he makes of it, under his own name.
+             Other verified readers bid on the filing and set their own price.</p>
+          <div class="pbbuy">
+            <button class="wbuy" data-sku="human_read" data-reader="mark-nejmeh">Buy his read</button>
+            <a class="wbuy ghost" href="/prices.html">Get bids</a>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="prow">
-      <b>$20</b>
-      <div><h4>Read the warrant</h4><p>The filing and its exhibit in plain English,
-      with 8K10Q, on this page. <b>Not included in the year.</b></p></div>
-      <button class="wbuy" data-sku="wire_read">Buy a read</button>
-    </div>
-    <div class="prow">
-      <b>$40</b>
-      <div><h4>An agent's opinion</h4><p>One of six reads it in character and says what
-      it makes of the terms. An opinion, never advice.</p></div>
-      <button class="wbuy" data-sku="wire_opinion">Buy an opinion</button>
-    </div>
-    <div class="prow">
-      <b>Their price</b>
-      <div><h4>A named human</h4><p>A verified professional or holder reads it, or gives
-      an opinion on it, under their own name. They set the price.</p></div>
-      <a class="wbuy ghost" href="/readers.html">See who is reading</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       ⚠ THE DAILY SUMMARY NEEDED EXPLAINING AND HAD NEVER BEEN
+       SHOWN. Nobody buys a thing they cannot picture, and "$5 a
+       day" on its own is a number attached to nothing.
+
+       ⚠ THE SAMPLE IS A REAL FILING, NOT AN INVENTED DAY. Tenon
+       Medical's 424B3 of 8 September, from the read already
+       published. Making up a specimen day on a site whose whole
+       argument is that nobody checks would be the one thing an
+       opponent could reach for.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="pbsum">
+    <h3>What the daily summary actually is</h3>
+    <p>Every offering filed that day, on one page: who is selling, how much they
+       raised, what the buyer paid, and <b style="color:var(--ink)">the new shares
+       as a share of the company</b> &mdash; the column nobody else prints. The
+       wire tells you a filing exists. The summary tells you how big it is.</p>
+
+    <table class="pbsamp">
+      <thead>
+        <tr><th>Company</th><th>Raised</th><th>Price</th><th>Who bought</th>
+            <th>Shares before</th><th>If all exercised</th><th>Increase</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tenon Medical (TNONW)</td>
+          <td>$2,999,405</td>
+          <td>$5.02</td>
+          <td>Armistice Capital</td>
+          <td>1,032,578</td>
+          <td>2,768,975</td>
+          <td class="big">+168%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="pbcap">A sample row from 8 September 2026, taken from the published
+       read of that filing. A real day carries every offering filed, not one.</p>
+
+    <div class="pbbuy">
+      <button class="wbuy" data-sku="daily_chart">Buy today's summary &mdash; $5</button>
+      <button class="wbuy ghost" data-sku="daily_chart_year">Every day for a year &mdash; $310</button>
     </div>
   </div>
 
@@ -1146,14 +1325,31 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
       + '<p class="g2">The five above are the most recent from today\'s scan, free, '
       + 'and they change every day. <b>Searching a company you name &mdash; every '
       + 'filing, every year &mdash; is the service.</b></p>'
+      /* ⚠ THIS OFFERED TWO PRODUCTS OUT OF EIGHT, AND BOTH WERE LISTS.
+         Somebody reaching this point has just been told the five above are
+         free and the rest are not — and the only two things on offer were
+         the list and more of the list. The read is the thing a holder
+         actually came for and it was not here. */
       + '<div class="prices">'
-      +   '<button class="pr wbuy" data-sku="wire_search"><b>$12</b>'
-      +     '<span>one search</span></button>'
-      +   '<button class="pr best wbuy" data-sku="wire_year"><b>$480</b>'
-      +     '<span>a year, unlimited</span></button>'
+      +   '<button class="pr wbuy" data-sku="wire_read"><b>$20</b>'
+      +     '<span>have one read</span></button>'
+      +   '<button class="pr best wbuy" data-sku="wire_search"><b>$12</b>'
+      +     '<span>one company, 5 years</span></button>'
+      +   '<button class="pr wbuy" data-sku="daily_chart"><b>$5</b>'
+      +     '<span>today, in full</span></button>'
       + '</div>'
-      + '<p class="g3">Forty dollars a month, paid once. No monthly billing, nothing '
-      + 'to cancel. <b>A search that finds nothing costs you nothing.</b></p>'
+      /* ⚠ THE FINE PRINT CONTRADICTED ITSELF. "Forty dollars a month, paid
+         once. No monthly billing" is two sentences fighting in one breath —
+         it made the year sound like a subscription in the same line that
+         said it was not one. */
+      + '<p class="g3">One payment each. Nothing recurring and nothing to '
+      + 'cancel. <b>A search that finds nothing costs you nothing.</b></p>'
+      + '<p class="g3">Searching every company, every day, for a year is '
+      /* ⚠ A LINK, NOT A BUY. The click handler only catches button.wbuy, so a
+         data-sku on an anchor never fires — a dead attribute that looks live.
+         This jumps to the band, where the year has a real button. */
+      + '<a class="gyear" href="#prices">$480</a>. '
+      + 'Everything we sell is on <a href="/prices.html">the price page</a>.</p>'
       + '<p class="g4">Or leave an email and be told when a company you follow turns '
       + 'up &mdash; <a href="#alerts">the box at the bottom of this page</a>.</p>'
       + '</div>';
@@ -1436,7 +1632,11 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   /* ⚠ THE ACCESSION HAS TO TRAVEL WITH THE PURCHASE. It did not, so somebody
      buying a read off a row was paying for "a read" with no filing attached —
      the money would arrive and nobody would know which document to read. */
-  function wbuy(sku, ticker, accession){
+  /* ⚠ THE READER HAS TO TRAVEL WITH A HUMAN READ. Added 10 Sep with the
+     named-human row: human_read fired with no reader attached would be a
+     payment for "a read by somebody", which nobody could fulfil. Same shape as
+     the accession, and it is ignored by every other SKU. */
+  function wbuy(sku, ticker, accession, reader){
     var email = prompt("Your email address — the receipt and your read go here.");
     if (!email) return;
     if (email.indexOf("@") < 1) { wmsg("That does not look like an email address.", true); return; }
@@ -1446,7 +1646,8 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
               + "&email=" + encodeURIComponent(email)
               + "&on=wire"
               + (t ? "&ticker=" + encodeURIComponent(t) : "")
-              + (accession ? "&ref=" + encodeURIComponent(accession) : ""))
+              + (accession ? "&ref=" + encodeURIComponent(accession) : "")
+              + (reader ? "&reader=" + encodeURIComponent(reader) : ""))
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (d && d.ok && d.url) { location.href = d.url; }
@@ -1458,7 +1659,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     var b = e.target.closest ? e.target.closest("button.wbuy") : null;
     if (!b) return;
     wbuy(b.getAttribute("data-sku"), b.getAttribute("data-t"),
-         b.getAttribute("data-acc"));
+         b.getAttribute("data-acc"), b.getAttribute("data-reader"));
   });
 
   document.getElementById("go").addEventListener("click", search);
