@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-s · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-u · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -304,6 +304,28 @@ h2{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 12px}
 .sis a:hover{border-color:var(--ink3)}
 .sis b{display:block;font-family:var(--mono);font-size:14px;letter-spacing:.05em;margin-bottom:5px}
 .sis span{font-size:13.5px;color:var(--ink2);line-height:1.55}
+
+/* ---------------- the answer and the offer, side by side ---------------- */
+.answer{display:grid;grid-template-columns:minmax(240px,1fr) minmax(280px,1.1fr);
+  gap:0;border:1px solid var(--line);border-radius:6px;margin:18px 0 16px;overflow:hidden}
+.answer .n{margin:0;border:0;border-right:1px solid var(--line);border-radius:0;
+  padding:20px 22px;align-content:center}
+.answer .offer{padding:20px 22px;background:rgba(201,162,39,.05)}
+.answer .offer p{margin:0 0 10px}
+.answer .have{font-size:14.5px;color:var(--ink3)}
+.answer .get{font-size:15.5px;color:var(--ink2)}
+.answer .get b{color:var(--ink)}
+.bigbuy{display:block;width:100%;background:var(--gold,#C9A227);color:#14150f;
+  border:0;border-radius:4px;padding:15px 18px;margin:14px 0 10px;
+  font:700 16px/1.2 var(--mono);cursor:pointer}
+.bigbuy:hover{filter:brightness(1.08)}
+.answer .alt{font-size:13.5px;color:var(--ink3);margin:0}
+.linkbuy{background:none;border:0;padding:0;color:var(--gold,#C9A227);
+  font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+@media(max-width:760px){
+  .answer{grid-template-columns:1fr}
+  .answer .n{border-right:0;border-bottom:1px solid var(--line)}
+}
 
 /* a price tile is a button now — same look, but it can be pressed */
 button.pr{font-family:inherit;cursor:pointer;border:1px solid var(--line);
@@ -859,14 +881,48 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 
         /* ---- searched, and there is nothing ---- */
         if (!a || !d.rows || !d.rows.length) {
+          /* ⚠ AN EMPTY SEARCH IS STILL SOMEBODY WHO CAME LOOKING.
+
+             This used to say "nothing on the wire" and leave a link. The
+             person had a question about a company and got a no, and there
+             was nothing else on offer — so they left.
+
+             The wire has nothing, but the COMPANY still files. Reading one
+             of those filings is a real service and it is the only thing
+             that still applies. It is offered plainly, once.
+
+             ⚠ AND THE CLAIM IS NARROWED. It said "we searched every filing
+             on record for this company", which we did not — the wire
+             searches its own record of MATCHES. If a company never matched,
+             there was never anything of theirs to search. What is true is
+             that nothing of theirs has ever matched, and that is what it
+             now says. */
           found('<div class="about">'
             + (c.name ? who : '<h3>' + esc(T) + '</h3>')
-            + '<p class="clean"><b>Nothing on the wire.</b> We searched ' + cov
-            + ' for this company. None of them carries the language of a warrant financing.</p>'
-            + '<p class="none">The wire watches for warrant language and nothing else. '
-            + '<a href="https://8k10q.com/?ticker=' + encodeURIComponent(T)
-            + '" style="color:var(--cool)">8K10Q reads any filing and tells you what is in it '
-            + '&mdash; $20 &rarr;</a></p>'
+            + '<p class="clean"><b>Nothing on the wire.</b> In five years of '
+            + 'scanning &mdash; ' + esc((d.coverage && d.coverage.from) || '2021')
+            + ' to today &mdash; no filing from this company has matched the '
+            + 'language of a warrant financing.</p>'
+
+            + '<div class="answer">'
+            +   '<div class="n" style="align-content:center">'
+            +     '<div><b>0</b><span>On the wire</span></div>'
+            +     '<div><b>&mdash;</b><span>Heavy terms</span></div>'
+            +   '</div>'
+            +   '<div class="offer">'
+            +     '<p class="have">The wire watches for warrant language and '
+            +       'nothing else. This company files plenty; none of it carries '
+            +       'that language.</p>'
+            +     '<p class="get"><b>Still want to know what they filed?</b> '
+            +       'We will read their most recent filing and tell you what is '
+            +       'in it, in plain English, with the parts that matter marked.</p>'
+            +     '<button class="bigbuy wbuy" data-sku="wire_read" data-t="' + esc(T) + '">'
+            +       'Read their latest filing &mdash; $20</button>'
+            +     '<p class="alt">Or <a href="' + esc((c.edgar || ('https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + encodeURIComponent(T))))
+            +       '" target="_blank" rel="noopener" style="color:var(--ink3)">'
+            +       'read it yourself on EDGAR</a> &mdash; free, and always will be.</p>'
+            +   '</div>'
+            + '</div>'
             + '</div>');
           return;
         }
@@ -876,35 +932,44 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           + who
           + '<p><b style="color:var(--ink)">' + esc(c.ticker || T)
           + ' is on the wire.</b></p>'
-          + '<div class="n">'
-          +   '<div><b>' + a.filings + '</b><span>Filings</span></div>'
-          +   '<div><b>' + a.heavy + '</b><span>Heavy terms</span></div>'
-          +   '<div><b>' + esc(a.first || "&mdash;") + '</b><span>First seen</span></div>'
-          +   '<div><b>' + esc(a.latest || "&mdash;") + '</b><span>Latest</span></div>'
+          /* ⚠ THE OFFER SITS BESIDE THE NUMBERS, NOT UNDER THEM.
+
+             Somebody searches TSLA, is shown "3 filings, 2 heavy terms", and
+             has no idea what else there is or why they would pay. The count
+             and the ask were in two different blocks with a paragraph in
+             between, so the answer looked like the whole product.
+
+             Now it is one row: the numbers on the left, and on the right, in
+             plain words, WHAT THEY HAVE, WHAT THEY WOULD GET, and one button.
+             No tiers to weigh up, no ladder, nothing to work out. */
+          + '<div class="answer">'
+          +   '<div class="n">'
+          +     '<div><b>' + a.filings + '</b><span>Filings</span></div>'
+          +     '<div><b>' + a.heavy + '</b><span>Heavy terms</span></div>'
+          +     '<div><b>' + esc(a.first || "&mdash;") + '</b><span>First seen</span></div>'
+          +     '<div><b>' + esc(a.latest || "&mdash;") + '</b><span>Latest</span></div>'
+          +   '</div>'
+          +   '<div class="offer">'
+          +     '<p class="have">You are seeing the count. '
+          +       'The ' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') +
+              ' themselves are not shown.</p>'
+          +     '<p class="get"><b>$12 shows you all ' + a.filings + '</b> &mdash; the '
+          +       'date, the form, the accession number and a link to each document, '
+          +       'so you can read them yourself.</p>'
+          +     '<button class="bigbuy wbuy" data-sku="wire_search" data-t="' + esc(T) + '">'
+          +       'Show me all ' + a.filings + ' &mdash; $12</button>'
+          +     '<p class="alt">Search a lot? <button class="linkbuy wbuy" '
+          +       'data-sku="wire_year" data-t="' + esc(T) + '">Take the year for $480</button>'
+          +       ' and search any company, any day.</p>'
+          +   '</div>'
           + '</div>'
+
           + '<p>' + a.filings + ' filing' + (a.filings === 1 ? " carries" : "s carry")
           + ' the language of a warrant financing'
           + (a.heavy ? ', and ' + a.heavy + ' of them carry the heavy terms' : '')
           + '. ' + (a.forms && a.forms.length
               ? 'Mostly ' + a.forms.slice(0,3).map(esc).join(", ") + '.' : '')
           + '</p>'
-
-          + '<div class="buy">'
-          +   '<p class="b1">See all ' + a.filings + ' &mdash; the dates, the forms, '
-          +     'the accession numbers, every year we hold.</p>'
-          /* ⚠ THE PRICES ARE BUTTONS. They used to be text tiles sitting under
-             the words "Not open yet", at the exact moment somebody had just
-             been shown that a company IS on the wire. That is the moment they
-             would buy, and there was nothing to press. */
-          +   '<div class="prices">'
-          +     '<button class="pr wbuy" data-sku="wire_search" data-t="' + esc(T) + '">'
-          +       '<b>$12</b><span>this search</span></button>'
-          +     '<button class="pr best wbuy" data-sku="wire_year" data-t="' + esc(T) + '">'
-          +       '<b>$480</b><span>the year, unlimited</span></button>'
-          +   '</div>'
-          +   '<p class="b3">Forty dollars a month, paid once. No monthly billing, '
-          +     'nothing to cancel. <b>A search that finds nothing costs you nothing.</b></p>'
-          + '</div>'
 
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
           + 'is.</b> Reading it is a different job, and it happens here, with 8K10Q.</p>'
