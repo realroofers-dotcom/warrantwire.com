@@ -1,398 +1,310 @@
-<!-- BUILT 2026-09-10 04:30 ET · counter-1c · warrantwire.com/cost.html
-     ==========================================================================
-     WHAT THIS IS
+<!-- BUILT 2026-09-09 23:10 ET · warrantwire counter-wire-1b · reads the `counter` worker
+     ⚠ HIS FRAMING, 9 Sep 2026, and it is the page: "Wealth lost by retail
+     investors. Wealth gained by ?" The question mark is the whole hook — the
+     page names what was lost, then refuses to name who gained, because that is
+     what the service does and it is what a reader clicks to find out.
 
-     A running total of what these offerings cost the people who already own
-     the shares — the placement agent fees, the agent expenses, and the legal
-     and offering expenses, taken from the filings themselves.
+     ⚠ THE TOP NUMBER IS THE FALL IN MARKET VALUE, NOT THE DEFICIT. The
+     accumulated deficit is what the COMPANIES consumed. What HOLDERS lost is
+     what the stock was worth then against what it is worth now. Two different
+     numbers, and only the second one matches the words on the page.
 
-     ⚠ THE COUNTER TICKS FROM A CALCULATED RATE, NOT AN INVENTED ONE.
-     It reads the tally endpoint, takes the disclosed total and the number of
-     days it covers, and ticks at that per-second rate between refreshes. The
-     rate is printed on the page. That is the difference between a counter and
-     a slot machine: anyone can check the arithmetic.
-
-     ⚠ DISCLOSED AND ESTIMATED ARE NEVER ADDED TOGETHER IN THE BIG NUMBER.
-     The big number is what filings STATE. The estimate sits beneath it,
-     labelled, with its method and sample size, and a reader can ignore it.
-
-     ⚠ IF THERE IS NO DATA, THE PAGE SAYS SO. It never shows a zero dressed up
-     as a finding, and it never invents a rate to keep the digits moving.
-     ========================================================================== -->
+     ⚠ IT CALLS ?lost=1 AND THAT ENDPOINT MUST EXIST. Then-minus-now is only
+     valid across the SAME companies at both ends; the two figures on ?totals=1
+     come from different frames with different company sets, so subtracting them
+     would be arithmetic that does not hold. Until ?lost=1 answers, the number
+     shows a dash. It never shows a wrong figure. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>What the raising costs — Warrant Wire</title>
-<meta name="description" content="A running total of the disclosed cost of small-cap share offerings: placement agent fees, agent expenses, and legal and offering expenses, taken from the filings.">
-<link rel="canonical" href="https://warrantwire.com/cost.html">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="favicon.png">
+<title>The screw — Warrant Wire</title>
+<meta name="description" content="What public shareholders lost, and who took the other side. Every figure from the companies' own filings.">
 <style>
 :root{
-  --ink:#14150f;         /* the site's paper-dark */
-  --panel:#1c1e16;
-  --line:#2e3125;
-  --text:#eceae0;
-  --dim:#a8aa9a;
-  --faint:#767a68;
-  --lit:#e8c547;         /* the counter's own colour — warm, filament-like */
-  --cool:#6fa88c;
-  --hot:#c65a4a;
-  --mono:"Roboto Mono",ui-monospace,monospace;
-  --serif:Spectral,Georgia,serif;
+  --ink:#EDE9DC; --dim:#9A9584; --faint:#6E6A5C;
+  --bg:#141510; --panel:#1D1E17; --line:#33342A;
+  --hot:#FF3B14; --cool:#7FA88B; --gold:#C9A227;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--ink);color:var(--text);
-  font:400 17px/1.65 var(--serif)}
-.wrap{max-width:920px;margin:0 auto;padding:0 26px}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.6 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
 a{color:var(--cool)}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 70px}
 
-/* ---------------- the masthead ---------------- */
-header{border-bottom:1px solid var(--line);padding:22px 0}
-.bar{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
-.logo{font:700 22px/1 var(--mono);letter-spacing:.02em;text-decoration:none;color:var(--text)}
-.logo i{font-style:normal;color:var(--hot)}
-.back{margin-left:auto;font:400 14px var(--serif);color:var(--dim);text-decoration:none}
+header.mast{display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.mark{font:700 22px/1 Helvetica,Arial,sans-serif;letter-spacing:.02em;
+  color:var(--ink);text-decoration:none}
+.mark b{color:#E2542C}
+.back{font-size:13.5px;color:var(--faint);text-decoration:none}
+.back:hover{color:var(--ink)}
 
-/* ---------------- the counter is the whole hero ---------------- */
-.hero{padding:58px 0 40px;border-bottom:1px solid var(--line)}
-.standfirst{font-size:19px;color:var(--dim);max-width:54ch;margin:0 0 34px}
-.standfirst b{color:var(--text);font-weight:600}
+/* ── HIS TWO LINES. The lost side is loud; the gained side is a question. ── */
+.stage{padding:44px 0 26px}
+.lostlabel{font:400 clamp(18px,2.6vw,26px)/1.3 Georgia,serif;color:var(--dim);
+  margin:0 0 16px}
+.odo{display:flex;align-items:baseline;gap:.04em;
+  font:700 clamp(38px,12.5vw,168px)/.92 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--hot);
+  white-space:nowrap;overflow:hidden}
+.odo .cur{font-size:.42em;font-weight:400;opacity:.75}
+.scale{margin:14px 0 0;font:400 clamp(16px,2.4vw,25px)/1.3 Georgia,serif}
+.sourced{margin:12px 0 0;color:var(--faint);font-size:14px;max-width:64ch}
 
-.odometer{font:700 clamp(34px,10.5vw,104px)/1 var(--mono);
-  letter-spacing:-.02em;color:var(--lit);
-  display:flex;align-items:baseline;gap:.06em;flex-wrap:nowrap;
-  text-shadow:0 0 42px rgba(232,197,71,.22)}
-.odometer .dollar{font-size:.52em;color:var(--dim);text-shadow:none}
-.digit{display:inline-block;min-width:.62em;text-align:center;
-  transition:color .18s linear}
-.digit.roll{color:#fff}
-.comma{opacity:.42}
+.gained{margin:40px 0 0;border-top:1px solid var(--line);padding-top:30px}
+.gained .l{font:400 clamp(18px,2.6vw,26px)/1.3 Georgia,serif;color:var(--dim);
+  margin:0 0 10px}
+.qmark{font:700 clamp(60px,15vw,190px)/.8 Georgia,serif;color:var(--gold);
+  margin:0;letter-spacing:-.03em}
+.gained p{max-width:52ch;color:var(--ink);font-size:17px;margin:18px 0 0}
 
-.under{margin:18px 0 0;font:400 15px/1.55 var(--mono);color:var(--faint);max-width:66ch}
-.rate{color:var(--dim)}
+/* the clock that runs while you read */
+.since{margin-top:30px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.since .n{font:700 clamp(20px,4vw,40px)/1 "SF Mono",ui-monospace,Menlo,monospace;
+  font-variant-numeric:tabular-nums;color:var(--hot)}
+.since .l{color:var(--dim);font-size:15px}
 
-/* ---------------- the split ---------------- */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
-  border:1px solid var(--line);margin:38px 0 0}
-@media(max-width:720px){.split{grid-template-columns:1fr}}
-.half{background:var(--ink);padding:24px 26px}
-.half h2{margin:0 0 4px;font:600 15px/1.3 var(--mono);color:var(--dim);
-  letter-spacing:.01em}
-.half .big{font:500 clamp(24px,4.4vw,34px)/1.1 var(--mono);margin:6px 0 10px}
-.half.stated .big{color:var(--cool)}
-.half.reckoned .big{color:var(--dim)}
-.half p{margin:0;font-size:14.5px;color:var(--faint);line-height:1.6}
-.half.reckoned{background:#191a13}
+/* ── the sell. Not a banner — the next thing to do, in order. ── */
+.sell{margin:52px 0 0;border-top:2px solid var(--line);padding-top:30px}
+.sell h2{font:400 26px/1.25 Georgia,serif;margin:0 0 6px}
+.sell .sub{color:var(--faint);font-size:14.5px;margin:0 0 22px;max-width:60ch}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{background:var(--panel);border:1px solid var(--line);padding:18px 18px 20px;
+  display:flex;flex-direction:column}
+.step .p{font:700 20px/1 "SF Mono",ui-monospace,Menlo,monospace;color:var(--gold);
+  margin-bottom:8px}
+.step h3{font:400 18px/1.25 Georgia,serif;margin:0 0 6px}
+.step p{color:var(--dim);font-size:14px;margin:0 0 16px;flex:1}
+.btn{display:inline-block;text-align:center;text-decoration:none;
+  padding:11px 14px;font:600 14.5px/1 Helvetica,Arial,sans-serif;
+  border:1px solid var(--gold);color:var(--gold);background:transparent}
+.btn:hover{background:var(--gold);color:#141510}
+.btn.solid{background:var(--gold);color:#141510}
+.btn.solid:hover{filter:brightness(1.12)}
+@media(max-width:820px){.steps{grid-template-columns:1fr}}
 
-/* ---------------- the rest ---------------- */
-main{padding:44px 0 60px}
-h3{font:600 22px/1.25 var(--serif);margin:38px 0 12px}
-h3:first-child{margin-top:0}
-p.body{max-width:66ch;color:var(--dim);margin:0 0 16px}
-p.body b{color:var(--text);font-weight:600}
+.army{margin:26px 0 0;background:var(--panel);border-left:3px solid var(--gold);
+  padding:16px 20px;color:var(--dim);font-size:15px}
+.army a{color:var(--gold)}
 
-table{width:100%;border-collapse:collapse;margin:18px 0 0;font:400 15px var(--mono)}
-th{text-align:left;font-weight:500;color:var(--faint);padding:9px 10px;
-  border-bottom:1px solid var(--line);font-size:13px}
-td{padding:10px;border-bottom:1px solid rgba(46,49,37,.55);color:var(--text)}
-td.n{text-align:right;font-variant-numeric:tabular-nums}
-tbody tr:hover{background:rgba(255,255,255,.02)}
-
-.method{border-left:2px solid var(--line);padding:2px 0 2px 20px;margin:26px 0 0;
-  color:var(--faint);font-size:15px;max-width:68ch}
-.method b{color:var(--dim);font-weight:600}
-
-.empty{border:1px dashed var(--line);padding:26px 24px;color:var(--dim);
-  font-size:16px;max-width:64ch}
-.empty b{color:var(--text)}
-
-footer{border-top:1px solid var(--line);padding:26px 0 48px;font:400 14px var(--mono);
-  color:var(--faint)}
-footer a{color:var(--dim)}
-.disc{margin:14px 0 0;font-size:13px;line-height:1.65;max-width:78ch}
-
-@media (prefers-reduced-motion: reduce){
-  .digit{transition:none}
+/* ── the three quiet figures ── */
+.three{display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--line);margin-top:46px}
+.three div{padding:22px 24px 22px 0;border-right:1px solid var(--line)}
+.three div:last-child{border-right:0;padding-right:0}
+.three div:not(:first-child){padding-left:24px}
+.three .n{font:700 clamp(18px,2.8vw,30px)/1.1 "SF Mono",ui-monospace,Menlo,monospace;
+  font-variant-numeric:tabular-nums;margin-bottom:6px}
+.three .up{color:var(--ink)} .three .good{color:var(--cool)}
+.three .l{color:var(--dim);font-size:14px;line-height:1.45}
+.three .s{color:var(--faint);font-size:12.5px;margin-top:5px}
+@media(max-width:760px){
+  .three{grid-template-columns:1fr}
+  .three div{border-right:0;border-bottom:1px solid var(--line);padding:18px 0}
+  .three div:not(:first-child){padding-left:0}
 }
 
-/* ---------------- the nav, the same on every page ---------------- */
-.wwnav{border-bottom:1px solid var(--line);background:var(--ink)}
-.wwnav .wrap{display:flex;gap:0;flex-wrap:wrap;padding-top:0;padding-bottom:0}
-.wwnav a{font:400 14px/1 var(--mono);color:var(--dim);text-decoration:none;
-  padding:13px 16px 13px 0;margin-right:2px;border-bottom:2px solid transparent}
-.wwnav a:hover{color:var(--text)}
-.wwnav a[aria-current]{color:var(--text);border-bottom-color:var(--cut,#c65a4a)}
-@media(max-width:620px){.wwnav a{padding:10px 12px 10px 0;font-size:13px}}
-
-/* ---------------- the light on "Look at this" ----------------
-   ⚠ ONE blinking thing on the site, and only on this link. It is
-   there because that page is where the record is laid out, and a
-   still nav gives no reason to look. Two more and it is a fruit
-   machine.
-
-   ⚠ IT STOPS FOR ANYONE WHO ASKS IT TO. prefers-reduced-motion is
-   not a nicety — a blinking element can trigger migraine and, in
-   the wrong range, seizure. The dot stays, lit and still. */
-.wwlight{display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:#c65a4a;margin-right:7px;vertical-align:middle;position:relative;
-  top:-1px;box-shadow:0 0 0 0 rgba(198,90,74,.65);
-  animation:wwpulse 1.9s ease-out infinite}
-@keyframes wwpulse{
-  0%   {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,.6)}
-  55%  {opacity:.35; box-shadow:0 0 0 6px rgba(198,90,74,0)}
-  100% {opacity:1;   box-shadow:0 0 0 0 rgba(198,90,74,0)}
-}
-@media (prefers-reduced-motion: reduce){
-  .wwlight{animation:none;opacity:1;box-shadow:none}
-}
+footer{margin-top:54px;border-top:1px solid var(--line);padding-top:16px;
+  color:var(--faint);font-size:13px}
+footer em{color:var(--dim)}
+.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 14px}
+.footnav a{color:var(--dim);text-decoration:none;font-size:14px;padding:4px 0}
+.footnav a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
-
-<div class="wrap"><header><div class="bar">
-  <a class="logo" href="/">WARRANT<i>WIRE</i></a>
-</div></header></div>
-
-<nav class="wwnav"><div class="wrap">
-  <a href="/">The wire</a>
-  <a href="/look.html"><span class="wwlight" aria-hidden="true"></span>Look at this</a>
-  <a href="/cost.html" aria-current="page">What the raising costs</a>
-  <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
-  <a href="https://8k10q.com">Read a filing</a>
-  <a href="/about.html">Who runs the wire</a>
-</div></nav>
-
 <div class="wrap">
-  <section class="hero">
-    <p class="standfirst">Every one of these offerings is paid for out of the
-    company the shareholders already own. This is what the raising has cost
-    them so far — <b>counting only what the filings actually state</b>.</p>
 
-    <div class="odometer" id="odo" aria-live="off">
-      <span class="dollar">$</span><span id="digits">—</span>
+  <header class="mast">
+    <a class="mark" href="https://warrantwire.com">WARRANT<b>WIRE</b></a>
+    <a class="back" href="/">Back to the wire</a>
+  </header>
+
+  <section class="stage">
+    <p class="lostlabel">Wealth lost by public shareholders</p>
+
+    <div class="odo"><span class="cur">$</span><span id="big">&mdash;</span></div>
+
+    <p class="scale" id="scale"></p>
+    <p class="sourced" id="sourced">Loading.</p>
+
+    <div class="since">
+      <span class="n"><span class="cur">$</span><span id="since">0</span></span>
+      <span class="l" id="since-l"></span>
     </div>
 
-    <p class="under" id="under">Reading the filings&hellip;</p>
-
-    <div class="split">
-      <div class="half stated">
-        <h2>Stated in the filings</h2>
-        <div class="big" id="disclosed">—</div>
-        <p id="disclosedNote">Placement agent fees, agent expenses, and legal
-        and offering expenses, exactly as each filing gives them. Every figure
-        is a floor: costs a document does not disclose are not in it.</p>
-      </div>
-      <div class="half reckoned">
-        <h2>Calculated on top</h2>
-        <div class="big" id="estimate">—</div>
-        <p id="estimateNote">Filings that do state their offering expenses give
-        a ratio to the money raised. The middle of those ratios is applied to
-        the filings that state nothing. Method and sample size below.</p>
-      </div>
+    <div class="gained">
+      <p class="l">Wealth gained by</p>
+      <p class="qmark">?</p>
+      <p>Not one dollar of it disappeared. It was paid to somebody — and the
+        names are in the filings, on the exhibits nobody opens. That is the
+        whole of what this service does.</p>
     </div>
   </section>
 
-  <main>
-    <div id="body"></div>
-  </main>
+  <!-- ══ THE SELL. The ladder in order: search, read, opinion. ══ -->
+  <section class="sell">
+    <h2>Find out on your own company</h2>
+    <p class="sub">Start with the search. It is free, and a search that finds
+      nothing costs you nothing.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="p">Free</div>
+        <h3>Search your company</h3>
+        <p>Every warrant filing we hold on one name — what was filed, when, and
+          which terms are in it.</p>
+        <a class="btn solid" href="/">Search the wire</a>
+      </div>
+      <div class="step">
+        <div class="p">$20</div>
+        <h3>Have the filing read</h3>
+        <p>The document and its exhibit in plain English, with the sections that
+          matter marked. Read by 8K10Q.</p>
+        <a class="btn" href="https://8k10q.com">Read a filing</a>
+      </div>
+      <div class="step">
+        <div class="p">$40</div>
+        <h3>An agent's opinion</h3>
+        <p>Barry-L reads the warrant paper, explains every term as he reaches it,
+          and says what the combination could mean. An opinion, never advice.</p>
+        <a class="btn" href="/#prices">Get an opinion</a>
+      </div>
+    </div>
+
+    <div class="army">
+      Shareholders who attend the meetings and keep up with the filings, to make a
+      better and more transparent market.
+      <a href="https://8k10q.com">Join the 8K10Q Army — it is free</a>.
+    </div>
+  </section>
+
+  <div class="three">
+    <div>
+      <div class="n up" id="inflow">&mdash;</div>
+      <div class="l">Put in by investors and lenders</div>
+      <div class="s" id="inflow-s"></div>
+    </div>
+    <div>
+      <div class="n good" id="revenue">&mdash;</div>
+      <div class="l">Earned in revenue over the same years</div>
+      <div class="s" id="revenue-s"></div>
+    </div>
+    <div>
+      <div class="n up" id="consumed">&mdash;</div>
+      <div class="l">Consumed by the companies since they were founded</div>
+      <div class="s" id="consumed-s"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footnav">
+      <a href="/">The wire</a>
+      <a href="/look.html">Look at this</a>
+      <a href="/cost.html">What the raising costs</a>
+      <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
+      <a href="https://8k10q.com">Read a filing</a>
+      <a href="https://triggeredshort.com">The research docket</a>
+      <a href="/about.html">Who runs the wire</a>
+    </div>
+    <em>"It's never as it seems." — Mark Nejmeh</em><br><br>
+    Every figure is tagged in a company's own annual report to the SEC. Nothing here
+    is estimated and no figure comes from a data vendor.
+    <span id="built"></span>
+  </footer>
 </div>
 
-<footer><div class="wrap">
-  Mark Nejmeh &middot; <a href="https://jobcreation.us">JobCreation.us</a>
-  &middot; <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>
-  &middot; 732-995-3914
-  <p class="disc">Nothing here is investment advice or a recommendation to buy or
-  sell any security. Every stated figure is taken from a filing and can be
-  checked against it. Calculated figures are shown separately, with their
-  method, and are not claims about any company. No statement here alleges that
-  any person or firm broke any law. SEC EDGAR filer information — CIK
-  0001860507 · SEC File No. 150-11431 · LTID 71743954.</p>
-</div></footer>
-
 <script>
-(function () {
-  /* ⚠ ONE LINE TO CHECK if the read worker ever moves. */
-  var READ = "https://read.realroofers.workers.dev";
-  var KEY  = "";   /* the tally is admin-only today; leave empty for the public
-                      page and put a public wrapper in front of it later */
+var COUNTER = "https://counter.realroofers.workers.dev";
 
-  var digitsEl = document.getElementById("digits");
-  var underEl  = document.getElementById("under");
-  var bodyEl   = document.getElementById("body");
+function commas(n){
+  n = Math.round(Number(n)||0);
+  var s = String(Math.abs(n)), out = "", c = 0;
+  for (var i = s.length-1; i >= 0; i--){
+    out = s[i] + out;
+    if (++c % 3 === 0 && i > 0) out = "," + out;
+  }
+  return (n < 0 ? "-" : "") + out;
+}
+function inWords(n){
+  var neg = Number(n) < 0; n = Math.abs(Number(n)||0);
+  var s = n >= 1e12 ? (n/1e12).toFixed(2) + " trillion"
+        : n >= 1e9  ? (n/1e9).toFixed(1)  + " billion"
+        : n >= 1e6  ? (n/1e6).toFixed(1)  + " million"
+        : commas(n);
+  return (neg ? "-" : "") + s;
+}
+/* ⚠ NOTHING IS NOT ZERO. A giant $0 is a claim; an em dash is not. */
+function figure(id, v){
+  var e = document.getElementById(id);
+  if (v === null || v === undefined || !isFinite(Number(v))){ e.textContent = "\u2014"; return false; }
+  e.textContent = commas(v);
+  return true;
+}
+var reduced = window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var total = 0, perSecond = 0, started = 0, base = 0, running = false;
+/* ── THE TOP NUMBER: what holders lost ──────────────────────────
+   ⚠ SAME COMPANIES AT BOTH ENDS OR IT IS NOT A COMPARISON. That is why this
+   comes from ?lost=1 and not from subtracting the two figures on ?totals=1 —
+   those are different frames covering different sets of companies, and the
+   difference between them would be a number that looks right and is not. */
+fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(d){
+  if (!d || !d.ok || !d.lost) throw new Error("not ready");
+  var lost = Number(d.lost.total);
+  var span = (Number(d.lost.to_year) - Number(d.lost.from_year)) || 0;
+  var perSec = (span > 0 && lost > 0) ? (lost / (span * 31557600)) : 0;
 
-  function commas(n) {
-    var s = Math.floor(n).toString();
-    var out = "", c = 0;
-    for (var i = s.length - 1; i >= 0; i--) {
-      out = s[i] + out;
-      if (++c % 3 === 0 && i > 0) out = "," + out;
-    }
-    return out;
+  if (figure("big", lost) && perSec && !reduced){
+    var t0 = Date.now(), big = document.getElementById("big"),
+        sn = document.getElementById("since");
+    setInterval(function(){
+      var secs = (Date.now() - t0) / 1000;
+      big.textContent = commas(lost + perSec * secs);
+      sn.textContent  = commas(perSec * secs);
+    }, 200);
   }
 
-  /* the digits are individual spans so a changing one can be lit briefly —
-     one small motion, and only where something actually changed */
-  var lastStr = "";
-  function paint(n) {
-    var str = commas(n);
-    if (str === lastStr) return;
-    var prev = lastStr;
-    lastStr = str;
-    var html = "";
-    for (var i = 0; i < str.length; i++) {
-      var ch = str[i];
-      if (ch === ",") { html += '<span class="comma">,</span>'; continue; }
-      var changed = prev.length !== str.length || prev[i] !== ch;
-      html += '<span class="digit' + (changed ? " roll" : "") + '">' + ch + "</span>";
-    }
-    digitsEl.innerHTML = html;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setTimeout(function () {
-      var lit = digitsEl.querySelectorAll(".digit.roll");
-      for (var k = 0; k < lit.length; k++) lit[k].classList.remove("roll");
-    }, 180);
-  }
+  document.getElementById("scale").textContent =
+    "$" + inWords(lost) + " gone, across " + commas(d.lost.companies) +
+    " companies, " + d.lost.from_year + " to " + d.lost.to_year + ".";
+  document.getElementById("sourced").textContent =
+    "The market value of the stock NOT held by insiders — what these companies " +
+    "filed on their own annual report covers — at the start against the latest " +
+    "on file. Same companies at both ends. The count runs at the average rate " +
+    "of those years; it is a rate, not a live measurement.";
+  document.getElementById("since-l").textContent =
+    perSec ? "since you opened this page, at that same average rate" : "";
+}).catch(function(){
+  document.getElementById("sourced").textContent =
+    "The counter has not finished building this figure yet. Nothing on this " +
+    "page is estimated, so it shows nothing rather than a guess.";
+});
 
-  function tick() {
-    if (!running) return;
-    var elapsed = (Date.now() - started) / 1000;
-    paint(base + perSecond * elapsed);
-    requestAnimationFrame(tick);
-  }
+/* ── the three supporting figures ── */
+fetch(COUNTER + "/?totals=1").then(function(r){ return r.json(); }).then(function(d){
+  if (!d || !d.ok) return;
+  var i = d.dollars_in || {};
+  figure("inflow", i.total);
+  document.getElementById("inflow-s").textContent =
+    i.total ? "$" + inWords(i.total) + " · " + (i.years || "") : "";
 
-  function money(n) { return "$" + commas(n || 0); }
+  var r2 = d.revenue_earned || {};
+  figure("revenue", r2.total);
+  document.getElementById("revenue-s").textContent =
+    r2.total ? "$" + inWords(r2.total) + " · " + (r2.years || "") : "";
 
-  function nothingYet(why) {
-    digitsEl.textContent = "0";
-    underEl.textContent = "";
-    document.getElementById("disclosed").textContent = "—";
-    document.getElementById("estimate").textContent = "—";
-    bodyEl.innerHTML =
-      '<div class="empty"><b>No filings have been read yet for this period.</b>' +
-      '<br><br>The counter runs on reads, not on the wire. A filing has to be ' +
-      'read before its costs are known, because the fee is in the document and ' +
-      'nowhere else. ' + (why ? "<br><br>" + why : "") + '</div>';
-  }
+  var c = d.dollars_consumed || {};
+  figure("consumed", c.total);
+  document.getElementById("consumed-s").textContent =
+    c.total ? "$" + inWords(c.total) + " · " +
+      (c.from_year && c.to_year ? c.from_year + " to " + c.to_year : "") : "";
 
-  function render(d) {
-    var dis = d.disclosed || {};
-    var est = d.estimated || {};
-    var days = (d.by_day || []).length;
-
-    if (!dis.filings_counted) { nothingYet(""); return; }
-
-    total = dis.total_disclosed_cost || 0;
-    base = total;
-
-    /* THE RATE IS CALCULATED, NOT CHOSEN: the disclosed total divided by the
-       days it covers. Printed on the page so it can be checked. */
-    var perDay = days ? total / days : 0;
-    perSecond = perDay / 86400;
-    started = Date.now();
-    running = perSecond > 0;
-    paint(total);
-    if (running) requestAnimationFrame(tick);
-
-    underEl.innerHTML =
-      "Counting " + dis.filings_counted + " filings read so far" +
-      (days ? " across " + days + (days === 1 ? " day" : " days") : "") +
-      ". <span class='rate'>The counter advances at " + money(Math.round(perDay)) +
-      " a day &mdash; that total divided by those days, and nothing else.</span>";
-
-    document.getElementById("disclosed").textContent = money(dis.total_disclosed_cost);
-    document.getElementById("disclosedNote").innerHTML =
-      "Out of " + money(dis.gross_raised) + " raised, that is <b>" +
-      (dis.cost_as_pct_of_gross !== null ? dis.cost_as_pct_of_gross + "%" : "—") +
-      "</b>. Placement agent fees " + money(dis.placement_agent_cash_fees) +
-      ", agent expenses " + money(dis.placement_agent_expenses) +
-      ", legal and offering expenses " + money(dis.offering_and_legal_expenses) +
-      ". Every figure is a floor.";
-
-    if (est.possible) {
-      document.getElementById("estimate").textContent =
-        "+ " + money(est.estimated_additional_legal_and_expenses);
-      document.getElementById("estimateNote").innerHTML =
-        "From " + est.sample_size + " filings that state both, the middle ratio " +
-        "of expenses to money raised is <b>" + est.median_ratio_pct + "%</b> " +
-        "(lowest " + est.lowest_ratio_pct + "%, highest " + est.highest_ratio_pct +
-        "%). Applied to " + est.filings_with_no_expense_figure +
-        " filings that state nothing, covering " + money(est.their_gross) +
-        " raised. This is calculated, not stated. It is not added to the counter.";
-    } else {
-      document.getElementById("estimate").textContent = "not yet";
-      document.getElementById("estimateNote").textContent =
-        est.reason || "Nothing to calculate from yet.";
-    }
-
-    var html = "";
-
-    if (d.by_agent && d.by_agent.length) {
-      html += "<h3>Who was paid</h3>" +
-        "<p class='body'>Placement agents, by the fees their filings disclose.</p>" +
-        "<table><thead><tr><th>Agent</th><th class='n'>Deals</th>" +
-        "<th class='n'>Raised</th><th class='n'>Fees</th><th class='n'>Rate</th>" +
-        "</tr></thead><tbody>";
-      for (var i = 0; i < d.by_agent.length; i++) {
-        var a = d.by_agent[i];
-        html += "<tr><td>" + a.agent + "</td><td class='n'>" + a.deals +
-          "</td><td class='n'>" + money(a.gross) + "</td><td class='n'>" +
-          money(a.disclosed_fees) + "</td><td class='n'>" +
-          (a.fee_pct !== null ? a.fee_pct + "%" : "—") + "</td></tr>";
-      }
-      html += "</tbody></table>";
-    }
-
-    if (d.by_day && d.by_day.length) {
-      html += "<h3>Day by day</h3><table><thead><tr><th>Day</th>" +
-        "<th class='n'>Filings</th><th class='n'>Raised</th>" +
-        "<th class='n'>Cost that day</th><th class='n'>Running</th>" +
-        "</tr></thead><tbody>";
-      var rows = d.by_day.slice(-30).reverse();
-      for (var j = 0; j < rows.length; j++) {
-        var r = rows[j];
-        html += "<tr><td>" + r.day + "</td><td class='n'>" + r.filings +
-          "</td><td class='n'>" + money(r.gross) + "</td><td class='n'>" +
-          money(r.disclosed_cost) + "</td><td class='n'>" +
-          money(r.running_disclosed_cost) + "</td></tr>";
-      }
-      html += "</tbody></table>";
-    }
-
-    html += '<div class="method"><b>How this is worked out.</b> Every stated ' +
-      'figure comes from a filing that has been read, and can be checked against ' +
-      'the document it came from. Registrations that only re-register shares ' +
-      'already sold are excluded, because they raise nothing and counting them ' +
-      'would count the same money twice. The calculated figure uses the middle ' +
-      'ratio of disclosed expenses to money raised, drawn from this same set of ' +
-      'filings — not from an outside estimate — and it is never added into the ' +
-      'stated total. Undisclosed costs are in neither figure, so both are ' +
-      'floors.</div>';
-
-    bodyEl.innerHTML = html;
-  }
-
-  fetch(READ + "/?action=tally" + (KEY ? "&key=" + encodeURIComponent(KEY) : ""))
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || d.ok === false) {
-        nothingYet(d && d.error ? "The wire said: " + d.error : "");
-        return;
-      }
-      render(d);
-    })
-    .catch(function () {
-      nothingYet("Could not reach the wire just now. Nothing is wrong with the " +
-                 "figures; the page simply could not load them.");
-    });
-})();
+  document.getElementById("built").textContent =
+    " Built from " + (d.built_so_far || "0 frames") + " so far.";
+});
 </script>
 </body>
 </html>
