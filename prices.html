@@ -1,0 +1,349 @@
+<!-- BUILT 2026-09-10 01:05 ET · warrantwire prices-1b · the whole board, every row buys
+     ⚠ THE BOARD IS EIGHT PRODUCTS AND THE INDEX CARRIED FIVE. Missing from the
+     index band: the free search, the daily summary ($5 / $310), the five-year
+     deep dive ($149, which was only ever a link on a filing row) and the reads
+     year ($1,200). All eight are here.
+
+     ⚠ THE SPLIT IS SHOWN, NOT HIDDEN. His rule: warrants on the wire, every
+     filing on 8K10Q. So the wire's own products run first and the reading
+     products sit in their own section marked as 8K10Q's — the click happens
+     here, the product and the money are theirs. A buyer seeing 8K10Q's name
+     before he pays is what stops the statement descriptor being a surprise.
+
+     ⚠ THE BUY PATH IS THE INDEX'S, BYTE FOR BYTE. Same PAY address, same
+     `button.wbuy` + data-sku contract, same `&on=wire`. The pay worker holds
+     every price server-side and builds the charge from its own table — this
+     page never sends an amount, and the numbers printed here are labels. If a
+     price on this page and a price in the SKU table ever disagree, the SKU
+     table is what charges. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What it costs — Warrant Wire</title>
+<meta name="description" content="Every price on Warrant Wire and 8K10Q. A search that finds nothing costs you nothing.">
+<style>
+:root{
+  --ink:#EDE9DC; --ink2:#C9C4B4; --dim:#9A9584; --faint:#6E6A5C;
+  --bg:#141510; --panel:#1D1E17; --line:#33342A; --line2:#2E3125;
+  --hot:#E2542C; --cool:#7FA88B; --gold:#C9A227;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.6 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
+a{color:var(--cool)}
+.wrap{max-width:1000px;margin:0 auto;padding:22px 20px 70px}
+
+header.mast{display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.mark{font:700 22px/1 Helvetica,Arial,sans-serif;letter-spacing:.02em;
+  color:var(--ink);text-decoration:none}
+.mark b{color:var(--hot)}
+.back{font-size:13.5px;color:var(--faint);text-decoration:none}
+.back:hover{color:var(--ink)}
+
+h1{font:400 clamp(28px,4.4vw,42px)/1.14 Georgia,serif;margin:34px 0 10px}
+.lede{color:var(--dim);max-width:62ch;margin:0 0 34px}
+
+h2{font:400 22px/1.25 Georgia,serif;margin:44px 0 4px}
+.note{color:var(--faint);font-size:14px;margin:0 0 18px;max-width:66ch}
+
+/* ── a row is a price, a name, what it is, and the button. Nothing else. ── */
+.row{display:grid;grid-template-columns:120px 1fr auto;gap:20px;align-items:start;
+  padding:20px 0;border-top:1px solid var(--line)}
+.row:last-child{border-bottom:1px solid var(--line)}
+.row .amt{font:700 30px/1 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink)}
+.row .amt small{display:block;font:400 13px/1.4 Georgia,serif;color:var(--faint);
+  margin-top:7px;letter-spacing:0}
+.row.free .amt{color:var(--cool)}
+.row h3{font:400 19px/1.25 Georgia,serif;margin:0 0 5px}
+.row p{margin:0;color:var(--dim);font-size:14.5px;max-width:56ch}
+.row .even{color:var(--faint);font-size:13px;margin-top:7px}
+.wbuy{background:transparent;border:1.5px solid var(--hot);color:var(--hot);
+  font:600 14.5px/1 Helvetica,Arial,sans-serif;padding:11px 16px;cursor:pointer;
+  white-space:nowrap}
+.wbuy:hover{background:var(--hot);color:#fff}
+.wbuy.ghost{border-color:var(--line);color:var(--ink2)}
+.wbuy.ghost:hover{border-color:var(--ink2);color:var(--ink)}
+a.wbuy{display:inline-block;text-decoration:none;text-align:center}
+@media(max-width:760px){
+  .row{grid-template-columns:1fr;gap:10px}
+  .row .amt{font-size:26px}
+  .wbuy{width:100%}
+}
+
+.strip{background:var(--panel);border-left:3px solid var(--gold);padding:15px 19px;
+  margin:26px 0;color:var(--dim);font-size:15px;max-width:74ch}
+.strip b{color:var(--ink);font-weight:400}
+#wbuymsg{min-height:22px;color:var(--gold);font-size:14.5px;margin:16px 0 0}
+#wbuymsg.bad{color:var(--hot)}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:16px;
+  color:var(--faint);font-size:13px}
+footer em{color:var(--dim)}
+.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 14px}
+.footnav a{color:var(--dim);text-decoration:none;font-size:14px;padding:4px 0}
+.footnav a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <a class="mark" href="/">WARRANT<b>WIRE</b></a>
+    <a class="back" href="/">Back to the wire</a>
+  </header>
+
+  <h1>What it costs</h1>
+  <p class="lede">The wire is the list — which companies filed warrant paper, on
+    what day, in what form. Reading it is priced separately, every time.</p>
+
+  <div class="strip">
+    <b>A search that finds nothing costs you nothing.</b> Five free searches a
+    day, no account. Pay only when there is something to see.
+  </div>
+
+  <h2>The wire</h2>
+  <p class="note">Warrants and nothing else. Every price here is one payment —
+    no monthly billing, nothing to cancel.</p>
+
+  <div class="row free">
+    <div class="amt">Free<small>five a day</small></div>
+    <div>
+      <h3>Search a company</h3>
+      <p>Whether a company you name has filed warrant paper, and which of the
+        terms we watch for are in it.</p>
+    </div>
+    <a class="wbuy ghost" href="/">Search the wire</a>
+  </div>
+
+  <div class="row">
+    <div class="amt">$12<small>one company</small></div>
+    <div>
+      <h3>One company, five years</h3>
+      <p>Every warrant filing on one company, every year we hold — the dates,
+        the forms, and every term marked.</p>
+    </div>
+    <button class="wbuy" data-sku="wire_search">Buy a search</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$5<small>for the day</small></div>
+    <div>
+      <h3>The daily summary</h3>
+      <p>Every offering filed that day in plain English: what is being sold, the
+        price against the prior close, the warrant coverage, and the new shares
+        as a share of the company.</p>
+    </div>
+    <button class="wbuy" data-sku="daily_chart">Buy today's</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$310<small>the year</small></div>
+    <div>
+      <h3>The daily summary, every day</h3>
+      <p>The same thing every trading day, for a year.</p>
+      <p class="even">Even at sixty-two days. Anyone reading it three times a
+        week is better off here.</p>
+    </div>
+    <button class="wbuy" data-sku="daily_chart_year">Take the year</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$480<small>the year</small></div>
+    <div>
+      <h3>The whole list, a year</h3>
+      <p>Search as often as you like, every company, every day. One payment,
+        nothing to cancel.</p>
+      <p class="even">Even at forty searches. This is the professional's tier —
+        a holder with six stocks pays $72 and should not buy it.</p>
+    </div>
+    <button class="wbuy" data-sku="wire_year">Take the year</button>
+  </div>
+
+  <h2>The reading — 8K10Q</h2>
+  <p class="note">The wire tells you where the paper is. 8K10Q tells you what it
+    says. You can buy any of these here; the product and the receipt are
+    8K10Q's, and their name is what appears on your card statement.</p>
+
+  <div class="row">
+    <div class="amt">$20<small>one filing</small></div>
+    <div>
+      <h3>Read the warrant</h3>
+      <p>The filing and its exhibit in plain English, with the sections that
+        matter marked. Not included in any year.</p>
+    </div>
+    <button class="wbuy" data-sku="wire_read">Buy a read</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$40<small>one opinion</small></div>
+    <div>
+      <h3>An agent's opinion</h3>
+      <p>Barry-L reads the warrant paper, explains every term as he reaches it,
+        and says what the combination could mean. He says when he could be
+        wrong. An opinion, never advice.</p>
+    </div>
+    <button class="wbuy" data-sku="wire_opinion">Buy an opinion</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$149<small>one company</small></div>
+    <div>
+      <h3>One company, five years, read</h3>
+      <p>Every filing that company made in five years, read rather than listed —
+        the arc, the share count each year, and what changed.</p>
+      <p class="even">Even at seven reads.</p>
+    </div>
+    <button class="wbuy" data-sku="deep_dive">Buy a deep read</button>
+  </div>
+
+  <div class="row">
+    <div class="amt">$1,200<small>the year</small></div>
+    <div>
+      <h3>Reads, a year</h3>
+      <p>Any filing read, all year. Capped at twenty-five a month and three
+        hundred a year.</p>
+      <p class="even">Even at sixty reads.</p>
+    </div>
+    <button class="wbuy" data-sku="read_year">Take the year</button>
+  </div>
+
+  <h2>The named humans</h2>
+  <p class="note">A verified person reads the filing under his own name and puts
+    his name on what he says. Each one sets his own price — these are not our
+    prices and we do not set them.</p>
+
+  <!-- ⚠ THE ROSTER IS DATA, NOT MARKUP. It renders from READERS in the script
+       below, which is the ONE place a reader is added or a price changed. A
+       hardcoded row per person is a dead end the moment somebody registers,
+       and this list is meant to grow. When the marketplace worker exists this
+       array is replaced by a fetch and nothing else on the page changes. -->
+  <div id="roster"></div>
+
+  <div class="row">
+    <div class="amt" style="font-size:19px;line-height:1.3">Read<br>for us</div>
+    <div>
+      <h3>Sell your own reads here</h3>
+      <p>A professional or a holder who knows the subject can read filings under
+        his own name and set his own price, on this site and on 8K10Q. One
+        registration, one verification, both shopfronts.</p>
+      <p class="even">Real names only, verified before anyone reads for money.</p>
+    </div>
+    <a class="wbuy ghost" href="/readers.html">See who is reading</a>
+  </div>
+
+  <p id="wbuymsg"></p>
+
+  <div class="strip">
+    <b>Pay from your bank and take 5% off.</b> Card or bank — bank runs through
+    our own ACHplug, with no processor in the middle.
+  </div>
+
+  <footer>
+    <div class="footnav">
+      <a href="/">The wire</a>
+      <a href="/look.html">Look at this</a>
+      <a href="/cost.html">What the raising costs</a>
+      <a href="/counter.html">The screw</a>
+      <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
+      <a href="https://8k10q.com">Read a filing</a>
+      <a href="https://triggeredshort.com">The research docket</a>
+      <a href="/about.html">Who runs the wire</a>
+    </div>
+    <em>"It's never as it seems." — Mark Nejmeh</em><br><br>
+    Alerts on the tickers you hold are free and always will be. Seeing the filing
+    is what the money is for.
+  </footer>
+</div>
+
+<script>
+(function(){
+  /* ⚠ IDENTICAL TO THE INDEX. Same address, same contract, same &on=wire, so
+     there is one buy path on this site rather than two that drift. */
+  var PAY = "https://pay.realroofers.workers.dev";
+
+  function wmsg(t, bad){
+    var m = document.getElementById("wbuymsg");
+    if (!m) return;
+    m.textContent = t; m.className = bad ? "bad" : "";
+  }
+
+  /* ⚠ ONE SKU FOR EVERY HUMAN READ, WITH THE READER ALONGSIDE IT. A SKU per
+     person would mean editing the pay worker every time somebody registers,
+     and a roster that needs a deploy to grow is not a marketplace. The price
+     lives server-side against the reader, exactly as every other price does. */
+  function wbuy(sku, ticker, accession, reader){
+    var email = prompt("Your email address — the receipt and your read go here.");
+    if (!email) return;
+    if (email.indexOf("@") < 1) { wmsg("That does not look like an email address.", true); return; }
+    wmsg("Opening checkout\u2026");
+    fetch(PAY + "/?buy=" + encodeURIComponent(sku)
+              + "&email=" + encodeURIComponent(email)
+              + "&on=wire"
+              + (ticker ? "&ticker=" + encodeURIComponent(ticker) : "")
+              + (accession ? "&ref=" + encodeURIComponent(accession) : "")
+              + (reader ? "&reader=" + encodeURIComponent(reader) : ""))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.ok && d.url) { location.href = d.url; }
+        else { wmsg((d && d.error) ? d.error : "Could not start the checkout.", true); }
+      })
+      .catch(function(){ wmsg("Could not reach the payment desk. Try again in a moment.", true); });
+  }
+
+  /* ⚠ ADD A READER HERE AND NOWHERE ELSE. id must match the pay worker's
+     record for that reader — it is what decides what they are charged. */
+  var READERS = [
+    { id:"mark-nejmeh", name:"Mark Nejmeh", price:"$200", per:"one filing",
+      what:"Founder of JobCreation.us. In the roofing trade since 1978, a degree " +
+           "in finance and economics from Upsala College, and the author of the " +
+           "Triggered Short research. Reads the filing himself and says what he " +
+           "makes of it, under his own name.",
+      note:"Where he holds a position in the company, he says so on the read." }
+  ];
+
+  (function(){
+    var box = document.getElementById("roster");
+    if (!box) return;
+    if (!READERS.length){
+      box.innerHTML = '<div class="row"><div class="amt" style="font-size:19px">' +
+        '&mdash;</div><div><h3>Nobody is reading yet</h3><p>This list fills as ' +
+        'professionals register.</p></div><span></span></div>';
+      return;
+    }
+    var h = "";
+    for (var i = 0; i < READERS.length; i++){
+      var r = READERS[i];
+      h += '<div class="row">' +
+             '<div class="amt">' + esc(r.price) +
+               '<small>' + esc(r.per) + '</small></div>' +
+             '<div><h3>' + esc(r.name) + '</h3>' +
+               '<p>' + esc(r.what) + '</p>' +
+               (r.note ? '<p class="even">' + esc(r.note) + '</p>' : '') +
+             '</div>' +
+             '<button class="wbuy" data-sku="human_read" data-reader="' +
+               esc(r.id) + '">Buy his read</button>' +
+           '</div>';
+    }
+    box.innerHTML = h;
+  })();
+
+  function esc(t){
+    return String(t == null ? "" : t)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("button.wbuy") : null;
+    if (!b) return;
+    wbuy(b.getAttribute("data-sku"), b.getAttribute("data-t"),
+         b.getAttribute("data-acc"), b.getAttribute("data-reader"));
+  });
+})();
+</script>
+</body>
+</html>
