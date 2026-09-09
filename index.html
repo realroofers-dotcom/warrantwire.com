@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-aa · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-ai · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -127,6 +127,16 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
   text-transform:uppercase;padding:11px 14px;border:2px solid var(--cool);
   border-radius:6px;background:#fff;color:#14150f}
 .finder input:focus{outline:3px solid rgba(138,106,28,.35);outline-offset:1px}
+/* ⚠ WHEN IT IS THE BUY, IT LOOKS LIKE THE BUY. Same button, gold, so nobody
+   presses it expecting a search and lands in checkout without noticing. */
+.finder button.gobuy{background:var(--gold,#C9A227);color:#14150f}
+/* ⚠ THE SECOND BUTTON IS QUIETER THAN THE BUY. Two buttons of equal weight
+   is a choice; one loud and one quiet is a suggestion with a way out. */
+.finder button#more{background:transparent;border:1.5px solid var(--line);
+  color:var(--ink2);font-weight:500}
+.finder button#more:hover{border-color:var(--ink3);color:var(--ink)}
+.finder button.gobuy:hover{filter:brightness(1.08)}
+
 .finder button{font:700 14.5px var(--sans,inherit);background:var(--hot,#c76d2a);
   border:0;color:#160f06;padding:11px 18px;border-radius:6px;cursor:pointer;
   white-space:nowrap}
@@ -138,6 +148,9 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
   margin:11px 0 0;max-width:620px}
 .freeline b{font:700 15.5px var(--sans,inherit);color:var(--ink)}
 .freeline span{font-size:13.5px;color:var(--ink3)}
+/* his line — it is not a caption, so it does not read like one */
+.freeline span.waron{font:700 15.5px var(--mono);letter-spacing:.03em;
+  text-transform:uppercase;color:var(--hot,#c76d2a)}
 .fnote{font-size:13.5px;color:var(--ink3);margin:11px 0 0}
 .pair{display:grid;gap:12px;margin:26px 0 0}
 @media(min-width:760px){.pair{grid-template-columns:1fr 1fr}}
@@ -255,7 +268,9 @@ h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.12;marg
 
 /* the wire */
 .row{border-bottom:1px solid var(--line2);padding:14px 0;display:grid;
-  grid-template-columns:88px 66px minmax(0,1fr) auto;gap:16px;align-items:start}
+  /* ⚠ THREE COLUMNS NOW, NOT FOUR. The date column went with the rest of the
+     giveaway — name, industry and marks is the whole free row. */
+  grid-template-columns:66px minmax(0,1fr) auto;gap:16px;align-items:start}
 .row:hover{background:#181a12}
 .row.heavy .tk{color:var(--hot)}
 .dt{font-family:var(--mono);font-size:11.5px;color:var(--ink3);padding-top:2px}
@@ -263,6 +278,11 @@ h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.12;marg
 .tk small{display:block;font-size:10px;font-weight:400;color:var(--ink3);letter-spacing:.06em;margin-top:2px}
 .co{font-size:14.5px;line-height:1.4;margin:0}
 .acc{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin:3px 0 0}
+/* the industry, under the name — his three things are name, industry, marks */
+.ind{margin:2px 0 0;font:400 12.5px var(--mono);color:var(--ink3);
+  letter-spacing:.02em}
+.samp{margin:0 0 14px;font-size:14.5px;color:var(--ink3)}
+.samp a{color:var(--cool)}
 .marks{margin:7px 0 0}
 .m{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;
   border:1px solid var(--line);color:var(--ink2);padding:2px 7px;border-radius:2px;margin:0 4px 4px 0}
@@ -386,6 +406,7 @@ button.pr span{display:block}
   border:1.5px solid var(--line);font-weight:500}
 .topbuy button.alt:hover{border-color:var(--ink2)}
 .topbuy-note{font-size:13.5px;color:var(--ink3)}
+.topbuy-note b{color:var(--ink);font-weight:700}
 @media(max-width:620px){
   .topbuy button{flex:1 1 100%;text-align:center}
   .topbuy-note{flex:1 1 100%}
@@ -641,25 +662,31 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 <div class="wrap hero" style="padding-left:0;padding-right:0;max-width:none">
   <p class="wake">Wake up &mdash; it's in the warrants.</p>
   <h1>Every warrant financing, as it is filed.</h1>
-  <p class="lede">We read the full text of every filing the SEC publishes and write
-  down the ones carrying <a href="https://triggeredshort.com/glossary.html" style="color:var(--cool)">the language of a warrant financing</a>. <b>The list, daily.</b></p>
+  <!-- ⚠ HIS LINE, 12 Sep 2026, replacing thirty-one words with nine. His note:
+       "the site is wordy, we need to make things clearer with less words."
+       The glossary link stays — it is the one word a stranger cannot read cold,
+       and it is the only thing on the line worth clicking. -->
+  <p class="lede"><b>Warrant filings read every day. Patterns searched. Issues
+  identified.</b> <a href="https://triggeredshort.com/glossary.html" style="color:var(--cool)">Glossary &rarr;</a></p>
 
   <div class="finder">
     <input id="q" type="text" placeholder="TICKER OR COMPANY" maxlength="40"
            autocapitalize="characters" autocorrect="off" spellcheck="false">
     <button id="go" type="button">Search the wire</button>
+    <!-- ⚠ THE SECOND BUTTON. His point, 12 Sep: "most people have more than one
+         company in the portfolio." When the first button turns into the buy,
+         there has to be a way to carry on looking — otherwise a man with six
+         holdings checks one, is asked for money, and leaves.
+         It is hidden until the first button becomes the buy. -->
+    <button id="more" type="button" hidden>Search another company</button>
   </div>
+  <!-- ⚠ TWO EXPLAINING SENTENCES REPLACED BY HIS LINE, 12 Sep 2026. The prices
+       they carried are NOT lost — $12 and $480 are on the buttons directly
+       below, and $20 is on every row's buy button. A price belongs on the
+       thing you press, not in a paragraph beside it. -->
   <p class="freeline">
-    <b>Five free warrant reports a day &mdash; search for your company.</b>
-    <span>They change every day. $12 for any company you name, or $480 for the
-    year.</span>
+    <span class="waron">The war on warrants is ON.</span>
   </p>
-  <!-- ⚠ THE WIRE READS ITS OWN WARRANTS. His correction, 12 Sep: the read
-       happens HERE. 8k10q reads everything; the wire reads the warrants, and a
-       buyer never leaves the page they were on. -->
-  <p class="fnote">Any filing on this list, read in plain English &mdash; what is
-  being sold, at what price, and how much of the company is being handed over.
-  <b>$20, on this page.</b></p>
 
   <!-- ⚠ THE ASK, WHERE THE EYE ALREADY IS.
        These same two buttons existed at the foot of the page, below a hundred
@@ -669,7 +696,12 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <div class="topbuy">
     <button class="wbuy" data-sku="wire_search">Search one company &mdash; $12</button>
     <button class="wbuy alt" data-sku="wire_year">Take the year &mdash; $480</button>
-    <span class="topbuy-note">A search that finds nothing costs you nothing.</span>
+    <!-- ⚠ THE FREE OFFER SITS WITH THE BUTTONS, not in a line of its own
+         further up. It is the thing that makes the two prices beside it
+         reasonable — five free a day, and the paid search is for the company
+         you actually hold. -->
+    <span class="topbuy-note"><b>Five free warrant searches a day.</b>
+      A search that finds nothing costs you nothing.</span>
   </div>
 
   <!-- ⚠ THIS WAS A SENTENCE PROMISING A BROADCAST WITH NOTHING TO PRESS.
@@ -718,6 +750,12 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <!-- ⚠ HIS CORRECTION, 12 Sep: NOT "they are at it again". That is a verdict
        on companies we have not read. It says what the reader is getting. -->
   <h2 class="filed">Five free warrant reports a day. Search for your company.</h2>
+  <!-- ⚠ A SAMPLE INSTEAD OF A GIVEAWAY. His instruction: "make it vague, and
+       enough information to let people know they can get more — use a sample
+       page link that shows a typical report we give." One link, not a link on
+       every row. -->
+  <p class="samp">Every one of these can be read in plain English.
+  <a href="https://8k10q.com/sample.html">See a typical report &rarr;</a></p>
   <p class="filedsub">Filed in the last few days. We read the documents, not the press
   releases.</p>
 
@@ -908,6 +946,37 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 
   function nameOf(s){ return String(s||"").replace(/\s*\(CIK\s*\d+\)\s*$/i,"").trim(); }
 
+  /* ============================================================
+     ⚠ PLAIN ENGLISH ON THE TAGS. His instruction, 12 Sep: "in plain language
+     they have this, they have that — we don't want to give them the kitchen
+     sink." "Variable rate transaction" is our phrase and means nothing to a
+     stranger. What it DOES fits in the same space.
+
+     The proper term stays as the tooltip, because somebody who knows it
+     should still be able to see it, and because the glossary teaches it.
+     ============================================================ */
+  var PLAIN_TAG = {
+    "variable rate transaction": "Price moves with the market",
+    "ownership blocker":         "Buyer's stake capped",
+    "pre-funded warrants":       "Stock already paid for",
+    "price reset":               "Price can be lowered",
+    "reduced exercise price":    "Price was cut",
+    "warrant inducement":        "Paid to convert early",
+    "inducement agreement":      "Paid to convert early",
+    "cashless exercise":         "Converts without cash",
+    "equity line":               "Shares sold off over time",
+    "floor price":               "A floor on the price",
+    "most favored nation":       "Gets any better terms later",
+    "most favoured nation":      "Gets any better terms later",
+    "participation right":       "Can join the next raise",
+    "registered direct":         "Sold to chosen buyers",
+    "atm programme":             "Sold into the open market",
+    "atm program":               "Sold into the open market"
+  };
+  function plainTag(l){
+    return PLAIN_TAG[String(l||"").toLowerCase().trim()] || l;
+  }
+
   function card(f){
     var labels = (f.labels||"").split(" | ")
       .filter(function(x,i,a){ return x && a.indexOf(x)===i; });
@@ -915,17 +984,41 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     var marks = labels.map(function(l){
       var cls = "m" + (HEAVY.indexOf(l) > -1 ? " h" : "") +
                 (/pre[-\s]?funded/i.test(l) ? " pf" : "");
-      return '<span class="' + cls + '">' + esc(l) + '</span>'; }).join("");
+      return '<span class="' + cls + '" title="' + esc(l) + '">' +
+             esc(plainTag(l)) + '</span>'; }).join("");
     var t = (f.ticker||"").toUpperCase();
 
+    /* ============================================================
+       ⚠ THE FREE ROW GIVES THE NAME, THE INDUSTRY, AND CHECK MARKS.
+       NOTHING ELSE.
+
+       His ruling, 12 Sep 2026: "we are selling information repackaged, that
+       is our product... get rid of giving everything away. We give company
+       name, industry and check marks for what's in it. That's it."
+
+       WHAT WAS TAKEN OUT AND WHY:
+         · the accession number — it is the key to the document on EDGAR
+         · the form type — tells a reader exactly what to go and look for
+         · THE DIRECT LINK TO THE FILING — this was the whole thing, free.
+           One click and they had read it. It was left in as an honesty
+           gesture and it was giving the product away instead
+         · the date — a date plus a name finds the filing in one search
+
+       ⚠ EDGAR IS STILL THERE AND ANYONE MAY USE IT. Nothing here hides a
+       public document; it is simply not handed over pre-sorted. The work of
+       finding it, reading it and knowing which words matter IS the product.
+       Somebody who wants to do that work themselves always could.
+
+       The accession still travels INSIDE the buy button — it is just never
+       printed and never linked.
+       ============================================================ */
     return '<div class="row'+(f.heavy?' heavy':'')+'">'
-      + '<div class="dt">'+esc(f.filed_on||"")+'</div>'
-      + '<div class="tk">'+(t?esc(t):'—')+'<small>'+esc(f.form||"")+'</small></div>'
+      + '<div class="tk">'+(t?esc(t):'&mdash;')+'</div>'
       + '<div><p class="co">'+esc(nameOf(f.company))+'</p>'
-      +   '<p class="acc">'+esc(f.accession||"")+'</p>'
+      +   (f.sector ? '<p class="ind">'+esc(f.sector)+'</p>' : '')
       +   '<div class="marks">'+marks+'</div></div>'
       + '<div class="go">'
-      +   (f.doc_url?'<a href="'+esc(f.doc_url)+'" target="_blank" rel="noopener">The filing ↗</a><br>':'')
+      /* ⚠ NO LINK TO THE DOCUMENT. See the note above the row. */
       /* ⚠ A BUY BUTTON, NOT A LINK TO ANOTHER SITE. His note, 12 Sep: every
          free warrant report needs the read for sale beside it. This was a
          link that sent the reader to 8k10q to start again — the moment they
@@ -993,7 +1086,52 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
       + '</div>';
   }
 
+  /* ============================================================
+     ⚠ THE SEARCH BUTTON BECOMES THE BUY BUTTON.
+
+     His idea, 12 Sep: "the buy should be the search button — it changes to
+     buy if it is a positive." It is right, and for a reason worth writing
+     down: the eye is already on that button. It is the thing they just
+     pressed. Putting the ask anywhere else means asking them to find it.
+
+     ⚠ IT GOES BACK THE MOMENT THEY TYPE. Otherwise the only way to search
+     again is a page reload, and a button that traps you is worse than one
+     you have to look for.
+     ============================================================ */
+  var GO = document.getElementById("go");
+  var GO_WORDS = GO ? GO.textContent : "Search the wire";
+
+  var MORE = document.getElementById("more");
+
+  function goBackToSearch(){
+    if (!GO) return;
+    GO.textContent = GO_WORDS;
+    GO.classList.remove("wbuy", "gobuy");
+    GO.removeAttribute("data-sku");
+    GO.removeAttribute("data-t");
+    if (MORE) MORE.hidden = true;
+  }
+
+  function goBecomesBuy(n, ticker){
+    if (!GO) return;
+    GO.textContent = "Show me all " + n + " \u2014 $12";
+    GO.classList.add("wbuy", "gobuy");
+    GO.setAttribute("data-sku", "wire_search");
+    GO.setAttribute("data-t", ticker || "");
+    if (MORE) MORE.hidden = false;
+  }
+
+  /* clears the box, puts the cursor back, and hands the page back to them */
+  if (MORE) MORE.addEventListener("click", function(){
+    var q = document.getElementById("q");
+    q.value = "";
+    goBackToSearch();
+    q.focus();
+    try { q.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+  });
+
   function search(){
+    goBackToSearch();
     var t = (document.getElementById("q").value || "").trim();
     if (!t) return;
     document.getElementById("q").value = t.toUpperCase();
@@ -1112,11 +1250,15 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
              plain words, WHAT THEY HAVE, WHAT THEY WOULD GET, and one button.
              No tiers to weigh up, no ladder, nothing to work out. */
           + '<div class="answer">'
+          /* ⚠ THE FREE ANSWER IS DELIBERATELY THIN. His point, 12 Sep: if the
+             free part carries the dates and the forms, a determined reader
+             reconstructs the whole list on EDGAR for nothing and never comes
+             back. So it proves there is something and stops there.
+             NO first-seen, NO latest, NO form names. Those are what the $12
+             buys, along with the accession numbers and the links. */
           +   '<div class="n">'
           +     '<div><b>' + a.filings + '</b><span>Filings</span></div>'
-          +     '<div><b>' + a.heavy + '</b><span>Heavy terms</span></div>'
-          +     '<div><b>' + esc(a.first || "&mdash;") + '</b><span>First seen</span></div>'
-          +     '<div><b>' + esc(a.latest || "&mdash;") + '</b><span>Latest</span></div>'
+          +     '<div><b>' + a.heavy + '</b><span>Carry the heavy terms</span></div>'
           +   '</div>'
           +   '<div class="offer">'
           +     '<p class="have">You are seeing the count. '
@@ -1133,12 +1275,12 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           +   '</div>'
           + '</div>'
 
+          /* ⚠ THE FORM NAMES ARE NOT GIVEN AWAY EITHER. "Mostly 424B3, EX-10.2"
+             tells a reader exactly what to go and look for. */
           + '<p>' + a.filings + ' filing' + (a.filings === 1 ? " carries" : "s carry")
           + ' the language of a warrant financing'
           + (a.heavy ? ', and ' + a.heavy + ' of them carry the heavy terms' : '')
-          + '. ' + (a.forms && a.forms.length
-              ? 'Mostly ' + a.forms.slice(0,3).map(esc).join(", ") + '.' : '')
-          + '</p>'
+          + '.</p>'
 
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
           + 'is.</b> Reading it is a different job, and it happens here, with 8K10Q.</p>'
@@ -1178,6 +1320,9 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
               + 'See what the exhibit said &rarr;</a></p>'
             : '')
           + '</div>');
+
+        /* ⚠ THE BUTTON BECOMES THE BUY, because there IS something to sell. */
+        goBecomesBuy(a.filings, T);
 
         /* the list below is today's scan, five free. A search does not unlock it. */
       })
@@ -1227,6 +1372,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   });
 
   document.getElementById("go").addEventListener("click", search);
+  document.getElementById("q").addEventListener("input", goBackToSearch);
   document.getElementById("q").addEventListener("keydown", function(e){
     if (e.key === "Enter") search();
   });
