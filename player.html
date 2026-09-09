@@ -1,0 +1,188 @@
+<!-- ============================================================================
+     THE SQUAWK PLAYER · player-1a · 2026-09-11 22:30 ET
+
+     Amalia on the home page. What is on now, and how long until the next one.
+
+     ⚠ IT NEVER PRETENDS TO BE LIVE WHEN IT IS NOT. It says which broadcast
+     this is and when it aired, and counts down to the next. A page that
+     claims "LIVE" over a recording made four hours ago is the exact kind of
+     thing this whole site exists to catch.
+
+     ⚠ NOTHING AUTOPLAYS. Phones refuse it, and rightly — nobody wants a site
+     talking at them unprompted. The visitor presses play.
+
+     ⚠ A NEW BROADCAST APPEARS ON ITS OWN. It asks every ninety seconds, so
+     someone with the page open at 12:30 sees the midday arrive without
+     reloading. If they are listening when it lands, it does NOT cut them off.
+
+     HOW TO USE IT
+       1. paste the <style> into the page's own <style>, or leave it here
+       2. paste the markup where you want the player
+       3. paste the <script> before </body>
+       4. nothing else — it asks the worker, it needs no key
+     ============================================================================ -->
+
+<style>
+/* ---------------- the squawk player ---------------- */
+.squawk{border:1px solid var(--line,#2e3125);border-radius:8px;
+  background:var(--panel,#1c1e16);padding:18px 20px;margin:22px 0;
+  font:400 16px/1.55 Spectral,Georgia,serif;color:var(--ink,#eceae0)}
+.squawk .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.squawk .onair{display:flex;align-items:center;gap:7px;
+  font:700 11px/1 "Roboto Mono",ui-monospace,monospace;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold,#C9A227)}
+.squawk .onair .dot{width:7px;height:7px;border-radius:50%;background:var(--gold,#C9A227)}
+.squawk.playing .onair{color:#c65a4a}
+.squawk.playing .onair .dot{background:#c65a4a;animation:sqpulse 1.4s ease-out infinite}
+@keyframes sqpulse{0%{box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  60%{box-shadow:0 0 0 7px rgba(198,90,74,0)}100%{box-shadow:0 0 0 0 rgba(198,90,74,0)}}
+@media (prefers-reduced-motion: reduce){.squawk .onair .dot{animation:none}}
+
+.squawk .who{font:600 18px/1.2 Spectral,Georgia,serif}
+.squawk .when{margin-left:auto;font:400 13px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68)}
+
+.squawk .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.squawk .go{display:flex;align-items:center;justify-content:center;gap:0;
+  width:54px;height:54px;flex:0 0 54px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--gold,#C9A227)}
+.squawk .go:hover{filter:brightness(1.08)}
+.squawk .go .tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 16px;
+  border-color:transparent transparent transparent #14150f;margin-left:4px}
+.squawk .go .sq{width:15px;height:15px;background:#14150f;display:none}
+.squawk.playing .go .tri{display:none}
+.squawk.playing .go .sq{display:block}
+
+.squawk .mid{flex:1 1 200px;min-width:180px}
+.squawk .line{font-size:15px;color:var(--ink2,#a8aa9a);margin:0 0 7px}
+.squawk .line b{color:var(--ink,#eceae0)}
+.squawk .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.squawk .bar i{display:block;height:100%;width:0;background:var(--gold,#C9A227);
+  transition:width .25s linear}
+.squawk .next{font:400 13px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68);margin:10px 0 0}
+.squawk .next b{color:var(--ink2,#a8aa9a);font-weight:500}
+.squawk .times{margin:9px 0 0;font:400 12.5px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68);display:flex;gap:14px;flex-wrap:wrap}
+.squawk .times span.now{color:var(--gold,#C9A227)}
+</style>
+
+<div class="squawk" id="squawk" hidden>
+  <div class="top">
+    <span class="onair"><span class="dot" aria-hidden="true"></span><span id="sqstate">On air</span></span>
+    <span class="who" id="sqwho">Amalia</span>
+    <span class="when" id="sqwhen"></span>
+  </div>
+  <div class="row">
+    <button class="go" id="sqgo" aria-label="Play the squawk">
+      <span class="tri" aria-hidden="true"></span><span class="sq" aria-hidden="true"></span>
+    </button>
+    <div class="mid">
+      <p class="line" id="sqline"></p>
+      <div class="bar"><i id="sqbar"></i></div>
+    </div>
+  </div>
+  <p class="next" id="sqnext"></p>
+  <p class="times" id="sqtimes"></p>
+  <audio id="sqaudio" preload="none"></audio>
+</div>
+
+<script>
+(function () {
+  /* ⚠ ONE LINE TO CHECK if her worker ever moves. */
+  var AMALIA = "https://amalia.realroofers.workers.dev";
+
+  var box = document.getElementById("squawk");
+  if (!box) return;
+  var au = document.getElementById("sqaudio");
+  var go = document.getElementById("sqgo");
+  var on = null, ticking = null;
+
+  function two(n) { return ("0" + n).slice(-2); }
+  function mmss(s) { s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ":" + two(s%60); }
+
+  function away(mins) {
+    if (mins < 1) return "any moment";
+    if (mins < 60) return "in " + mins + (mins === 1 ? " minute" : " minutes");
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return "in " + h + (h === 1 ? " hour" : " hours") + (m ? " " + m + " minutes" : "");
+  }
+
+  function paint(d) {
+    if (!d || !d.ok) { box.hidden = true; return; }
+
+    /* ⚠ NOTHING RECORDED MEANS NOTHING SHOWN. No dead player. */
+    if (!d.on_air) { box.hidden = true; return; }
+
+    box.hidden = false;
+
+    var isNew = !on || on.audio !== d.on_air.audio;
+    on = d.on_air;
+
+    document.getElementById("sqwho").textContent = "Amalia — " + on.broadcast;
+    document.getElementById("sqwhen").textContent = d.now_in_new_york + " New York";
+
+    document.getElementById("sqline").innerHTML =
+      "<b>" + (on.minutes ? on.minutes + " minutes" : "Ready") + "</b> &middot; " +
+      "recorded " + (on.air_date === (new Date()).toISOString().slice(0,10)
+        ? "today" : "on " + on.air_date);
+
+    document.getElementById("sqnext").innerHTML =
+      d.weekend
+        ? "She is off at the weekend &mdash; the markets are shut and so is she. " +
+          "Back Monday at <b>08:18</b>."
+        : "Next: <b>" + d.next.broadcast + "</b> at <b>" + d.next.at +
+          "</b> &mdash; " + away(d.next.minutes_away) + ".";
+
+    var t = "";
+    for (var i = 0; i < (d.schedule || []).length; i++) {
+      var s2 = d.schedule[i];
+      t += '<span class="' + (s2.slot === on.slot ? "now" : "") + '">' +
+           s2.at + ' ' + s2.broadcast + '</span>';
+    }
+    document.getElementById("sqtimes").innerHTML = t;
+
+    /* ⚠ A NEW BROADCAST DOES NOT INTERRUPT SOMEBODY LISTENING. */
+    if (isNew && au.paused) au.src = AMALIA + on.audio;
+  }
+
+  go.addEventListener("click", function () {
+    if (!on) return;
+    if (!au.src) au.src = AMALIA + on.audio;
+    if (au.paused) au.play(); else au.pause();
+  });
+
+  au.addEventListener("play", function () {
+    box.classList.add("playing");
+    document.getElementById("sqstate").textContent = "Playing";
+  });
+  function stopped() {
+    box.classList.remove("playing");
+    document.getElementById("sqstate").textContent = "On air";
+  }
+  au.addEventListener("pause", stopped);
+  au.addEventListener("ended", function () {
+    stopped();
+    document.getElementById("sqbar").style.width = "0";
+  });
+  au.addEventListener("timeupdate", function () {
+    if (!au.duration || !isFinite(au.duration)) return;
+    document.getElementById("sqbar").style.width =
+      (au.currentTime / au.duration * 100) + "%";
+    document.getElementById("sqline").innerHTML =
+      "<b>" + mmss(au.duration - au.currentTime) + " left</b> &middot; " +
+      on.broadcast.toLowerCase();
+  });
+
+  function look() {
+    fetch(AMALIA + "/?live=1")
+      .then(function (r) { return r.json(); })
+      .then(paint)
+      .catch(function () {});
+  }
+
+  look();
+  /* ninety seconds — she airs five times a day, not five times a minute */
+  setInterval(look, 90000);
+})();
+</script>
