@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-u · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-v · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -179,11 +179,9 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .gate .g2{font-size:15.5px;color:var(--ink2);margin:0 0 18px;max-width:46ch;
   margin-left:auto;margin-right:auto}
 .gate .g2 b{color:var(--ink)}
-.squawk{font:500 14px/1.55 inherit;color:var(--ink2);border:1px solid var(--line);
-  border-radius:6px;padding:11px 14px;margin:14px 0 0;max-width:62ch}
-.squawk b{color:var(--ink)}
-.squawk .sq-l{display:block;font:700 10.5px/1 var(--mono);letter-spacing:.16em;
-  text-transform:uppercase;color:var(--hot,#E1573A);margin:0 0 5px}
+/* ⚠ THE OLD .squawk STYLES ARE GONE. They were for a paragraph advertising
+   a broadcast nobody could hear. The class name is reused by the player
+   below, so leaving them would have fought it. */
 .wake{font:700 clamp(13px,2.1vw,16px)/1.2 var(--mono);letter-spacing:.14em;
   text-transform:uppercase;color:var(--hot,#E1573A);margin:0 0 10px}
 .pintro{max-width:68ch;color:var(--ink2);margin:0 0 22px}
@@ -441,11 +439,107 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   .wwflag{padding:0 12px;font-size:13px;right:62px}
   .wwflag .dot{left:9px}
 }
+/* ---------------- the squawk player ---------------- */
+.squawk{border:1px solid var(--line,#2e3125);border-radius:8px;
+  background:var(--panel,#1c1e16);padding:18px 20px;margin:22px 0;
+  font:400 16px/1.55 Spectral,Georgia,serif;color:var(--ink,#eceae0)}
+.squawk .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.squawk .onair{display:flex;align-items:center;gap:7px;
+  font:700 11px/1 "Roboto Mono",ui-monospace,monospace;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold,#C9A227)}
+.squawk .onair .dot{width:7px;height:7px;border-radius:50%;background:var(--gold,#C9A227)}
+.squawk.playing .onair{color:#c65a4a}
+.squawk.playing .onair .dot{background:#c65a4a;animation:sqpulse 1.4s ease-out infinite}
+@keyframes sqpulse{0%{box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  60%{box-shadow:0 0 0 7px rgba(198,90,74,0)}100%{box-shadow:0 0 0 0 rgba(198,90,74,0)}}
+@media (prefers-reduced-motion: reduce){.squawk .onair .dot{animation:none}}
+
+.squawk .who{font:600 18px/1.2 Spectral,Georgia,serif}
+.squawk .when{margin-left:auto;font:400 13px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68)}
+
+.squawk .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.squawk .go{display:flex;align-items:center;justify-content:center;gap:0;
+  width:54px;height:54px;flex:0 0 54px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--gold,#C9A227)}
+.squawk .go:hover{filter:brightness(1.08)}
+.squawk .go .tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 16px;
+  border-color:transparent transparent transparent #14150f;margin-left:4px}
+.squawk .go .sq{width:15px;height:15px;background:#14150f;display:none}
+.squawk.playing .go .tri{display:none}
+.squawk.playing .go .sq{display:block}
+
+.squawk .mid{flex:1 1 200px;min-width:180px}
+.squawk .line{font-size:15px;color:var(--ink2,#a8aa9a);margin:0 0 7px}
+.squawk .line b{color:var(--ink,#eceae0)}
+.squawk .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.squawk .bar i{display:block;height:100%;width:0;background:var(--gold,#C9A227);
+  transition:width .25s linear}
+.squawk .next{font:400 13px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68);margin:10px 0 0}
+.squawk .next b{color:var(--ink2,#a8aa9a);font-weight:500}
+.squawk .times{margin:9px 0 0;font:400 12.5px "Roboto Mono",ui-monospace,monospace;
+  color:var(--ink3,#767a68);display:flex;gap:14px;flex-wrap:wrap}
+.squawk .times span.now{color:var(--gold,#C9A227)}
+
+/* ---------------- the breaking corner ---------------- */
+.bkcorner{position:fixed;top:70px;right:14px;z-index:55;width:min(340px,calc(100vw - 28px));
+  background:#1c1e16;border:1px solid #2e3125;border-left:3px solid #c65a4a;
+  border-radius:6px;padding:15px 17px 15px 16px;display:none;
+  box-shadow:0 12px 34px rgba(0,0,0,.45);
+  font:400 15px/1.55 Spectral,Georgia,serif;color:#eceae0}
+.bkcorner[data-show="1"]{display:block}
+.bkcorner .hd{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.bkcorner .dot{width:8px;height:8px;border-radius:50%;background:#c65a4a;flex:0 0 8px;
+  animation:bkpulse 1.6s ease-out infinite}
+@keyframes bkpulse{
+  0%{opacity:1;box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  55%{opacity:.3;box-shadow:0 0 0 6px rgba(198,90,74,0)}
+  100%{opacity:1;box-shadow:0 0 0 0 rgba(198,90,74,0)}}
+@media (prefers-reduced-motion: reduce){.bkcorner .dot{animation:none}}
+.bkcorner .lbl{font:700 11px/1 "Roboto Mono",ui-monospace,monospace;
+  letter-spacing:.16em;text-transform:uppercase;color:#c65a4a}
+
+/* ⚠ ONE BUTTON, AND IT ONLY EXISTS WHEN THERE IS A RECORDING TO PLAY.
+   A play button with nothing behind it is worse than no button. */
+.bkplay{display:flex;align-items:center;gap:10px;width:100%;
+  background:#c65a4a;color:#fff;border:0;border-radius:4px;
+  padding:11px 14px;margin:2px 0 9px;cursor:pointer;
+  font:600 14px/1 Spectral,Georgia,serif;text-align:left}
+.bkplay:hover{background:#b04d3e}
+.bkplay .tri{flex:0 0 auto;width:0;height:0;border-style:solid;
+  border-width:7px 0 7px 11px;border-color:transparent transparent transparent #fff}
+.bkplay .sq{flex:0 0 auto;width:11px;height:11px;background:#fff;display:none}
+.bkplay[data-playing="1"] .tri{display:none}
+.bkplay[data-playing="1"] .sq{display:block}
+.bkplay .len{margin-left:auto;font:400 12px "Roboto Mono",ui-monospace,monospace;
+  opacity:.8}
+.bkcorner .x{margin-left:auto;background:none;border:0;color:#767a68;cursor:pointer;
+  font:400 20px/1 inherit;padding:0 2px}
+.bkcorner .x:hover{color:#eceae0}
+.bkcorner p{margin:0 0 10px}
+.bkcorner audio{width:100%;height:34px;margin:4px 0 8px}
+.bkcorner .by{font:400 12.5px "Roboto Mono",ui-monospace,monospace;color:#767a68;margin:0}
+.bkcorner .by b{color:#6fa88c;font-weight:500}
+@media(max-width:620px){
+  .bkcorner{top:auto;bottom:12px;right:12px;left:12px;width:auto}
+}
 </style>
 </head>
 <body>
 
 <a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+<div class="bkcorner" id="bkcorner" role="status" aria-live="polite">
+  <div class="hd">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="lbl">Breaking</span>
+    <button class="x" id="bkx" aria-label="Close">&times;</button>
+  </div>
+  <p id="bktext"></p>
+  <div id="bkaudio"></div>
+  <p class="by" id="bkby"></p>
+  <audio id="bkplayer" preload="none" style="display:none"></audio>
+</div>
 <button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
 <div class="navscrim" id="navscrim"></div>
 <nav class="navpanel" id="navpanel" aria-label="Site">
@@ -531,8 +625,27 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     <span class="topbuy-note">A search that finds nothing costs you nothing.</span>
   </div>
 
-  <p class="squawk"><span class="sq-l">The Morning Squawk</span>
-  Get your morning squawk from <b>Amalia</b> promptly at <b>8:18</b>, Monday to Friday.</p>
+  <!-- ⚠ THIS WAS A SENTENCE PROMISING A BROADCAST WITH NOTHING TO PRESS.
+       It is now the broadcast. -->
+<div class="squawk" id="squawk" hidden>
+  <div class="top">
+    <span class="onair"><span class="dot" aria-hidden="true"></span><span id="sqstate">On air</span></span>
+    <span class="who" id="sqwho">Amalia</span>
+    <span class="when" id="sqwhen"></span>
+  </div>
+  <div class="row">
+    <button class="go" id="sqgo" aria-label="Play the squawk">
+      <span class="tri" aria-hidden="true"></span><span class="sq" aria-hidden="true"></span>
+    </button>
+    <div class="mid">
+      <p class="line" id="sqline"></p>
+      <div class="bar"><i id="sqbar"></i></div>
+    </div>
+  </div>
+  <p class="next" id="sqnext"></p>
+  <p class="times" id="sqtimes"></p>
+  <audio id="sqaudio" preload="none"></audio>
+</div>
 
   <div class="pair">
     <div>
@@ -1083,6 +1196,200 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") set(false);
   });
+})();
+</script>
+<script>
+(function () {
+  /* ⚠ ONE LINE TO CHECK if her worker ever moves. */
+  var AMALIA = "https://amalia.realroofers.workers.dev";
+
+  var box = document.getElementById("squawk");
+  if (!box) return;
+  var au = document.getElementById("sqaudio");
+  var go = document.getElementById("sqgo");
+  var on = null, ticking = null;
+
+  function two(n) { return ("0" + n).slice(-2); }
+  function mmss(s) { s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ":" + two(s%60); }
+
+  function away(mins) {
+    if (mins < 1) return "any moment";
+    if (mins < 60) return "in " + mins + (mins === 1 ? " minute" : " minutes");
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return "in " + h + (h === 1 ? " hour" : " hours") + (m ? " " + m + " minutes" : "");
+  }
+
+  function paint(d) {
+    if (!d || !d.ok) { box.hidden = true; return; }
+
+    /* ⚠ NOTHING RECORDED MEANS NOTHING SHOWN. No dead player. */
+    if (!d.on_air) { box.hidden = true; return; }
+
+    box.hidden = false;
+
+    var isNew = !on || on.audio !== d.on_air.audio;
+    on = d.on_air;
+
+    document.getElementById("sqwho").textContent = "Amalia — " + on.broadcast;
+    document.getElementById("sqwhen").textContent = d.now_in_new_york + " New York";
+
+    document.getElementById("sqline").innerHTML =
+      "<b>" + (on.minutes ? on.minutes + " minutes" : "Ready") + "</b> &middot; " +
+      "recorded " + (on.air_date === (new Date()).toISOString().slice(0,10)
+        ? "today" : "on " + on.air_date);
+
+    document.getElementById("sqnext").innerHTML =
+      d.weekend
+        ? "She is off at the weekend &mdash; the markets are shut and so is she. " +
+          "Back Monday at <b>08:18</b>."
+        : "Next: <b>" + d.next.broadcast + "</b> at <b>" + d.next.at +
+          "</b> &mdash; " + away(d.next.minutes_away) + ".";
+
+    var t = "";
+    for (var i = 0; i < (d.schedule || []).length; i++) {
+      var s2 = d.schedule[i];
+      t += '<span class="' + (s2.slot === on.slot ? "now" : "") + '">' +
+           s2.at + ' ' + s2.broadcast + '</span>';
+    }
+    document.getElementById("sqtimes").innerHTML = t;
+
+    /* ⚠ A NEW BROADCAST DOES NOT INTERRUPT SOMEBODY LISTENING. */
+    if (isNew && au.paused) au.src = AMALIA + on.audio;
+  }
+
+  go.addEventListener("click", function () {
+    if (!on) return;
+    if (!au.src) au.src = AMALIA + on.audio;
+    if (au.paused) au.play(); else au.pause();
+  });
+
+  au.addEventListener("play", function () {
+    box.classList.add("playing");
+    document.getElementById("sqstate").textContent = "Playing";
+  });
+  function stopped() {
+    box.classList.remove("playing");
+    document.getElementById("sqstate").textContent = "On air";
+  }
+  au.addEventListener("pause", stopped);
+  au.addEventListener("ended", function () {
+    stopped();
+    document.getElementById("sqbar").style.width = "0";
+  });
+  au.addEventListener("timeupdate", function () {
+    if (!au.duration || !isFinite(au.duration)) return;
+    document.getElementById("sqbar").style.width =
+      (au.currentTime / au.duration * 100) + "%";
+    document.getElementById("sqline").innerHTML =
+      "<b>" + mmss(au.duration - au.currentTime) + " left</b> &middot; " +
+      on.broadcast.toLowerCase();
+  });
+
+  function look() {
+    fetch(AMALIA + "/?live=1")
+      .then(function (r) { return r.json(); })
+      .then(paint)
+      .catch(function () {});
+  }
+
+  look();
+  /* ninety seconds — she airs five times a day, not five times a minute */
+  setInterval(look, 90000);
+})();
+</script>
+<script>
+(function () {
+  var AMALIA = "https://amalia.realroofers.workers.dev";
+  var box = document.getElementById("bkcorner");
+  if (!box) return;
+  var seen = null;
+
+  /* dismissed for THIS bulletin only — the next one shows again */
+  function dismissed(id) {
+    try { return window.name.indexOf("bk" + id + ";") >= 0; } catch (e) { return false; }
+  }
+  function dismiss(id) {
+    try { window.name = (window.name || "") + "bk" + id + ";"; } catch (e) {}
+    box.removeAttribute("data-show");
+  }
+
+  document.getElementById("bkx").addEventListener("click", function () {
+    if (seen) dismiss(seen);
+    else box.removeAttribute("data-show");
+  });
+
+  function paint(d) {
+    /* ⚠ NOTHING LIVE MEANS NOTHING SHOWN. A corner that is always shouting
+       stops being read. */
+    /* ⚠ NOTHING BREAKING MEANS NOTHING ON THE PAGE AT ALL. No empty box,
+       no "no news today", no play button with nothing behind it. */
+    if (!d || !d.live || !d.breaking) {
+      var pp = document.getElementById("bkplayer");
+      if (pp && !pp.paused) pp.pause();
+      box.removeAttribute("data-show");
+      seen = null;
+      return;
+    }
+    if (d.id === seen) return;                 /* already up, leave it alone */
+    if (dismissed(d.id)) return;
+
+    seen = d.id;
+    document.getElementById("bktext").textContent = d.text || "";
+
+    var a = document.getElementById("bkaudio");
+    var by = document.getElementById("bkby");
+
+    /* ⚠ THE BUTTON ONLY APPEARS WHEN THERE IS SOMETHING TO PLAY. */
+    if (d.audio) {
+      a.innerHTML =
+        '<button class="bkplay" id="bkgo">' +
+          '<span class="tri" aria-hidden="true"></span>' +
+          '<span class="sq" aria-hidden="true"></span>' +
+          '<span>Listen</span><span class="len" id="bklen"></span>' +
+        '</button>';
+      var p = document.getElementById("bkplayer");
+      p.src = AMALIA + d.audio;
+      var btn = document.getElementById("bkgo");
+
+      btn.addEventListener("click", function () {
+        if (p.paused) { p.play(); } else { p.pause(); }
+      });
+      p.addEventListener("play",  function () { btn.setAttribute("data-playing", "1"); });
+      p.addEventListener("pause", function () { btn.removeAttribute("data-playing"); });
+      p.addEventListener("ended", function () { btn.removeAttribute("data-playing"); });
+      p.addEventListener("loadedmetadata", function () {
+        if (isFinite(p.duration)) {
+          var s2 = Math.round(p.duration);
+          document.getElementById("bklen").textContent =
+            Math.floor(s2 / 60) + ":" + ("0" + (s2 % 60)).slice(-2);
+        }
+      });
+      p.addEventListener("timeupdate", function () {
+        var left = Math.max(0, Math.round((p.duration || 0) - p.currentTime));
+        if (isFinite(left) && !p.paused)
+          document.getElementById("bklen").textContent =
+            "-" + Math.floor(left / 60) + ":" + ("0" + (left % 60)).slice(-2);
+      });
+
+      by.innerHTML = d.read_by
+        ? 'Read by <b>' + d.read_by + '</b>.'
+        : 'Read by <b>Amalia</b>.';
+    } else {
+      a.innerHTML = "";
+      by.innerHTML = 'In writing for now. Amalia records it shortly.';
+    }
+    box.setAttribute("data-show", "1");
+  }
+
+  function look() {
+    fetch(AMALIA + "/?breaking=1")
+      .then(function (r) { return r.json(); })
+      .then(paint)
+      .catch(function () {});
+  }
+
+  look();
+  setInterval(look, 90000);      /* a minute and a half — news, not a ticker */
 })();
 </script>
 </body>
