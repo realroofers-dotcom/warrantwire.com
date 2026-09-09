@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-aw · av + Stephen’s twenty-second clip on every free row that has one -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-ay · ax + the reader and opinion-maker band, marked coming soon -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -300,6 +300,36 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .pbsamp .big{color:var(--hot)}
 .pbcap{color:var(--ink3);font-size:12.5px;margin:0 0 14px}
 .pbbuy{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ============================================================
+   ⚠ THE GIG BAND. It recruits; it does not sell. Nothing in it
+   can be pressed into a checkout, because the marketplace is not
+   open and `human_read` is not a price at the pay desk. Both
+   buttons go to a page.
+
+   ⚠ AND IT SAYS "SOON" ON ITS FACE. A recruiting block that looks
+   live brings people who then find a shut door, and the first
+   thing they conclude is that the rest of the site is the same.
+   ============================================================ */
+.gig{display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:start;
+  max-width:940px}
+@media(max-width:840px){.gig{grid-template-columns:1fr;gap:22px}}
+.gig .soonmark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--warm);border:1px solid var(--warm);
+  border-radius:3px;padding:3px 8px;margin:0 0 12px}
+.gig h3{margin:0 0 8px;font:400 21px/1.25 Georgia,serif;color:var(--ink)}
+.gig p{margin:0 0 12px;font-size:14.5px;color:var(--ink2);max-width:52ch}
+.gig .why{color:var(--ink3);font-size:13.5px;max-width:52ch}
+.gigsplit{width:100%;border-collapse:collapse;font-size:13.5px}
+.gigsplit th,.gigsplit td{padding:8px 10px;border-bottom:1px solid var(--line);
+  text-align:right}
+.gigsplit th:first-child,.gigsplit td:first-child{text-align:left}
+.gigsplit th{color:var(--ink3);font:400 12px var(--sans)}
+.gigsplit td{font-family:var(--mono);font-size:13px;color:var(--ink)}
+.gigsplit td:first-child{font-family:var(--sans);font-size:13.5px;color:var(--ink2)}
+.gigsplit td.keep{color:var(--cool)}
+.gigcap{color:var(--ink3);font-size:12.5px;margin:10px 0 16px;max-width:46ch}
+.gigbtns{display:flex;gap:10px;flex-wrap:wrap}
 .pnote{max-width:66ch;color:var(--ink3);font-size:14px;margin:18px 0 0}
 .pnote b{color:var(--ink)}
 #wbuymsg{color:var(--ink2);font-size:14.5px;margin:14px 0 0;min-height:20px}
@@ -339,6 +369,12 @@ h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.12;marg
   font-size:14px;line-height:1.6;color:var(--ink2);max-width:74ch}
 .caveat b{color:var(--warm);font-family:var(--mono);font-size:10px;letter-spacing:.14em;
   text-transform:uppercase;display:block;margin-bottom:5px}
+/* ⚠ THE SIGNATURE. It is his name under a statement about other people's
+   companies, so it is set apart as a signature rather than running on as one
+   more sentence of the disclosure. */
+.caveat .sig{display:block;margin-top:12px;padding-top:10px;
+  border-top:1px solid var(--line);color:var(--ink3);font-size:13.5px}
+.caveat .sig em{color:var(--ink2);font-style:italic}
 
 /* controls */
 .bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:16px 0 12px}
@@ -916,11 +952,21 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <div class="sell" id="sell"></div>
   <div id="rows"><div class="quiet">Reading the wire…</div></div>
 
+  <!-- ══════════════════════════════════════════════════════════
+       ⚠ HIS WORDS, 10 Sep 2026, VERBATIM. Dictated by Mark and set here as
+       given — the only changes are punctuation and where the lines break.
+       Nothing in this block was written by anyone else and it carries his
+       name, so it is not to be reworded or tightened in a later pass.
+       ══════════════════════════════════════════════════════════ -->
   <div class="caveat" style="margin-top:26px"><b>Read this with the list</b>
-    A match is not a finding. This language is ordinary and lawful, and most of these deals are
-    unremarkable. A filing appears here because the document is worth reading —
+    A match is not a finding. However, based on past experience, the results we
+    search for bring suspicion because they have been seen before. You must read
+    everything in the markets today. This language is ordinary and lawful, and
+    most of these deals are unremarkable. A filing appears here because the
+    document is worth reading —
     <b style="display:inline;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">nothing
     on this page says any company or any person did anything wrong.</b>
+    <span class="sig">Thank you.<br><em>Mark Nejmeh</em>, founder</span>
   </div>
 </div>
 
@@ -1098,6 +1144,49 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <p class="pnote">Alerts on the tickers you hold are free and always will be. Seeing
   the filing is what the money is for.</p>
   <p id="wbuymsg"></p>
+</div>
+
+<div class="wrap band" id="readers" style="padding-left:0;padding-right:0;max-width:none">
+  <h2>Become a reader and opinion maker</h2>
+  <p class="pintro">Read financial documents and report. A machine reads every
+  filing on this wire; some documents are worth a person.</p>
+
+  <div class="gig">
+    <div>
+      <span class="soonmark">Opening soon</span>
+      <h3>Sell your own reads and opinions here</h3>
+      <p>You set your own price. A read is what the document says; an opinion is
+        what you make of it, and they are bought separately.</p>
+      <p><b style="color:var(--ink);font-weight:400">Nobody reads here
+        anonymously.</b> A real name and real contact details, verified before
+        you can sell anything. Your name is published on everything you write.
+        No handles and no exceptions.</p>
+      <p class="why">Reading gets cheaper every year. A dated public record of a
+        named person being right does not — and that record is scored against
+        what the company did next, not against whether the buyer liked it.</p>
+      <div class="gigbtns">
+        <a class="wbuy" href="/readers.html">See the terms</a>
+        <a class="wbuy ghost" href="/readers.html#top">Who is reading</a>
+      </div>
+    </div>
+
+    <div>
+      <table class="gigsplit">
+        <thead>
+          <tr><th>What you supply</th><th>We take</th><th>On $200 you keep</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A written read</td><td>$25</td><td class="keep">$175</td></tr>
+          <tr><td>A written opinion</td><td>$25</td><td class="keep">$175</td></tr>
+          <tr><td>Either, plus a machine voice</td><td>$50</td><td class="keep">$150</td></tr>
+          <tr><td>Either, plus your own voice</td><td>$75</td><td class="keep">$125</td></tr>
+        </tbody>
+      </table>
+      <p class="gigcap">A flat fee, not a percentage — the better you are paid,
+        the less it costs you. Paid straight into your bank through our own
+        ACHplug, per job, with no processor in the middle.</p>
+    </div>
+  </div>
 </div>
 
 <div class="wrap band" style="padding-left:0;padding-right:0;max-width:none">
