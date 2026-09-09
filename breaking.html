@@ -1,0 +1,177 @@
+<!-- ============================================================================
+     THE BREAKING CORNER · breaking-corner-3a · 2026-09-11 13:35 ET
+
+     Upper right of warrantwire.com. Shows whatever is live on the wire's
+     bulletin queue, and plays it if there is a recording.
+
+     ⚠ IT SAYS WHOSE VOICE IT IS. If a person recorded it, the panel names
+     them. If it is Amalia, it says so. On a site whose whole argument is that
+     nobody checks, being caught passing a machine off as a person would end it.
+
+     ⚠ IT SHOWS NOTHING WHEN THERE IS NOTHING. No empty box, no "no news
+     today". A corner that is always shouting stops being read.
+
+     ⚠ IT DISMISSES AND STAYS DISMISSED for that bulletin only. The next one
+     appears again. Nobody should have to close the same thing twice.
+
+     HOW TO USE IT
+       1. paste the <style> block into the page's own <style>, or leave it here
+       2. paste the markup and the script anywhere before </body>
+       3. nothing else — it asks the worker, it does not need a key
+     ============================================================================ -->
+
+<style>
+/* ---------------- the breaking corner ---------------- */
+.bkcorner{position:fixed;top:70px;right:14px;z-index:55;width:min(340px,calc(100vw - 28px));
+  background:#1c1e16;border:1px solid #2e3125;border-left:3px solid #c65a4a;
+  border-radius:6px;padding:15px 17px 15px 16px;display:none;
+  box-shadow:0 12px 34px rgba(0,0,0,.45);
+  font:400 15px/1.55 Spectral,Georgia,serif;color:#eceae0}
+.bkcorner[data-show="1"]{display:block}
+.bkcorner .hd{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.bkcorner .dot{width:8px;height:8px;border-radius:50%;background:#c65a4a;flex:0 0 8px;
+  animation:bkpulse 1.6s ease-out infinite}
+@keyframes bkpulse{
+  0%{opacity:1;box-shadow:0 0 0 0 rgba(198,90,74,.6)}
+  55%{opacity:.3;box-shadow:0 0 0 6px rgba(198,90,74,0)}
+  100%{opacity:1;box-shadow:0 0 0 0 rgba(198,90,74,0)}}
+@media (prefers-reduced-motion: reduce){.bkcorner .dot{animation:none}}
+.bkcorner .lbl{font:700 11px/1 "Roboto Mono",ui-monospace,monospace;
+  letter-spacing:.16em;text-transform:uppercase;color:#c65a4a}
+
+/* ⚠ ONE BUTTON, AND IT ONLY EXISTS WHEN THERE IS A RECORDING TO PLAY.
+   A play button with nothing behind it is worse than no button. */
+.bkplay{display:flex;align-items:center;gap:10px;width:100%;
+  background:#c65a4a;color:#fff;border:0;border-radius:4px;
+  padding:11px 14px;margin:2px 0 9px;cursor:pointer;
+  font:600 14px/1 Spectral,Georgia,serif;text-align:left}
+.bkplay:hover{background:#b04d3e}
+.bkplay .tri{flex:0 0 auto;width:0;height:0;border-style:solid;
+  border-width:7px 0 7px 11px;border-color:transparent transparent transparent #fff}
+.bkplay .sq{flex:0 0 auto;width:11px;height:11px;background:#fff;display:none}
+.bkplay[data-playing="1"] .tri{display:none}
+.bkplay[data-playing="1"] .sq{display:block}
+.bkplay .len{margin-left:auto;font:400 12px "Roboto Mono",ui-monospace,monospace;
+  opacity:.8}
+.bkcorner .x{margin-left:auto;background:none;border:0;color:#767a68;cursor:pointer;
+  font:400 20px/1 inherit;padding:0 2px}
+.bkcorner .x:hover{color:#eceae0}
+.bkcorner p{margin:0 0 10px}
+.bkcorner audio{width:100%;height:34px;margin:4px 0 8px}
+.bkcorner .by{font:400 12.5px "Roboto Mono",ui-monospace,monospace;color:#767a68;margin:0}
+.bkcorner .by b{color:#6fa88c;font-weight:500}
+@media(max-width:620px){
+  .bkcorner{top:auto;bottom:12px;right:12px;left:12px;width:auto}
+}
+</style>
+
+<div class="bkcorner" id="bkcorner" role="status" aria-live="polite">
+  <div class="hd">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="lbl">Breaking</span>
+    <button class="x" id="bkx" aria-label="Close">&times;</button>
+  </div>
+  <p id="bktext"></p>
+  <div id="bkaudio"></div>
+  <p class="by" id="bkby"></p>
+  <audio id="bkplayer" preload="none" style="display:none"></audio>
+</div>
+
+<script>
+(function () {
+  /* ⚠ THE NEWSROOM IS ITS OWN WORKER. Bulletins, breaking news, the archive
+     and the RSS all moved off Amalia on 11 Sep — she broadcasts and nothing
+     else. Anything to do with a bulletin asks the newsroom. */
+  var NEWSROOM = "https://newsroom.realroofers.workers.dev";
+  var box = document.getElementById("bkcorner");
+  if (!box) return;
+  var seen = null;
+
+  /* dismissed for THIS bulletin only — the next one shows again */
+  function dismissed(id) {
+    try { return window.name.indexOf("bk" + id + ";") >= 0; } catch (e) { return false; }
+  }
+  function dismiss(id) {
+    try { window.name = (window.name || "") + "bk" + id + ";"; } catch (e) {}
+    box.removeAttribute("data-show");
+  }
+
+  document.getElementById("bkx").addEventListener("click", function () {
+    if (seen) dismiss(seen);
+    else box.removeAttribute("data-show");
+  });
+
+  function paint(d) {
+    /* ⚠ NOTHING LIVE MEANS NOTHING SHOWN. A corner that is always shouting
+       stops being read. */
+    /* ⚠ NOTHING BREAKING MEANS NOTHING ON THE PAGE AT ALL. No empty box,
+       no "no news today", no play button with nothing behind it. */
+    if (!d || !d.live || !d.breaking) {
+      var pp = document.getElementById("bkplayer");
+      if (pp && !pp.paused) pp.pause();
+      box.removeAttribute("data-show");
+      seen = null;
+      return;
+    }
+    if (d.id === seen) return;                 /* already up, leave it alone */
+    if (dismissed(d.id)) return;
+
+    seen = d.id;
+    document.getElementById("bktext").textContent = d.text || "";
+
+    var a = document.getElementById("bkaudio");
+    var by = document.getElementById("bkby");
+
+    /* ⚠ THE BUTTON ONLY APPEARS WHEN THERE IS SOMETHING TO PLAY. */
+    if (d.audio) {
+      a.innerHTML =
+        '<button class="bkplay" id="bkgo">' +
+          '<span class="tri" aria-hidden="true"></span>' +
+          '<span class="sq" aria-hidden="true"></span>' +
+          '<span>Listen</span><span class="len" id="bklen"></span>' +
+        '</button>';
+      var p = document.getElementById("bkplayer");
+      p.src = NEWSROOM + d.audio;
+      var btn = document.getElementById("bkgo");
+
+      btn.addEventListener("click", function () {
+        if (p.paused) { p.play(); } else { p.pause(); }
+      });
+      p.addEventListener("play",  function () { btn.setAttribute("data-playing", "1"); });
+      p.addEventListener("pause", function () { btn.removeAttribute("data-playing"); });
+      p.addEventListener("ended", function () { btn.removeAttribute("data-playing"); });
+      p.addEventListener("loadedmetadata", function () {
+        if (isFinite(p.duration)) {
+          var s2 = Math.round(p.duration);
+          document.getElementById("bklen").textContent =
+            Math.floor(s2 / 60) + ":" + ("0" + (s2 % 60)).slice(-2);
+        }
+      });
+      p.addEventListener("timeupdate", function () {
+        var left = Math.max(0, Math.round((p.duration || 0) - p.currentTime));
+        if (isFinite(left) && !p.paused)
+          document.getElementById("bklen").textContent =
+            "-" + Math.floor(left / 60) + ":" + ("0" + (left % 60)).slice(-2);
+      });
+
+      by.innerHTML = d.read_by
+        ? 'Read by <b>' + d.read_by + '</b>.'
+        : 'Read by <b>Amalia</b>.';
+    } else {
+      a.innerHTML = "";
+      by.innerHTML = 'In writing for now. Amalia records it shortly.';
+    }
+    box.setAttribute("data-show", "1");
+  }
+
+  function look() {
+    fetch(NEWSROOM + "/?breaking=1")
+      .then(function (r) { return r.json(); })
+      .then(paint)
+      .catch(function () {});
+  }
+
+  look();
+  setInterval(look, 90000);      /* a minute and a half — news, not a ticker */
+})();
+</script>
