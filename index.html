@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-ao · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-aq · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -179,6 +179,7 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .freeline b{font:700 15.5px var(--sans,inherit);color:var(--ink)}
 .freeline span{font-size:13.5px;color:var(--ink3)}
 /* his line — it is not a caption, so it does not read like one */
+.freenote{margin:7px 0 0;font-size:13px;color:var(--ink3);max-width:520px}
 .split1{margin:16px 0 0;font-size:15px;color:var(--ink3);max-width:60ch}
 .split1 b{color:var(--ink2);font-weight:600}
 .freeline span.waron{font:700 15.5px var(--mono);letter-spacing:.03em;
@@ -779,6 +780,10 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
          It is hidden until the first button becomes the buy. -->
     <button id="more" type="button" hidden>Search another company</button>
   </div>
+  <!-- ⚠ TIED TO THE SEARCH BOX, not to the buttons. It answers the question a
+       stranger has at the moment he is deciding whether to type anything at
+       all — will this cost me something if it turns up empty. -->
+  <p class="freenote">A search that finds nothing costs you nothing.</p>
   <!-- ⚠ TWO EXPLAINING SENTENCES REPLACED BY HIS LINE, 12 Sep 2026. The prices
        they carried are NOT lost — $12 and $480 are on the buttons directly
        below, and $20 is on every row's buy button. A price belongs on the
@@ -795,12 +800,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   <div class="topbuy">
     <button class="wbuy" data-sku="wire_search">Search one company &mdash; $12</button>
     <button class="wbuy alt" data-sku="wire_year">Take the year &mdash; $480</button>
-    <!-- ⚠ THE FREE OFFER SITS WITH THE BUTTONS, not in a line of its own
-         further up. It is the thing that makes the two prices beside it
-         reasonable — five free a day, and the paid search is for the company
-         you actually hold. -->
-    <span class="topbuy-note"><b>Five free warrant searches a day.</b>
-      A search that finds nothing costs you nothing.</span>
+
   </div>
 
   <!-- ⚠ THIS WAS A SENTENCE PROMISING A BROADCAST WITH NOTHING TO PRESS.
