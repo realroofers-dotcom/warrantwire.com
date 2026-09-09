@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-am · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-an · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -179,6 +179,8 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .freeline b{font:700 15.5px var(--sans,inherit);color:var(--ink)}
 .freeline span{font-size:13.5px;color:var(--ink3)}
 /* his line — it is not a caption, so it does not read like one */
+.split1{margin:16px 0 0;font-size:15px;color:var(--ink3);max-width:60ch}
+.split1 b{color:var(--ink2);font-weight:600}
 .freeline span.waron{font:700 15.5px var(--mono);letter-spacing:.03em;
   text-transform:uppercase;color:var(--hot,#c76d2a)}
 .fnote{font-size:13.5px;color:var(--ink3);margin:11px 0 0}
@@ -309,6 +311,10 @@ h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.12;marg
 .co{font-size:14.5px;line-height:1.4;margin:0}
 .acc{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin:3px 0 0}
 /* the industry, under the name — his three things are name, industry, marks */
+.found{margin:8px 0 0;font-size:13.5px;color:var(--ink2)}
+.go button.mini{background:none;border:0;padding:4px 0 0;color:var(--ink3);
+  font:400 11px var(--mono);text-decoration:underline;cursor:pointer}
+.go button.mini:hover{color:var(--cool)}
 .ind{margin:2px 0 0;font:400 12.5px var(--mono);color:var(--ink3);
   letter-spacing:.02em}
 .samp{margin:0 0 14px;font-size:14.5px;color:var(--ink3)}
@@ -794,22 +800,12 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
        It is now the broadcast. -->
 
 
-  <div class="pair">
-    <div>
-      <span class="w">This site</span>
-      <b>Who filed, and when</b>
-      <p>Which companies filed warrant language, on what day, in what form. A list
-      you can work from &mdash; useful if you trade around warrant paper coming out.</p>
-      <span class="pp">$12 a search &middot; $480 the year, paid once</span>
-    </div>
-    <div class="o">
-      <span class="w">8K10Q.com</span>
-      <b>What it says</b>
-      <p>Somebody reads the filing and the exhibit and tells you in plain English
-      what the terms actually are. <b>The wire does not do this and never will.</b></p>
-      <a class="pp go8" href="https://8k10q.com">$20 plain clear read for you &rarr;</a>
-    </div>
-  </div>
+  <!-- ⚠ SIXTY WORDS IN TWO BOXES BECAME ONE LINE. His note, 12 Sep: it can be
+       deleted or explained in one box. The split is worth saying — it is why
+       there are two prices — but it needed a sentence, not a panel sitting
+       between the search and the product. The prices are on the buttons. -->
+  <p class="split1">The wire tells you <b>where the paper is</b>.
+  8K10Q tells you <b>what it says</b>.</p>
 
   <div id="found"></div>
 </div>
@@ -1302,6 +1298,16 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           return;
         }
 
+        /* ⚠ THE TERMS COME OFF THE FILINGS WE ARE NOT SHOWING. A reader learns
+           WHAT is in this company's paper without learning WHICH document it is
+           in — which is exactly the line between the free answer and the $12. */
+        var allMarks = [];
+        (d.rows || []).forEach(function (f) {
+          String(f.labels || "").split(" | ").forEach(function (l) {
+            if (l && allMarks.indexOf(l) < 0) allMarks.push(l);
+          });
+        });
+
         /* ---- it is on the wire. The ANSWER is free; the LIST is the $12. ---- */
         found('<div class="about">'
           + who
@@ -1317,38 +1323,45 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
              Now it is one row: the numbers on the left, and on the right, in
              plain words, WHAT THEY HAVE, WHAT THEY WOULD GET, and one button.
              No tiers to weigh up, no ladder, nothing to work out. */
-          + '<div class="answer">'
-          /* ⚠ THE FREE ANSWER IS DELIBERATELY THIN. His point, 12 Sep: if the
-             free part carries the dates and the forms, a determined reader
-             reconstructs the whole list on EDGAR for nothing and never comes
-             back. So it proves there is something and stops there.
-             NO first-seen, NO latest, NO form names. Those are what the $12
-             buys, along with the accession numbers and the links. */
-          +   '<div class="n">'
-          +     '<div><b>' + a.filings + '</b><span>Filings</span></div>'
-          +     '<div><b>' + a.heavy + '</b><span>Carry the heavy terms</span></div>'
-          +   '</div>'
-          +   '<div class="offer">'
-          +     '<p class="have">You are seeing the count. '
-          +       'The ' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') +
-              ' themselves are not shown.</p>'
-          +     '<p class="get"><b>$12 shows you all ' + a.filings + '</b> &mdash; the '
-          +       'date, the form, the accession number and a link to each document, '
-          +       'so you can read them yourself.</p>'
-          +     '<button class="bigbuy wbuy" data-sku="wire_search" data-t="' + esc(T) + '">'
-          +       'Show me all ' + a.filings + ' &mdash; $12</button>'
-          +     '<p class="alt">Search a lot? <button class="linkbuy wbuy" '
-          +       'data-sku="wire_year" data-t="' + esc(T) + '">Take the year for $480</button>'
-          +       ' and search any company, any day.</p>'
+          /* ============================================================
+             ⚠ A SEARCH LOOKS LIKE THE FREE LIST. His note, 12 Sep: "this
+             search should deliver the same kind of results as the five free."
+
+             It used to answer in a shape found nowhere else on the page — a
+             counts panel beside a paragraph — so a visitor had two visual
+             languages to learn for one product. Now the answer is a ROW, the
+             same row the free list uses: name, industry, and the marks in
+             plain English.
+
+             ⚠ AND IT STAYS AS THIN AS THE FREE ONES. No dates, no forms, no
+             accession numbers, no links. Those are what the $12 buys, and a
+             reader who has them does not need us. */
+          + '<div class="rows">'
+          +   '<div class="row' + (a.heavy ? ' heavy' : '') + '">'
+          +     '<div class="tk">' + esc(c.ticker || T) + '</div>'
+          +     '<div><p class="co">' + esc(nm) + '</p>'
+          +       (c.business || c.sector
+                    ? '<p class="ind">' + esc(c.business || c.sector) + '</p>' : '')
+          +       '<div class="marks">'
+          +         allMarks.slice(0, 8).map(function (l) {
+                      return '<span class="m' + (HEAVY.indexOf(l) > -1 ? ' h' : '') +
+                             (/pre[-\s]?funded/i.test(l) ? ' pf' : '') +
+                             '" title="' + esc(l) + '">' + esc(plainTag(l)) + '</span>';
+                    }).join('')
+          +       '</div>'
+          +       '<p class="found">' + a.filings + ' filing'
+          +         (a.filings === 1 ? '' : 's') + ' on the wire'
+          +         (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '')
+          +         '.</p>'
+          +     '</div>'
+          +     '<div class="go">'
+          +       '<button class="wbuy readbtn" data-sku="wire_search" data-t="' + esc(T) + '">'
+          +         'Show me all ' + a.filings + ' &middot; $12</button>'
+          +       '<br><button class="mini wbuy" data-sku="wire_year" data-t="' + esc(T) + '">'
+          +         'Or take the year &middot; $480</button>'
+          +     '</div>'
           +   '</div>'
           + '</div>'
-
-          /* ⚠ THE FORM NAMES ARE NOT GIVEN AWAY EITHER. "Mostly 424B3, EX-10.2"
-             tells a reader exactly what to go and look for. */
-          + '<p>' + a.filings + ' filing' + (a.filings === 1 ? " carries" : "s carry")
-          + ' the language of a warrant financing'
-          + (a.heavy ? ', and ' + a.heavy + ' of them carry the heavy terms' : '')
-          + '.</p>'
 
           + '<p class="split"><b>That is what the wire knows &mdash; where the paper '
           + 'is.</b> Reading it is a different job, and it happens here, with 8K10Q.</p>'
