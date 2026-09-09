@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-al · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
+<!-- BUILT 2026-09-08 09:20 ET · warrantwire index-am · prices $12 / $480 + wake line + Amalia squawk + NYC clock + About links + the ladder and pricing -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -111,25 +111,36 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .logo i{font-style:normal;color:var(--hot)}
 .logo small{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.2em;
   color:var(--ink3);font-weight:400;margin-top:9px;text-transform:uppercase;
-  margin-left:0}
+  margin-left:0;margin-bottom:0}
 /* ⚠ THE LIVE LINE AND THE CLOCK SIT LEFT NOW, NOT HARD RIGHT.
 
    His note, 12 Sep: they can no longer be seen. The player moved to the top
    right corner and sat straight on top of them. Anything pinned to the right
    edge of the masthead is now underneath a fixed panel, so the two things
    that say the site is working move in beside the logo. */
-.mast .live{margin-left:0;padding-bottom:4px}
+/* ⚠ THE STATUS LINE GETS ITS OWN ROW.
+
+   His note, 12 Sep: it can be adjusted to look better. It was sitting on the
+   same baseline as the tagline, jammed against the end of it — which reads as
+   crowded rather than placed. Giving the logo the full width pushes the live
+   light and the clock onto their own line underneath, where they read as one
+   quiet strip instead of an afterthought hanging off the masthead. */
+.mast .logo{flex:1 0 100%}
+.mast .live{margin-left:0;padding-bottom:0}
 .live{display:flex;align-items:center;gap:7px;font-family:var(--mono);
   font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 /* ⚠ THE DATE AND TIME SIT IN THE MIDDLE. His note, 12 Sep. `auto` margins on
    both sides push it off the logo and off the live line, and it stops well
    short of the panel because of the padding below. */
-.mast #nyc{margin-left:auto;margin-right:auto;padding-bottom:4px;
+/* the clock sits beside the light on that same strip, separated rather than
+   run together — a hairline does it more quietly than a bullet */
+.mast #nyc{margin:0;padding:0 0 0 14px;border-left:1px solid var(--line2,#2e3125);
   font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink3);
   white-space:nowrap}
+/* and the strip as a whole sits a little away from the tagline above it */
+.mast{row-gap:14px}
 @media(max-width:820px){
-  /* on a phone the masthead wraps, so centring it there just leaves a gap */
-  .mast #nyc{margin-left:0;margin-right:0}
+  .mast #nyc{padding-left:0;border-left:0}
 }
 /* ⚠ NOTHING IN THE MASTHEAD MAY RUN UNDER THE PANEL. 360px of clearance on
    the right, on any screen wide enough for the panel to be fixed. */
