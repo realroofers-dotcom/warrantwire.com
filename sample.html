@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-08 12:35 ET · sample-read-1a · 8k10q.com/sample.html -->
+<!-- BUILT 2026-09-08 12:35 ET · sample-read-1b · 8k10q.com/sample.html -->
 <!--
    ⚠ MARK — READ THIS BEFORE YOU UPLOAD IT.
 
@@ -116,6 +116,38 @@ ol.q li{margin:0 0 8px}
 
 footer{border-top:1px solid var(--line);padding:30px 0 50px;font-size:13.5px;color:#9FABD8}
 .disc{font-size:12.5px;line-height:1.6;color:#8290BD;max-width:80ch;margin:16px 0 0}
+
+/* ⚠ THE PRE-FUNDED FLASH, in this page's own colours — the orange that is
+   already the accent here, not the wire's red. */
+/* ---------------- the pre-funded flash ---------------- */
+.pf-flash{
+  border-radius:3px;
+  padding:1px 5px;
+  margin:0 -2px;
+  animation:pfflash 2.4s ease-in-out infinite;
+}
+@keyframes pfflash{
+  0%, 100% { background:rgba(255,74,0,.13);
+             box-shadow:0 0 0 0 rgba(198,90,74,0) }
+  50%      { background:rgba(255,74,0,.34);
+             box-shadow:0 0 0 3px rgba(255,74,0,.16) }
+}
+@media (prefers-reduced-motion: reduce){
+  .pf-flash{ animation:none; background:rgba(255,74,0,.30) }
+}
+
+/* a whole block, rather than a phrase — the term's own panel on a read */
+.pf-block{
+  border-left:4px solid var(--hot);
+  animation:pfedge 2.4s ease-in-out infinite;
+}
+@keyframes pfedge{
+  0%, 100% { border-left-color:#8a3200 }
+  50%      { border-left-color:#FF7A3D }
+}
+@media (prefers-reduced-motion: reduce){
+  .pf-block{ animation:none; border-left-color:var(--hot) }
+}
 </style>
 </head>
 <body>
@@ -275,6 +307,72 @@ footer{border-top:1px solid var(--line);padding:30px 0 50px;font-size:13.5px;col
   or sell any security. SEC EDGAR filer information — CIK 0001860507 · SEC File
   No. 150-11431 · LTID 71743954.</p>
 </div></footer>
+
+<script>
+(function () {
+  /* ⚠ IT FINDS THE TERM ITSELF, so no page has to change its markup.
+     Walks the text, wraps any mention of pre-funded warrants, and leaves
+     everything else exactly as it was. */
+  /* ⚠ FILINGS SPELL IT THREE WAYS: "pre-funded", "prefunded" and "pre funded".
+     A hyphen-only match misses the third, which appears often enough to matter. */
+  var TERM = /\b(pre[-\s]?funded\s+warrants?)\b/i;
+
+  /* ⚠ NEVER INSIDE THESE. Wrapping text inside a script, a style or an
+     input would break the page rather than decorate it. */
+  var LEAVE_ALONE = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, SELECT:1,
+                      OPTION:1, CODE:1, PRE:1, TITLE:1 };
+
+  function walk(node) {
+    if (!node) return;
+
+    if (node.nodeType === 3) {                       /* a run of text */
+      var t = node.nodeValue;
+      if (!TERM.test(t)) return;
+
+      var frag = document.createDocumentFragment();
+      var rest = t, m;
+      var re = new RegExp(TERM.source, "ig");
+      var last = 0;
+      while ((m = re.exec(t)) !== null) {
+        if (m.index > last)
+          frag.appendChild(document.createTextNode(t.slice(last, m.index)));
+        var span = document.createElement("span");
+        span.className = "pf-flash";
+        span.textContent = m[0];
+        frag.appendChild(span);
+        last = m.index + m[0].length;
+      }
+      if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+      return;
+    }
+
+    if (node.nodeType !== 1) return;
+    if (LEAVE_ALONE[node.tagName]) return;
+    if (node.classList && node.classList.contains("pf-flash")) return;
+
+    /* a term's own panel gets the edge instead of the words */
+    if (node.classList && node.classList.contains("term") &&
+        TERM.test(node.textContent || "")) {
+      node.classList.add("pf-block");
+    }
+
+    var kids = Array.prototype.slice.call(node.childNodes);
+    for (var i = 0; i < kids.length; i++) walk(kids[i]);
+  }
+
+  function run() { walk(document.body); }
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", run);
+  else run();
+
+  /* ⚠ IF THE PAGE LOADS ITS READ AFTER THE FACT, run it again. Cheap, and
+     it means a read fetched by JavaScript is marked the same as one that
+     came with the page. */
+  window.pfFlashAgain = run;
+})();
+</script>
 
 <script src="https://adhotbox.com/box.js" data-auto
   data-not=".doc, .terms, .nums, .listen, .disc, .buy"></script>

@@ -1,0 +1,126 @@
+<!-- ============================================================================
+     THE PRE-FUNDED FLASH · prefunded-flash-1b · 2026-09-11 23:40 ET
+
+     For 8k10q.com — sample.html, the read page, and anywhere else a term is
+     named. The wire's index already has this built in.
+
+     ⚠ THE TEXT IS NOT RED. It keeps whatever colour the other terms have.
+     The border and background pulse behind it. Colouring the words
+     differently would say "this one is bad", which is a judgement. The flash
+     says "look here", which is a direction — and a direction is what the
+     reader actually needs.
+
+     ⚠ ONLY PRE-FUNDED WARRANTS. It is the term a holder is least likely to
+     understand and the one that does the most work: stock already paid for,
+     sitting outside the ownership blocker until it is exercised. Flash a
+     second term and the first stops meaning anything.
+
+     ⚠ IT IS SLOW AND IT STOPS FOR ANYONE WHO ASKS. Two and a half seconds a
+     cycle — nowhere near the three-flashes-a-second range that can trigger a
+     seizure — and prefers-reduced-motion leaves it lit and still. The mark
+     still stands out; it simply does not move. This is not optional
+     politeness on a site read by people in their sixties and seventies.
+
+     HOW TO USE IT
+       1. paste the <style> into the page
+       2. paste the <script> before </body> — it finds them itself, so
+          nothing in the page's own markup has to change
+     ============================================================================ -->
+
+<style>
+/* ---------------- the pre-funded flash ---------------- */
+.pf-flash{
+  border-radius:3px;
+  padding:1px 5px;
+  margin:0 -2px;
+  animation:pfflash 2.4s ease-in-out infinite;
+}
+@keyframes pfflash{
+  0%, 100% { background:rgba(198,90,74,.10);
+             box-shadow:0 0 0 0 rgba(198,90,74,0) }
+  50%      { background:rgba(198,90,74,.30);
+             box-shadow:0 0 0 3px rgba(198,90,74,.14) }
+}
+@media (prefers-reduced-motion: reduce){
+  .pf-flash{ animation:none; background:rgba(198,90,74,.26) }
+}
+
+/* a whole block, rather than a phrase — the term's own panel on a read */
+.pf-block{
+  border-left:3px solid #c65a4a;
+  animation:pfedge 2.4s ease-in-out infinite;
+}
+@keyframes pfedge{
+  0%, 100% { border-left-color:#7a3a2e }
+  50%      { border-left-color:#e8705c }
+}
+@media (prefers-reduced-motion: reduce){
+  .pf-block{ animation:none; border-left-color:#c65a4a }
+}
+</style>
+
+<script>
+(function () {
+  /* ⚠ IT FINDS THE TERM ITSELF, so no page has to change its markup.
+     Walks the text, wraps any mention of pre-funded warrants, and leaves
+     everything else exactly as it was. */
+  /* ⚠ FILINGS SPELL IT THREE WAYS: "pre-funded", "prefunded" and "pre funded".
+     A hyphen-only match misses the third, which appears often enough to matter. */
+  var TERM = /\b(pre[-\s]?funded\s+warrants?)\b/i;
+
+  /* ⚠ NEVER INSIDE THESE. Wrapping text inside a script, a style or an
+     input would break the page rather than decorate it. */
+  var LEAVE_ALONE = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, SELECT:1,
+                      OPTION:1, CODE:1, PRE:1, TITLE:1 };
+
+  function walk(node) {
+    if (!node) return;
+
+    if (node.nodeType === 3) {                       /* a run of text */
+      var t = node.nodeValue;
+      if (!TERM.test(t)) return;
+
+      var frag = document.createDocumentFragment();
+      var rest = t, m;
+      var re = new RegExp(TERM.source, "ig");
+      var last = 0;
+      while ((m = re.exec(t)) !== null) {
+        if (m.index > last)
+          frag.appendChild(document.createTextNode(t.slice(last, m.index)));
+        var span = document.createElement("span");
+        span.className = "pf-flash";
+        span.textContent = m[0];
+        frag.appendChild(span);
+        last = m.index + m[0].length;
+      }
+      if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+      return;
+    }
+
+    if (node.nodeType !== 1) return;
+    if (LEAVE_ALONE[node.tagName]) return;
+    if (node.classList && node.classList.contains("pf-flash")) return;
+
+    /* a term's own panel gets the edge instead of the words */
+    if (node.classList && node.classList.contains("term") &&
+        TERM.test(node.textContent || "")) {
+      node.classList.add("pf-block");
+    }
+
+    var kids = Array.prototype.slice.call(node.childNodes);
+    for (var i = 0; i < kids.length; i++) walk(kids[i]);
+  }
+
+  function run() { walk(document.body); }
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", run);
+  else run();
+
+  /* ⚠ IF THE PAGE LOADS ITS READ AFTER THE FACT, run it again. Cheap, and
+     it means a read fetched by JavaScript is marked the same as one that
+     came with the page. */
+  window.pfFlashAgain = run;
+})();
+</script>
