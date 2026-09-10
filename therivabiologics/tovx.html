@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 01:20 ET · warrantwire tovx-report-1b — faces and firm marks
+<!-- BUILT 2026-09-11 05:00 ET · warrantwire tovx-report-1d — the box says what it is
      Lives at warrantwire.com/therivabiologics/tovx
 
      ⚠ THE ADDRESS FORMAT IS THE COMPANY NAME, THEN THE SYMBOL. His call,
@@ -66,8 +66,20 @@ h1{font:400 clamp(27px,4vw,40px)/1.1 Georgia,serif;margin:0 0 6px}
 /* the grade block, the loudest thing above the fold */
 .gradebox{text-align:center;min-width:190px;border:2px solid var(--line);
   border-radius:8px;padding:16px 20px}
-.gradebox .m{font-size:30px;line-height:1;display:block;margin-bottom:6px}
-.gradebox .g{font:700 clamp(20px,3vw,30px)/1.1 var(--mono);letter-spacing:.02em}
+/* ⚠ THE VERDICT READS FIRST AND THE MARK SITS WITH IT ON THE SAME LINE. On
+   the live page the mark floated alone above an invisible label and read as a
+   broken image. Words first, symbol second. */
+/* ⚠ THE BOX HAS TO SAY WHAT IT IS BEFORE IT SAYS WHAT IT SAYS. Somebody
+   arriving cold saw a red circle with a cross through it and no idea it was a
+   rating at all — it read as an error. The label goes first, then the words,
+   then the mark, then the letter. */
+.gradebox .lbl{font:600 10.5px var(--mono);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:9px}
+.gradebox .v{display:flex;align-items:center;justify-content:center;gap:9px;
+  font:700 clamp(17px,2.6vw,25px)/1.1 var(--sans);letter-spacing:.02em}
+.gradebox .m{font-size:26px;line-height:1;display:inline-flex}
+.gradebox .g{display:block;margin-top:8px;font:700 12.5px var(--mono);
+  letter-spacing:.14em;color:var(--ink3)}
 .gradebox .s{font-family:var(--mono);font-size:12.5px;color:var(--ink3);margin-top:6px}
 .gradebox .w{font-size:13px;color:var(--ink2);margin-top:9px;max-width:20ch;
   margin-left:auto;margin-right:auto;line-height:1.45}
@@ -165,8 +177,10 @@ footer em{color:var(--ink2)}
          than an average. Nobody is exposed to an average; a holder meets the
          one document that decides what happens to his shares. -->
     <div class="gradebox" id="gradebox">
-      <span class="m" id="gmark"></span>
-      <span class="g" id="ggrade">&mdash;</span>
+      <div class="lbl" id="glabel">Worst rating</div>
+      <div class="v"><span class="m" id="gmark"></span>
+        <span id="gverdict">&mdash;</span></div>
+      <span class="g" id="ggrade"></span>
       <div class="s" id="gscore"></div>
       <div class="w" id="gsays">Loading.</div>
     </div>
@@ -314,7 +328,10 @@ footer em{color:var(--ink2)}
     var h = "";
     (m.bands || []).forEach(function(b){
       h += '<div>' + (b.mark || "") + '<b style="color:' + esc(b.hex) + '">' +
-           esc(b.grade) + '</b><span>' + esc(b.says) + '</span></div>';
+           esc(b.verdict || b.grade) + '</b><span>' + esc(b.says) +
+           (b.verdict ? ' <span style="color:var(--ink3);font-family:var(--mono);' +
+             'font-size:12px">(' + esc(b.grade) + ')</span>' : '') +
+           '</span></div>';
     });
     box("key", h);
   }).catch(function(){ dead("key", "The scale"); });
@@ -327,8 +344,20 @@ footer em{color:var(--ink2)}
       var w = d.worst_document || {};
 
       document.getElementById("gmark").innerHTML = w.mark || "";
-      document.getElementById("ggrade").textContent = w.grade || "—";
-      document.getElementById("ggrade").style.color = w.hex || "";
+      /* ⚠ THE VERDICT IN WORDS, THEN THE LETTER UNDERNEATH. A mark alone tells
+         a reader something is wrong without telling him what. */
+      var vd = document.getElementById("gverdict");
+      vd.textContent = w.verdict || w.grade || "—";
+      vd.style.color = w.hex || "";
+      document.getElementById("ggrade").textContent =
+        w.grade ? ("GRADE " + w.grade) : "";
+      /* ⚠ THE LABEL SAYS WORST OF HOW MANY, COUNTED. "Worst rating" on its own
+         invites the question "of what?", and the answer is on the page
+         already. */
+      document.getElementById("glabel").textContent =
+        d.filings && d.filings.length
+          ? ("Worst rating of " + d.filings.length + " filings")
+          : "Worst rating";
       document.getElementById("gscore").textContent =
         (w.score != null ? w.score + " / 100" : "") +
         (w.form ? "  ·  " + w.form : "");
@@ -366,7 +395,10 @@ footer em{color:var(--ink2)}
       rows.forEach(function(x){
         h += '<tr><td class="f">' + esc(x.filed_on) + '</td>' +
              '<td class="f">' + esc(x.form) + '</td>' +
-             '<td class="g" style="color:' + esc(x.hex) + '">' + esc(x.grade) + '</td>' +
+             '<td class="g" style="color:' + esc(x.hex) + '">' + esc(x.grade) +
+               (x.verdict ? '<div style="font:400 11px var(--sans);color:var(--ink3);' +
+                 'letter-spacing:.04em;margin-top:2px">' + esc(x.verdict) + '</div>' : '') +
+             '</td>' +
              '<td class="n">' + esc(x.score) + '</td>' +
              '<td class="n">' + commas(x.words) + '</td>' +
              '<td class="f"><a href="' + esc(edgar(x.accession)) +
