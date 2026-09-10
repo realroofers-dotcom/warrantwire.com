@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire checkout-1e — the fields can be seen, and an error takes you to it
+<!-- BUILT 2026-09-11 · warrantwire checkout-1f — grey not black, and you can change your mind
      Lives at warrantwire.com/checkout.html
 
      ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
@@ -40,8 +40,13 @@
 <meta name="robots" content="noindex">
 <style>
 :root{
-  --paper:#14150f; --panel:#1c1e16; --line:#2e3125;
-  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  /* ⚠ NOT BLACK. A page about to take somebody's bank details was near-black
+     with near-black panels on it, which reads as cheap and makes a man
+     hesitate at exactly the wrong moment. The page is grey, the panel he is
+     reading sits lighter than the page, and the fields sit darker than the
+     panel — three levels, so the eye knows where it is. */
+  --paper:#1e211a; --panel:#2a2e24; --line:#464b3a;
+  --ink:#f0efe6; --ink2:#b9bcab; --ink3:#8b8f7c;
   --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -63,7 +68,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 
 /* what you are buying */
 .item{background:var(--panel);border:1px solid var(--line);border-radius:8px;
-  padding:20px 22px}
+  padding:20px 22px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
 .item h1{font:400 26px/1.2 Georgia,serif;margin:0}
 .item .ctx{font:600 12px var(--mono);letter-spacing:.1em;color:var(--warm);
   margin:8px 0 0;text-transform:uppercase}
@@ -77,9 +82,21 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 .line p{color:var(--ink2);margin:6px 0 0;font-size:14px}
 .line .right{text-align:right;white-space:nowrap}
 .line .p{font:700 17px var(--mono);color:var(--ink);display:block}
-.rm{margin-top:8px;background:none;border:0;color:var(--ink3);
-  font:400 12.5px var(--sans);cursor:pointer;padding:2px 0;text-decoration:underline}
-.rm:hover{color:var(--hot)}
+/* ⚠ REMOVE WAS A GREY UNDERLINE THAT LOOKED LIKE A FOOTNOTE. A man changing
+   his mind should not have to hunt for it. */
+.rm{margin-top:9px;background:transparent;border:1px solid var(--line);
+  color:var(--ink2);border-radius:5px;
+  font:600 12px var(--sans);cursor:pointer;padding:6px 11px}
+.rm:hover{border-color:var(--hot);color:var(--hot);background:rgba(198,90,74,.08)}
+
+/* ⚠ AND A WAY OUT OF THE WHOLE THING. Taking one line off at a time when he
+   has decided against all of it is a man being made to work for the privilege
+   of not buying. */
+.away{display:flex;justify-content:space-between;align-items:center;
+  gap:14px;flex-wrap:wrap;margin:14px 0 0}
+.clear{background:none;border:0;color:var(--ink3);cursor:pointer;
+  font:400 13px var(--sans);text-decoration:underline;padding:4px 0}
+.clear:hover{color:var(--hot)}
 .item .amt{font:700 34px/1 var(--mono);color:var(--ink);margin:16px 0 0;
   font-variant-numeric:tabular-nums}
 .item .amt small{display:block;font:400 12.5px var(--sans);color:var(--ink3);
@@ -95,17 +112,17 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 
    ⚠ ALL OF IT IS CSS ON THIS PAGE. Not a line of the plug is touched.
    ============================================================ */
-.achplug{--ach-line:#4a4f3c}
+.achplug{--ach-line:#565c47}
 .achplug input,
 .achplug select{
-  border:1.5px solid #4a4f3c !important;
-  background:#101109 !important;
+  border:1.5px solid #565c47 !important;
+  background:#171a12 !important;
   color:var(--ink) !important;
   border-radius:5px !important;
   padding:11px 12px !important;
   font-size:16px !important;   /* ⚠ 16px OR A PHONE ZOOMS IN ON FOCUS */
 }
-.achplug input::placeholder{color:#5f6552 !important}
+.achplug input::placeholder{color:#787f66 !important}
 .achplug input:focus,
 .achplug select:focus{
   border-color:var(--warm) !important;
@@ -316,17 +333,34 @@ if (!list.length) {
       'get what you bought as soon as you authorise it. ' +
       'By paying you agree to the <a href="/terms.html">terms</a>, which ' +
       'include a refund within fourteen days if you want one.</p>' +
-    '<p class="small"><a href="/prices.html">Add something else</a></p>';
+    '<div class="away">' +
+      '<a class="small" style="margin:0" href="/prices.html">Add something else</a>' +
+      '<button type="button" class="clear" id="clear">Empty the checkout</button>' +
+    '</div>';
 
   /* ⚠ REMOVING RELOADS THE PAGE. The plug has already drawn a box for the old
      total by then, and a box showing one number beside a list showing another
      is how somebody gets charged the wrong amount. */
   document.getElementById("out").addEventListener("click", function(e){
-    var b = e.target.closest && e.target.closest(".rm");
+    var t = e.target;
+
+    /* ⚠ EMPTYING IT ASKS FIRST. One stray click should not throw away a
+       hundred pounds of choices he spent ten minutes making. */
+    if (t.id === "clear") {
+      if (!confirm("Take everything off the checkout?")) return;
+      keep([]);
+      location.href = "/checkout.html";
+      return;
+    }
+
+    var b = t.closest && t.closest(".rm");
     if (!b) return;
     var l = held();
     l.splice(Number(b.getAttribute("data-i")), 1);
     keep(l);
+    /* ⚠ RELOADED, NOT REDRAWN. The plug has already built a box for the old
+       total, and a box charging one number beside a list showing another is
+       how a man is charged the wrong amount. */
     location.href = "/checkout.html";
   });
 
