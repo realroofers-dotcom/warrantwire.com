@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bg · bf + the year in two sizes, both with their caps stated -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bl · bh + every buy goes to the checkout, and Prices is in the nav -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -891,6 +891,11 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
        — because people type the name far more than the ticker. -->
   <a href="/therivabiologics/tovx" style="color:var(--cool)">See a sample &rarr;</a>
   <span style="color:var(--line2,#2e3125)">&nbsp;|&nbsp;</span>
+  <!-- ⚠ THE PRICE LIST IS ITS OWN PAGE AND ITS OWN LINK. The band further down
+       is the quick way to buy where you are standing; this is the whole list
+       for somebody who came to compare. -->
+  <a href="/prices.html" style="color:var(--cool)">Prices &rarr;</a>
+  <span style="color:var(--line2,#2e3125)">&nbsp;|&nbsp;</span>
   <!-- ⚠ HIS PLACEMENT, 10 Sep: beside the typical report, not buried in the nav.
        The three links now answer a stranger's three questions in order: what do
        the words mean, what do I get, and how big is this. -->
@@ -1195,8 +1200,16 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
     </div>
   </div>
 
-  <p class="pnote"><b>Pay from your bank and take 5% off.</b> Card or bank &mdash; bank
-  runs through our own ACHplug, with no processor in the middle.</p>
+  <!-- ⚠ TWO PER CENT, NOT FIVE. His correction, 11 Sep 2026 — and it was live
+       on three places on this site promising a discount he had not agreed to.
+       On a $480 year the difference between five and two is $14.40 a sale.
+
+       ⚠ AND IT SAYS MOST, NOT ALL. Most bank payments clear straight away.
+       Some do not, and a page that says "instant" is a page that gets an
+       angry email from the one buyer whose bank took three days. -->
+  <p class="pnote"><b>Pay from your bank and take 2% off.</b> Card or bank &mdash; bank
+  runs through our own ACHplug, with no processor in the middle. Most bank
+  payments clear straight away; a few take a day or two.</p>
   <p class="pnote">Alerts on the tickers you hold are free and always will be. Seeing
   the filing is what the money is for.</p>
   <p id="wbuymsg"></p>
@@ -1892,7 +1905,7 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
           +     '<a class="wbuy ghost" href="/readers.html?ticker=' + encodeURIComponent(T) + '">See who is reading</a>'
           +   '</div>'
           + '</div>'
-          + '<p class="ladnote">Pay from your bank and take <b>5% off</b> anything on '
+          + '<p class="ladnote">Pay from your bank and take <b>2% off</b> anything on '
           +   'this page.</p>'
 
           + (a.on_docket
@@ -1931,24 +1944,25 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
      named-human row: human_read fired with no reader attached would be a
      payment for "a read by somebody", which nobody could fulfil. Same shape as
      the accession, and it is ignored by every other SKU. */
+  /* ⚠ IT GOES TO THE CHECKOUT NOW, NOT STRAIGHT TO A CARD FORM. Before this a
+     buy button asked for an email in a browser prompt and threw the man at
+     Stripe — he never saw what he had picked, could not take it off again, and
+     could not choose to pay from his bank. Every site with more than one
+     product has a checkout, and this is how a button reaches it.
+
+     ⚠ THE CONTEXT TRAVELS WITH IT. A read is a read OF A FILING, so the ticker
+     and the accession go in the address and end up on the order. Without them
+     the journal has a row nobody can match to anything.
+
+     ⚠ AND NO EMAIL IS ASKED FOR HERE ANY MORE. The checkout takes it, once,
+     where a person expects to be asked — not in a browser prompt three clicks
+     earlier. */
   function wbuy(sku, ticker, accession, reader){
-    var email = prompt("Your email address — the receipt and your read go here.");
-    if (!email) return;
-    if (email.indexOf("@") < 1) { wmsg("That does not look like an email address.", true); return; }
-    wmsg("Opening checkout…");
     var t = ticker || (document.getElementById("q").value || "").trim().toUpperCase();
-    fetch(PAY + "/?buy=" + encodeURIComponent(sku)
-              + "&email=" + encodeURIComponent(email)
-              + "&on=wire"
-              + (t ? "&ticker=" + encodeURIComponent(t) : "")
-              + (accession ? "&ref=" + encodeURIComponent(accession) : "")
-              + (reader ? "&reader=" + encodeURIComponent(reader) : ""))
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d && d.ok && d.url) { location.href = d.url; }
-        else { wmsg((d && d.error) ? d.error : "Could not start the checkout.", true); }
-      })
-      .catch(function(){ wmsg("Could not reach the payment desk. Try again in a moment.", true); });
+    location.href = "/checkout.html?buy=" + encodeURIComponent(sku)
+      + (t ? "&ticker=" + encodeURIComponent(t) : "")
+      + (accession ? "&acc=" + encodeURIComponent(accession) : "")
+      + (reader ? "&reader=" + encodeURIComponent(reader) : "");
   }
   document.addEventListener("click", function(e){
     var b = e.target.closest ? e.target.closest("button.wbuy") : null;
