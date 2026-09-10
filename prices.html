@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 01:05 ET · warrantwire prices-1b · the whole board, every row buys
+<!-- BUILT 2026-09-10 01:05 ET · warrantwire prices-1e · every buy button fires a SKU the pay desk actually holds
      ⚠ THE BOARD IS EIGHT PRODUCTS AND THE INDEX CARRIED FIVE. Missing from the
      index band: the free search, the daily summary ($5 / $310), the five-year
      deep dive ($149, which was only ever a link on a filing row) and the reads
@@ -200,24 +200,54 @@ footer em{color:var(--dim)}
     <button class="wbuy" data-sku="deep_dive">Buy a deep read</button>
   </div>
 
+  <!-- ⚠ $1,800 AND k8_year. `read_year` is not a price at the pay desk and the
+       button would have failed at checkout. The page prints what the desk
+       charges — a page saying $1,200 against a card billed $1,800 is a
+       chargeback. The $1,200 Warrant Wire reads-year is a separate product and
+       needs adding to the pay worker before it can appear. -->
   <div class="row">
-    <div class="amt">$1,200<small>the year</small></div>
+    <div class="amt">$1,800<small>the year</small></div>
     <div>
       <h3>Reads, a year</h3>
-      <p>Any filing read, all year. Capped at twenty-five a month and three
-        hundred a year.</p>
-      <p class="even">Even at sixty reads.</p>
+      <p>Any filing read, all year, by 8K10Q. Capped at twenty-five a month and
+        three hundred a year.</p>
+      <p class="even">Even at ninety reads.</p>
     </div>
-    <button class="wbuy" data-sku="read_year">Take the year</button>
+    <button class="wbuy" data-sku="k8_year">Take the year</button>
   </div>
 
-  <h2>The named humans</h2>
-  <p class="note">A verified person reads the filing under his own name and puts
-    his name on what he says. Each one sets his own price — these are not our
-    prices and we do not set them.</p>
+  <h2>Get bids from a named human</h2>
+  <p class="note">Tell us which filing and the verified readers bid on it. You
+    see who they are and what each one asks, and you pick. Nobody sets their
+    price but themselves, and we do not set it for them.</p>
+
+  <!-- ⚠ BIDS, NOT A PRICE LIST. His call, 10 Sep. The figure beside a reader is
+       what he usually asks, not what he will charge for this one — a filing
+       that runs four hundred pages is not the same job as an 8-K, and a fixed
+       price either overcharges the small one or loses the big one.
+
+       ⚠ AND IT IS WHY A NEW READER HAS A REASON TO BE HERE BEFORE THERE IS
+       TRAFFIC. A price list is only worth joining once buyers arrive. A bid
+       request lands in front of everyone on the roster the day they sign up. -->
+  <div class="row" style="border-top:2px solid var(--line)">
+    <div class="amt" style="font-size:19px;line-height:1.3">You<br>choose</div>
+    <div>
+      <h3>Put a filing out for bids</h3>
+      <p>Name the company or paste the filing. Every verified reader sees it and
+        bids what they will read it for. No charge to ask, and no obligation to
+        take any of them.</p>
+      <p class="even">Bids come back by email. We are answering these by hand
+        while the roster is small.</p>
+    </div>
+    <a class="wbuy" id="bidbtn" href="#">Get bids</a>
+  </div>
+
+  <p class="note" style="margin-top:18px">Who is reading. Where a reader has set
+    a standing price you can buy it now; the rest bid on the filing in front of
+    them.</p>
 
   <!-- ⚠ THE ROSTER IS DATA, NOT MARKUP. It renders from READERS in the script
-       below, which is the ONE place a reader is added or a price changed. A
+       below, which is the ONE place a reader is added or a figure changed. A
        hardcoded row per person is a dead end the moment somebody registers,
        and this list is meant to grow. When the marketplace worker exists this
        array is replaced by a fetch and nothing else on the page changes. -->
@@ -226,9 +256,9 @@ footer em{color:var(--dim)}
   <div class="row">
     <div class="amt" style="font-size:19px;line-height:1.3">Read<br>for us</div>
     <div>
-      <h3>Sell your own reads here</h3>
-      <p>A professional or a holder who knows the subject can read filings under
-        his own name and set his own price, on this site and on 8K10Q. One
+      <h3>Bid on filings yourself</h3>
+      <p>A professional or a holder who knows the subject can bid on filings and
+        read them under his own name, on this site and on 8K10Q. One
         registration, one verification, both shopfronts.</p>
       <p class="even">Real names only, verified before anyone reads for money.</p>
     </div>
@@ -298,6 +328,7 @@ footer em{color:var(--dim)}
      record for that reader — it is what decides what they are charged. */
   var READERS = [
     { id:"mark-nejmeh", name:"Mark Nejmeh", price:"$200", per:"one filing",
+      fixed:true,
       what:"Founder of JobCreation.us. In the roofing trade since 1978, a degree " +
            "in finance and economics from Upsala College, and the author of the " +
            "Triggered Short research. Reads the filing himself and says what he " +
@@ -317,19 +348,53 @@ footer em{color:var(--dim)}
     var h = "";
     for (var i = 0; i < READERS.length; i++){
       var r = READERS[i];
+      /* ⚠ TWO KINDS OF ROW, AND THE DIFFERENCE IS WHETHER THE PRICE IS FIRM.
+         `fixed:true` means the reader has set a standing price and it can be
+         bought on the spot. Everyone else asks for a bid, because a filing
+         that runs four hundred pages is not the same job as an 8-K and a
+         standing figure would either overcharge the small one or lose the
+         big one. Mark is fixed; the roster is not. */
       h += '<div class="row">' +
              '<div class="amt">' + esc(r.price) +
-               '<small>' + esc(r.per) + '</small></div>' +
+               '<small>' + (r.fixed ? esc(r.per || "one filing") : "usually asks") +
+               '</small></div>' +
              '<div><h3>' + esc(r.name) + '</h3>' +
                '<p>' + esc(r.what) + '</p>' +
                (r.note ? '<p class="even">' + esc(r.note) + '</p>' : '') +
              '</div>' +
-             '<button class="wbuy" data-sku="human_read" data-reader="' +
-               esc(r.id) + '">Buy his read</button>' +
+             /* ⚠ NOBODY IS BUYABLE UNTIL THE DESK HOLDS A PRICE FOR THEM.
+                `human_read` is not a SKU, so even a reader with a standing
+                price asks by letter. A button that errors in front of a buyer
+                is worse than one that says the marketplace is not open. */
+             '<a class="wbuy ghost bidone" href="#" data-reader="' + esc(r.id) +
+               '" data-name="' + esc(r.name) + '">Ask ' + esc(first(r.name)) +
+               '</a>' +
            '</div>';
     }
     box.innerHTML = h;
   })();
+
+  function first(n){ return String(n || "").split(/[ ,]/)[0]; }
+
+  /* ⚠ THE REQUEST GOES BY EMAIL AND THAT IS DELIBERATE, NOT A PLACEHOLDER.
+     A stored bid request needs a table, a notification to every reader, their
+     bids collected, the buyer choosing and then paying — that is a build. A
+     button that looks like it does all of that and does not is worse than an
+     email that actually reaches him. The subject and body are filled in so the
+     reader knows which filing before he opens it. */
+  var BID_TO = "research@warrantwire.com";
+  function bidLink(readerName){
+    var who = readerName ? (" from " + readerName) : "";
+    var subject = "Bid request" + who;
+    var body = "Which company or filing:  \n\n" +
+               "Ticker (if you know it):  \n\n" +
+               "Accession number (if you have it):  \n\n" +
+               "Anything you want looked at in particular:  \n\n" +
+               "-- \nSent from warrantwire.com/prices.html";
+    return "mailto:" + BID_TO +
+           "?subject=" + encodeURIComponent(subject) +
+           "&body=" + encodeURIComponent(body);
+  }
 
   function esc(t){
     return String(t == null ? "" : t)
@@ -338,6 +403,12 @@ footer em{color:var(--dim)}
   }
 
   document.addEventListener("click", function(e){
+    var ask = e.target.closest ? e.target.closest("#bidbtn, .bidone") : null;
+    if (ask){
+      e.preventDefault();
+      location.href = bidLink(ask.getAttribute("data-name"));
+      return;
+    }
     var b = e.target.closest ? e.target.closest("button.wbuy") : null;
     if (!b) return;
     wbuy(b.getAttribute("data-sku"), b.getAttribute("data-t"),

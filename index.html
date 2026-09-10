@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bd · bc + the sample points at the full TOVX report -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-be · bd + every buy button now fires a SKU the pay desk actually holds -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -1089,25 +1089,39 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         </div>
       </div>
 
+      <!-- ⚠ $1,800 AND k8_year, NOT $1,200 AND read_year. `read_year` is not a
+           price at the pay desk and never was — the button would have failed
+           at checkout in front of a buyer. What the desk holds is `k8_year` at
+           $1,800, with a cap of twenty-five reads a month.
+
+           ⚠ THE PAGE PRINTS WHAT THE DESK CHARGES. A page saying $1,200 while
+           the card is billed $1,800 is a chargeback, and it is the one mistake
+           on this site that costs money rather than credibility. The $1,200
+           Warrant Wire reads-year he wants is a SEPARATE product and needs one
+           line adding to the pay worker before it can appear here. -->
       <div class="pbrow">
-        <b>$1,200<small>the year</small></b>
+        <b>$1,800<small>the year</small></b>
         <div>
           <h4>Reads, a year</h4>
-          <p>Any filing read, all year. Capped at twenty-five a month.</p>
-          <p class="pbeven">Even at sixty reads.</p>
-          <button class="wbuy" data-sku="read_year">Take the year</button>
+          <p>Any filing read, all year, by 8K10Q. Capped at twenty-five a month
+             and three hundred a year.</p>
+          <p class="pbeven">Even at ninety reads.</p>
+          <button class="wbuy" data-sku="k8_year">Take the year</button>
         </div>
       </div>
 
+      <!-- ⚠ NO BUY BUTTON HERE. `human_read` is not a price at the desk, and
+           the marketplace is not open. A row that looks buyable and errors
+           when pressed is worse than a row that says it is coming. -->
       <div class="pbrow">
-        <b>$200<small>one filing</small></b>
+        <b>Soon<small>they set the price</small></b>
         <div>
-          <h4>A named human &mdash; Mark Nejmeh</h4>
-          <p>Reads it himself and says what he makes of it, under his own name.
-             Other verified readers bid on the filing and set their own price.</p>
+          <h4>A named human</h4>
+          <p>A verified person reads the filing under his own name and puts his
+             name on what he says. Each one sets his own price.</p>
+          <p class="pbeven">Not open yet. The terms are settled and published.</p>
           <div class="pbbuy">
-            <button class="wbuy" data-sku="human_read" data-reader="mark-nejmeh">Buy his read</button>
-            <a class="wbuy ghost" href="/prices.html">Get bids</a>
+            <a class="wbuy ghost" href="/readers.html">See who is reading</a>
           </div>
         </div>
       </div>
