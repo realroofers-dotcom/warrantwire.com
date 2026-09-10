@@ -1,1 +1,521 @@
+<!-- BUILT 2026-09-11 01:20 ET · warrantwire tovx-report-1b — faces and firm marks
+     Lives at warrantwire.com/therivabiologics/tovx
 
+     ⚠ THE ADDRESS FORMAT IS THE COMPANY NAME, THEN THE SYMBOL. His call,
+     10 Sep 2026, and it is the right one for search: people type the company
+     name far more than the ticker, so the name carries the weight and the
+     symbol disambiguates. Every published company follows it —
+     /therivabiologics/tovx, /lexariabioscience/lexx.
+
+     On Cloudflare Pages that means a FOLDER per company:
+       therivabiologics/tovx.html  →  /therivabiologics/tovx
+
+     ⚠ NOTHING ON THIS PAGE IS TYPED IN. Grade, people, filings, going concern
+     and what shareholders have lost are all fetched live from the workers that
+     compute them. A report with numbers typed into it is a report that goes
+     stale and then gets quoted.
+
+     ⚠ THE PEOPLE COME FIRST, AFTER THE GRADE. His instruction: a company is
+     the people who run it and the firms they hire. Filings are what those
+     people did.
+
+     ⚠ AND HIS POSITION IS ON THE PAGE, beside the numbers, not in a footer. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Theriva Biologics (TOVX) — the full report | Warrant Wire</title>
+<meta name="description" content="Theriva Biologics, TOVX. Every filing graded against the SEC's own plain English rule, the people who signed them, and what shareholders have lost.">
+<link rel="canonical" href="https://warrantwire.com/therivabiologics/tovx">
+<style>
+:root{
+  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
+  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:16px/1.65 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
+a{color:var(--cool)}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 20px 70px}
+
+header.mast{display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.mark{font:700 22px/1 var(--sans);letter-spacing:.02em;color:var(--ink);text-decoration:none}
+.mark b{color:var(--hot)}
+.back{font-size:13.5px;color:var(--ink3);text-decoration:none}
+.back:hover{color:var(--ink)}
+.kicker{font:600 11.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--warm);margin:30px 0 10px}
+
+/* ── the company, with the grade beside it ── */
+.top{display:grid;grid-template-columns:auto 1fr auto;gap:26px;align-items:center;
+  border-bottom:1px solid var(--line);padding-bottom:26px}
+@media(max-width:760px){.top{grid-template-columns:1fr;gap:18px}}
+.logo{width:96px;height:96px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;display:none;align-items:center;justify-content:center;padding:10px}
+.logo.on{display:flex}
+.logo img{max-width:100%;max-height:100%;display:block}
+h1{font:400 clamp(27px,4vw,40px)/1.1 Georgia,serif;margin:0 0 6px}
+.tick{font:700 13.5px var(--mono);letter-spacing:.06em;color:var(--warm)}
+.bits{color:var(--ink3);font-size:13.5px;margin:8px 0 0}
+
+/* the grade block, the loudest thing above the fold */
+.gradebox{text-align:center;min-width:190px;border:2px solid var(--line);
+  border-radius:8px;padding:16px 20px}
+.gradebox .m{font-size:30px;line-height:1;display:block;margin-bottom:6px}
+.gradebox .g{font:700 clamp(20px,3vw,30px)/1.1 var(--mono);letter-spacing:.02em}
+.gradebox .s{font-family:var(--mono);font-size:12.5px;color:var(--ink3);margin-top:6px}
+.gradebox .w{font-size:13px;color:var(--ink2);margin-top:9px;max-width:20ch;
+  margin-left:auto;margin-right:auto;line-height:1.45}
+
+.strip{background:var(--panel);border-left:3px solid var(--warm);padding:15px 19px;
+  margin:22px 0;color:var(--ink2);font-size:14.5px;max-width:78ch}
+.strip b{color:var(--ink);font-weight:400}
+.strip.hot{border-left-color:var(--hot)}
+
+h2{font:400 23px/1.25 Georgia,serif;margin:44px 0 4px}
+.note{color:var(--ink3);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+
+/* ── the people ── */
+.folk{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:0 24px}
+.folk .p{padding:12px 0;border-bottom:1px solid var(--line2)}
+/* ⚠ THE FACE SITS BESIDE THE NAME, NOT ABOVE IT. A grid of portraits reads
+   as a staff page; a face beside a name reads as a record of who did what,
+   which is what this is. And the row holds its shape whether or not there is
+   a picture, so a page half-populated does not look broken. */
+.folk .p{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start}
+.folk .face{width:52px;height:52px;border-radius:50%;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center}
+.folk .face img{width:100%;height:100%;object-fit:cover;display:none}
+.folk .face img.on{display:block}
+.folk .face .ini{font:600 15px var(--sans);color:var(--ink3);letter-spacing:.04em}
+.folk .nm{font-size:16px}
+.folk .ti{color:var(--warm);font:600 12.5px var(--sans);margin-top:2px}
+.folk .mt{color:var(--ink3);font:400 12px var(--mono);margin-top:4px}
+.folk .stale{color:var(--hot);font-size:12px;margin-top:4px}
+/* the firm mark, in the table beside the name */
+.fmark{width:26px;height:26px;object-fit:contain;background:#fff;border-radius:3px;
+  padding:2px;vertical-align:middle;margin-right:9px;display:none}
+.fmark.on{display:inline-block}
+.fname{display:inline-flex;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:baseline}
+th{color:var(--ink3);font:400 12.5px var(--sans);white-space:nowrap}
+td.n{text-align:right;font-family:var(--mono);font-size:13.5px}
+td.g{white-space:nowrap;font:700 12.5px var(--mono);letter-spacing:.03em}
+td.f{font-family:var(--mono);font-size:13px;color:var(--ink2);white-space:nowrap}
+tbody tr:hover{background:#1a1c14}
+.tally{display:flex;gap:0 18px;flex-wrap:wrap;margin:0 0 14px;font-family:var(--mono);font-size:13px}
+
+.key{display:grid;grid-template-columns:repeat(auto-fit,minmax(276px,1fr));gap:0 24px;
+  border-top:1px solid var(--line);margin-top:8px}
+.key div{display:flex;gap:9px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line2)}
+.key b{font:700 12.5px var(--mono);min-width:100px}
+.key span{color:var(--ink2);font-size:14px}
+
+.mine{background:var(--panel);border:1px solid var(--hot);border-radius:6px;
+  padding:17px 20px;margin:30px 0;max-width:78ch}
+.mine b{display:block;color:var(--hot);font:600 12.5px var(--sans);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+.mine p{margin:0 0 8px;color:var(--ink2);font-size:14.5px}
+.mine p:last-child{margin-bottom:0}
+
+.btn{display:inline-block;text-decoration:none;background:transparent;
+  border:1.5px solid var(--hot);color:var(--hot);border-radius:5px;
+  padding:11px 17px;font:600 14.5px var(--sans);margin:4px 8px 4px 0}
+.btn:hover{background:var(--hot);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--ink2)}
+.btn.ghost:hover{border-color:var(--ink2);color:var(--ink)}
+
+footer{margin-top:54px;border-top:1px solid var(--line);padding-top:16px;
+  color:var(--ink3);font-size:13px}
+footer em{color:var(--ink2)}
+.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 14px}
+.footnav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0}
+.quiet{color:var(--ink3);padding:12px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <a class="mark" href="/">WARRANT<b>WIRE</b></a>
+    <a class="back" href="/">Back to the wire</a>
+  </header>
+
+  <div class="kicker">A sample of the full report</div>
+
+  <div class="top">
+    <div class="logo" id="logobox"><img id="logo" alt=""></div>
+    <div>
+      <h1>Theriva Biologics</h1>
+      <div class="tick">TOVX &middot; CIK 894158</div>
+      <p class="bits" id="bits">Every filing this company made that we hold,
+        graded against <a href="https://www.ecfr.gov/current/title-17/chapter-II/part-230/section-230.421"
+        target="_blank" rel="noopener">17 CFR 230.421</a> &mdash; the SEC's own
+        plain English rule.</p>
+    </div>
+    <!-- ⚠ THE GRADE IS THE FIRST THING, and it is the WORST document rather
+         than an average. Nobody is exposed to an average; a holder meets the
+         one document that decides what happens to his shares. -->
+    <div class="gradebox" id="gradebox">
+      <span class="m" id="gmark"></span>
+      <span class="g" id="ggrade">&mdash;</span>
+      <div class="s" id="gscore"></div>
+      <div class="w" id="gsays">Loading.</div>
+    </div>
+  </div>
+
+  <div class="strip hot" id="caution" style="display:none"></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       THE PEOPLE FIRST. His instruction: a company is the people
+       who run it and the firms they hire. Filings are what those
+       people did.
+       ══════════════════════════════════════════════════════════ -->
+  <h2>Who is involved</h2>
+  <p class="note">Officers and directors are taken from Form 4 &mdash; the name
+    and the title the company itself tagged in its own insider filings.</p>
+  <div id="people"><div class="quiet">Loading&hellip;</div></div>
+
+  <h2>The firms</h2>
+  <p class="note" id="firmsnote">Counsel, placement agents and buyers recorded
+    from reading the filings.</p>
+  <div id="firms"><div class="quiet">Loading&hellip;</div></div>
+
+  <h2>What they filed</h2>
+  <p class="note">Newest first. Every accession links to the original document
+    on EDGAR &mdash; free, and always will be.</p>
+  <div class="tally" id="tally"></div>
+  <div id="table"><div class="quiet">Loading&hellip;</div></div>
+
+  <h2>What the grades mean</h2>
+  <div class="key" id="key"><div class="quiet">Loading the scale&hellip;</div></div>
+
+  <h2>Going concern, and what shareholders have lost</h2>
+  <div id="concern"><div class="quiet">Loading&hellip;</div></div>
+
+  <div class="mine">
+    <b>Who wrote this and what he owns</b>
+    <p>Mark Nejmeh, founder of JobCreation.us, publishes the Triggered Short
+      research and built this measurement. <b>He holds shares in Theriva
+      Biologics (TOVX)</b> and has done since before this page existed.</p>
+    <p>That is why this company is the sample: it is the one whose filings he
+      has read every one of. It is also why the method is published rather than
+      described &mdash; so that nothing here rests on trusting him.</p>
+    <p>Filer information and contact details are on
+      <a href="/about.html">who runs the wire</a>. Any response from anyone
+      named on this page will be published in full and unedited.</p>
+  </div>
+
+  <div class="strip">
+    <b>What none of this means.</b> A grade measures how a document is written.
+    It is not a finding that any rule was broken &mdash; that is the
+    Commission's to decide and nobody else's. Being named on this page is not
+    an allegation of anything. Nothing here is a view on this company, its
+    business or its share price, and nothing here is a recommendation to buy or
+    sell anything.
+  </div>
+
+  <h2>This is what a report looks like</h2>
+  <p class="note">This one is free because it is the sample. A report on a
+    company you name is not.</p>
+  <p>
+    <a class="btn" href="/">Search your own company</a>
+    <a class="btn ghost" href="https://8k10q.com">Have a filing read &mdash; $20</a>
+    <a class="btn ghost" href="/prices.html">What it costs</a>
+  </p>
+
+  <footer>
+    <div class="footnav">
+      <a href="/">The wire</a>
+      <a href="/grades.html">Company grades</a>
+      <a href="/counter.html">The screw</a>
+      <a href="/readers.html">Become a reader</a>
+      <a href="/prices.html">What it costs</a>
+      <a href="https://8k10q.com">Read a filing</a>
+      <a href="/about.html">Who runs the wire</a>
+    </div>
+    <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
+    Every figure is computed from documents filed with the SEC and recomputed
+    each time this page is opened. <span id="asof"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var GRADE   = "https://grade.realroofers.workers.dev";
+  var PEOPLE  = "https://people.realroofers.workers.dev";
+  var CONCERN = "https://concern.realroofers.workers.dev";
+  var TICKER  = "TOVX";
+  var CIK     = "894158";
+
+  function esc(t){
+    return String(t == null ? "" : t)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+  function commas(n){
+    n = Math.round(Number(n)||0);
+    var s = String(Math.abs(n)), out = "", c = 0;
+    for (var i = s.length-1; i >= 0; i--){
+      out = s[i] + out; if (++c % 3 === 0 && i > 0) out = "," + out;
+    }
+    return (n < 0 ? "-" : "") + out;
+  }
+  function money(n){
+    if (n === null || n === undefined || !isFinite(Number(n))) return null;
+    var v = Math.abs(Number(n));
+    return "$" + (v >= 1e9 ? (v/1e9).toFixed(1) + " billion"
+                : v >= 1e6 ? (v/1e6).toFixed(1) + " million"
+                : commas(v));
+  }
+  /* ⚠ EVERY CLAIM ONE CLICK FROM THE DOCUMENT IT CAME FROM. That is the
+     standard the whole site runs on and it costs one line. */
+  function edgar(acc){
+    return "https://www.sec.gov/Archives/edgar/data/" + CIK + "/" +
+           String(acc).replace(/-/g,"") + "/";
+  }
+  function box(id, html){ document.getElementById(id).innerHTML = html; }
+  /* ⚠ THE SAME SLUG THE LOGO STORE USES. Two different slug rules is how a
+     mark that was uploaded never appears on the page that wants it. */
+  function slug(n){
+    return String(n || "").toLowerCase().replace(/[^a-z0-9]+/g,"-")
+      .replace(/^-|-$/g,"").slice(0,60);
+  }
+  function initials(n){
+    var w = String(n || "").trim().split(/\s+/).filter(Boolean);
+    if (!w.length) return "?";
+    if (w.length === 1) return w[0].slice(0,2).toUpperCase();
+    return (w[0][0] + w[w.length-1][0]).toUpperCase();
+  }
+  function dead(id, what){
+    box(id, '<div class="quiet">' + what + ' is not answering. Nothing on this ' +
+            'page is stored here, so there is nothing to show when a ' +
+            'measurement is unavailable.</div>');
+  }
+
+  /* ── the logo, hidden until one exists ── */
+  (function(){
+    var img = document.getElementById("logo"), b = document.getElementById("logobox");
+    img.onload = function(){ b.classList.add("on"); };
+    img.src = GRADE + "/?logo=company:" + String(CIK).padStart(10,"0");
+    img.alt = "Theriva Biologics";
+  })();
+
+  /* ── the scale ── */
+  fetch(GRADE + "/?method=1").then(function(r){ return r.json(); }).then(function(m){
+    var h = "";
+    (m.bands || []).forEach(function(b){
+      h += '<div>' + (b.mark || "") + '<b style="color:' + esc(b.hex) + '">' +
+           esc(b.grade) + '</b><span>' + esc(b.says) + '</span></div>';
+    });
+    box("key", h);
+  }).catch(function(){ dead("key", "The scale"); });
+
+  /* ── the grade and the filings ── */
+  fetch(GRADE + "/?ticker=" + encodeURIComponent(TICKER))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok || !d.filings || !d.filings.length) throw new Error("none");
+      var w = d.worst_document || {};
+
+      document.getElementById("gmark").innerHTML = w.mark || "";
+      document.getElementById("ggrade").textContent = w.grade || "—";
+      document.getElementById("ggrade").style.color = w.hex || "";
+      document.getElementById("gscore").textContent =
+        (w.score != null ? w.score + " / 100" : "") +
+        (w.form ? "  ·  " + w.form : "");
+      document.getElementById("gsays").textContent = w.says || "";
+      document.getElementById("gradebox").style.borderColor = w.hex || "";
+
+      if (d.caution){
+        var c = document.getElementById("caution");
+        c.innerHTML = '<b>' + esc(d.caution.level) + '</b> ' + esc(d.caution.says);
+        c.style.display = "";
+      }
+
+      var rows = d.filings;
+      var best = rows.slice().sort(function(a,b){ return b.score - a.score; })[0];
+      document.getElementById("bits").innerHTML =
+        esc(rows.length) + ' filings graded against ' +
+        '<a href="https://www.ecfr.gov/current/title-17/chapter-II/part-230/section-230.421" ' +
+        'target="_blank" rel="noopener">17 CFR 230.421</a>, the SEC\'s own plain ' +
+        'English rule. The best of them scored ' + esc(best.score) + '.';
+
+      var tally = {}, hexOf = {};
+      rows.forEach(function(x){ tally[x.grade] = (tally[x.grade]||0)+1; hexOf[x.grade] = x.hex; });
+      var th = "";
+      ["A","B","C","D","F","WORD SALAD"].forEach(function(g){
+        if (!tally[g]) return;
+        th += '<span style="color:' + esc(hexOf[g]||"#a8aa9a") + '"><b>' + esc(g) +
+              '</b> ' + tally[g] + '</span>';
+      });
+      box("tally", th);
+
+      var h = '<table><thead><tr><th>Filed</th><th>Form</th><th>Grade</th>' +
+              '<th style="text-align:right">Score</th>' +
+              '<th style="text-align:right">Words</th><th>The document</th>' +
+              '</tr></thead><tbody>';
+      rows.forEach(function(x){
+        h += '<tr><td class="f">' + esc(x.filed_on) + '</td>' +
+             '<td class="f">' + esc(x.form) + '</td>' +
+             '<td class="g" style="color:' + esc(x.hex) + '">' + esc(x.grade) + '</td>' +
+             '<td class="n">' + esc(x.score) + '</td>' +
+             '<td class="n">' + commas(x.words) + '</td>' +
+             '<td class="f"><a href="' + esc(edgar(x.accession)) +
+               '" target="_blank" rel="noopener">' + esc(x.accession) + '</a></td></tr>';
+      });
+      box("table", h + '</tbody></table>');
+      document.getElementById("asof").textContent =
+        "Read " + new Date().toLocaleString() + ".";
+    })
+    .catch(function(){
+      dead("table", "The grades");
+      document.getElementById("gsays").textContent = "The grades are not answering.";
+    });
+
+  /* ── the people ── */
+  fetch(PEOPLE + "/?people=1&ticker=" + encodeURIComponent(TICKER))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error("none");
+
+      function group(title, list){
+        if (!list || !list.length) return "";
+        var h = '<div class="kicker" style="margin:18px 0 4px">' + esc(title) + '</div>' +
+                '<div class="folk">';
+        list.forEach(function(p, i){
+          /* ⚠ INITIALS WHERE THERE IS NO PICTURE. A missing face leaves a
+             circle with the person's initials in it rather than a hole, so a
+             half-gathered set still reads as a finished page. */
+          var id = "face-" + esc(title).replace(/\W/g,"") + "-" + i;
+          h += '<div class="p">' +
+                 '<div class="face">' +
+                   (p.photo
+                     ? '<img id="' + id + '" alt="" src="' + esc(p.photo) + '">'
+                     : '') +
+                   '<span class="ini">' + esc(initials(p.name)) + '</span>' +
+                 '</div>' +
+                 '<div><div class="nm">' + esc(p.name) + '</div>' +
+                 (p.title ? '<div class="ti">' + esc(p.title) + '</div>' : '') +
+                 '<div class="mt">' + esc(p.filings) + ' insider filings &middot; last ' +
+                 esc(p.last_filed) + '</div>' +
+                 /* ⚠ STALE IS SHOWN, NOT HIDDEN. Presenting someone who left as
+                    current is the first thing a company writes to you about. */
+                 (p.note ? '<div class="stale">' + esc(p.note) + '</div>' : '') +
+                 '</div></div>';
+        });
+        return h + '</div>';
+      }
+
+      var h = group("Officers", d.officers) +
+              group("Directors", d.directors) +
+              group("Ten per cent holders", d.ten_percent_holders);
+      box("people", h || '<div class="quiet">No insider filings held for this ' +
+        'company yet.</div>');
+
+      /* ⚠ A PICTURE APPEARS ONLY WHEN IT HAS ACTUALLY LOADED. Drawing the img
+         and hoping is how a page ends up with broken-image icons beside real
+         people's names. Until it loads the initials stand in; if it never
+         loads they simply stay. */
+      var imgs = document.querySelectorAll("#people .face img");
+      for (var i = 0; i < imgs.length; i++){
+        (function(el){
+          if (el.complete && el.naturalWidth) { show(el); return; }
+          el.onload = function(){ show(el); };
+        })(imgs[i]);
+      }
+      function show(el){
+        el.classList.add("on");
+        var ini = el.parentNode.querySelector(".ini");
+        if (ini) ini.style.display = "none";
+      }
+
+      var f = d.firms || [];
+      if (f.length){
+        var fh = '<table><thead><tr><th>Firm</th><th>Role</th>' +
+                 '<th style="text-align:right">Appearances</th></tr></thead><tbody>';
+        f.forEach(function(x, i){
+          /* ⚠ THE MARK COMES FROM THE SAME PLACE THE COMPANY LOGO DOES, keyed
+             on the role and a slug of the firm's name, and it stays hidden
+             unless one has actually been uploaded. A firm with no mark shows
+             its name, which identifies it completely. */
+          var kind = /counsel|attorney|law/i.test(x.role) ? "counsel"
+                   : /audit|account/i.test(x.role)        ? "auditor"
+                   : "agent";
+          var src = GRADE + "/?logo=" + kind + ":" + slug(x.name);
+          fh += '<tr><td><span class="fname">' +
+                  '<img class="fmark" id="fm-' + i + '" alt="" src="' + esc(src) + '">' +
+                  esc(x.name) + '</span></td>' +
+                '<td class="f">' + esc(x.role) + '</td>' +
+                '<td class="n">' + esc(x.appearances) + '</td></tr>';
+        });
+        box("firms", fh + '</tbody></table>');
+        var fms = document.querySelectorAll("#firms .fmark");
+        for (var k = 0; k < fms.length; k++){
+          (function(el){
+            if (el.complete && el.naturalWidth) { el.classList.add("on"); return; }
+            el.onload = function(){ el.classList.add("on"); };
+          })(fms[k]);
+        }
+      } else {
+        box("firms", '<div class="quiet">No firms recorded for this company yet.</div>');
+      }
+      /* the partial-coverage warning travels with the firms, always */
+      document.getElementById("firmsnote").textContent = d.firms_warning ||
+        "Recorded by hand from reading the filings.";
+    })
+    .catch(function(){ dead("people", "The people"); dead("firms", "The firms"); });
+
+  /* ── going concern and the money ── */
+  fetch(CONCERN + "/?company=" + encodeURIComponent(TICKER))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error("none");
+      var s = d.shareholders || {};
+      var h = "";
+
+      if (d.times) {
+        h += '<p>Going concern language appears in <b>' + esc(d.times) +
+             '</b> filings we hold, from ' + esc(d.first) + ' to ' + esc(d.latest) + '.' +
+             (d.auditor ? ' The auditor of record is ' + esc(d.auditor) + '.' : '') +
+             '</p>';
+      } else {
+        h += '<p class="quiet">No going concern language recorded for this ' +
+             'company yet.</p>';
+      }
+
+      if (s.held && s.worth_then != null){
+        h += '<table><tbody>' +
+             (s.money_in != null ? '<tr><td>Put in by investors and lenders</td>' +
+               '<td class="n">' + esc(money(s.money_in)) + '</td></tr>' : '') +
+             (s.money_out != null ? '<tr><td>Paid back out</td><td class="n">' +
+               esc(money(s.money_out)) + '</td></tr>' : '') +
+             '<tr><td>What the stock was worth in ' + esc(s.worth_then_year) + '</td>' +
+               '<td class="n">' + esc(money(s.worth_then)) + '</td></tr>' +
+             '<tr><td>What it was worth in ' + esc(s.worth_now_year) + '</td>' +
+               '<td class="n">' + esc(money(s.worth_now)) + '</td></tr>' +
+             '<tr><td><b>The difference</b></td><td class="n" style="color:var(--hot)">' +
+               esc(s.per_cent) + '%</td></tr>' +
+             '</tbody></table>' +
+             '<p class="note" style="margin-top:12px">Public float, out of the ' +
+             'company\'s own annual reports, same company at both ends.</p>';
+      } else if (s.held === false){
+        /* ⚠ NOT HELD IS A FACT ABOUT US, NOT A ZERO ABOUT THEM. */
+        h += '<p class="quiet">We do not hold the market value figures for this ' +
+             'company yet.</p>';
+      }
+      box("concern", h);
+    })
+    .catch(function(){ dead("concern", "The going concern watch"); });
+})();
+</script>
+</body>
+</html>
