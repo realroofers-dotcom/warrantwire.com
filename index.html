@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bl · bh + every buy goes to the checkout, and Prices is in the nav -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bn · bm + the checkout button comes from the cart worker -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -2202,5 +2202,13 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
   setInterval(look, 90000);      /* a minute and a half — news, not a ticker */
 })();
 </script>
+<!-- ⚠ THE CHECKOUT BUTTON, ON EVERY PAGE. One line. It draws itself only when
+     something has been picked, and it is what gets a man back to what he chose
+     after he wandered off to read a filing. -->
+<!-- ⚠ FROM THE CART WORKER, NOT A FILE IN THIS REPO. One copy serves
+     warrantwire, 8k10q and triggeredshort — three copies would be two of them
+     going stale. It fetches the prices from whichever site it is loaded on, so
+     each one shows its own. -->
+<script src="https://cart.realroofers.workers.dev/" defer></script>
 </body>
 </html>
