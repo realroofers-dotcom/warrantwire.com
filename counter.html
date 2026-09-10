@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-09 23:10 ET · warrantwire counter-wire-1b · reads the `counter` worker
+<!-- BUILT 2026-09-11 05:30 ET · warrantwire counter-wire-1c — the empty state · reads the `counter` worker
      ⚠ HIS FRAMING, 9 Sep 2026, and it is the page: "Wealth lost by retail
      investors. Wealth gained by ?" The question mark is the whole hook — the
      page names what was lost, then refuses to name who gained, because that is
@@ -45,6 +45,12 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 .stage{padding:44px 0 26px}
 .lostlabel{font:400 clamp(18px,2.6vw,26px)/1.3 Georgia,serif;color:var(--dim);
   margin:0 0 16px}
+/* ⚠ AN EMPTY COUNTER IS HIDDEN, NOT SHOWN AS A DASH. An em dash set at a
+   hundred and sixty pixels reads as a redaction bar, and the ticker beneath
+   it sat at $0 with no rate to run at — so a page that was correctly showing
+   nothing looked like a page that was broken. Nothing is drawn until there is
+   something to draw. */
+.odo.empty, .since.empty{display:none}
 .odo{display:flex;align-items:baseline;gap:.04em;
   font:700 clamp(38px,12.5vw,168px)/.92 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
   font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--hot);
@@ -252,7 +258,9 @@ var reduced = window.matchMedia &&
    those are different frames covering different sets of companies, and the
    difference between them would be a number that looks right and is not. */
 fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(d){
-  if (!d || !d.ok || !d.lost) throw new Error("not ready");
+  /* ⚠ ok:true WITH NO FIGURE IS THE NORMAL CASE WHILE THE FRAMES ARE STILL
+     BEING PULLED, and it must land in the same empty state as a failure. */
+  if (!d || !d.ok || !d.lost || !d.lost.total) { nothingYet(); return; }
   var lost = Number(d.lost.total);
   var span = (Number(d.lost.to_year) - Number(d.lost.from_year)) || 0;
   var perSec = (span > 0 && lost > 0) ? (lost / (span * 31557600)) : 0;
@@ -277,11 +285,24 @@ fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(
     "of those years; it is a rate, not a live measurement.";
   document.getElementById("since-l").textContent =
     perSec ? "since you opened this page, at that same average rate" : "";
-}).catch(function(){
-  document.getElementById("sourced").textContent =
-    "The counter has not finished building this figure yet. Nothing on this " +
-    "page is estimated, so it shows nothing rather than a guess.";
-});
+}).catch(function(){ nothingYet(); });
+
+/* ⚠ ONE PLACE THAT PUTS THE PAGE INTO ITS EMPTY STATE, used whether the
+   endpoint is missing, the answer is empty, or the worker is down. Three
+   different ways of showing nothing is how one of them ends up ugly. */
+function nothingYet(){
+  var o = document.querySelector(".odo");
+  var s = document.querySelector(".since");
+  if (o) o.className += " empty";
+  if (s) s.className += " empty";
+  document.getElementById("scale").textContent = "";
+  document.getElementById("sourced").innerHTML =
+    "<b style='color:var(--ink)'>This figure is still being built.</b> " +
+    "It is assembled from the public float every company files on its own " +
+    "annual report cover, one year at a time, and it is not finished. " +
+    "Nothing on this page is estimated, so it shows nothing rather than a " +
+    "guess.";
+}
 
 /* ── the three supporting figures ── */
 fetch(COUNTER + "/?totals=1").then(function(r){ return r.json(); }).then(function(d){
