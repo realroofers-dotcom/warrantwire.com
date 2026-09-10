@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 05:30 ET · warrantwire counter-wire-1c — the empty state · reads the `counter` worker
+<!-- BUILT 2026-09-11 06:20 ET · warrantwire counter-wire-1d — the number fits, on any screen · reads the `counter` worker
      ⚠ HIS FRAMING, 9 Sep 2026, and it is the page: "Wealth lost by retail
      investors. Wealth gained by ?" The question mark is the whole hook — the
      page names what was lost, then refuses to name who gained, because that is
@@ -51,10 +51,15 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
    nothing looked like a page that was broken. Nothing is drawn until there is
    something to draw. */
 .odo.empty, .since.empty{display:none}
+/* ⚠ THE SIZE IS SET IN JAVASCRIPT, NOT BY clamp(). A viewport-width rule
+   cannot know how many digits the number has — the same 12.5vw that fits
+   $8.4 billion runs a fourteen-digit figure off the right-hand edge, which is
+   what happened on a desktop, never mind a phone. So it is fitted to the
+   actual string after it is written, and refitted as it ticks. */
 .odo{display:flex;align-items:baseline;gap:.04em;
-  font:700 clamp(38px,12.5vw,168px)/.92 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  font:700 96px/.92 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
   font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--hot);
-  white-space:nowrap;overflow:hidden}
+  white-space:nowrap;max-width:100%}
 .odo .cur{font-size:.42em;font-weight:400;opacity:.75}
 .scale{margin:14px 0 0;font:400 clamp(16px,2.4vw,25px)/1.3 Georgia,serif}
 .sourced{margin:12px 0 0;color:var(--faint);font-size:14px;max-width:64ch}
@@ -68,8 +73,9 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 
 /* the clock that runs while you read */
 .since{margin-top:30px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.since .n{font:700 clamp(20px,4vw,40px)/1 "SF Mono",ui-monospace,Menlo,monospace;
-  font-variant-numeric:tabular-nums;color:var(--hot)}
+.since{max-width:100%}
+.since .n{font:700 clamp(17px,3.4vw,34px)/1 "SF Mono",ui-monospace,Menlo,monospace;
+  font-variant-numeric:tabular-nums;color:var(--hot);white-space:nowrap}
 .since .l{color:var(--dim);font-size:15px}
 
 /* ── the sell. Not a banner — the next thing to do, in order. ── */
@@ -249,6 +255,24 @@ function figure(id, v){
   e.textContent = commas(v);
   return true;
 }
+/* ⚠ SHRINK UNTIL IT FITS, THEN STOP. Measured against the element's own
+   parent rather than the viewport, so it is right inside any column, and
+   re-run on resize because a phone changes width when it is turned. */
+function fit(el, max, min){
+  if (!el || !el.parentNode) return;
+  var size = max;
+  el.style.fontSize = size + "px";
+  var room = el.parentNode.clientWidth || el.clientWidth;
+  for (var i = 0; i < 40 && size > min; i++){
+    if (el.scrollWidth <= room) break;
+    size = Math.max(min, Math.floor(size * 0.92));
+    el.style.fontSize = size + "px";
+  }
+}
+function fitAll(){ fit(document.querySelector(".odo"), 168, 22); }
+window.addEventListener("resize", fitAll);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", fitAll);
+
 var reduced = window.matchMedia &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -265,6 +289,7 @@ fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(
   var span = (Number(d.lost.to_year) - Number(d.lost.from_year)) || 0;
   var perSec = (span > 0 && lost > 0) ? (lost / (span * 31557600)) : 0;
 
+  fitAll();
   if (figure("big", lost) && perSec && !reduced){
     var t0 = Date.now(), big = document.getElementById("big"),
         sn = document.getElementById("since");
@@ -272,6 +297,9 @@ fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(
       var secs = (Date.now() - t0) / 1000;
       big.textContent = commas(lost + perSec * secs);
       sn.textContent  = commas(perSec * secs);
+      /* ⚠ REFIT AS IT TICKS. The number gains a digit as it climbs, and a
+         size fitted to the old string no longer fits the new one. */
+      fitAll();
     }, 200);
   }
 
