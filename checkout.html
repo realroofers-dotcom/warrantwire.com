@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire checkout-1d — the box no longer repeats itself
+<!-- BUILT 2026-09-11 · warrantwire checkout-1e — the fields can be seen, and an error takes you to it
      Lives at warrantwire.com/checkout.html
 
      ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
@@ -86,6 +86,46 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
   margin-top:6px;letter-spacing:.02em}
 
 .pay{margin-top:6px}
+
+/* ============================================================
+   ⚠ THE FIELDS HAD NO EDGES. ACHplug draws its inputs with a border colour
+   taken from --ach-line, and on a dark page that colour disappeared — so a man
+   filling in a routing number was aiming at nothing. Every box gets a visible
+   edge here, and the one he is in gets a brighter one.
+
+   ⚠ ALL OF IT IS CSS ON THIS PAGE. Not a line of the plug is touched.
+   ============================================================ */
+.achplug{--ach-line:#4a4f3c}
+.achplug input,
+.achplug select{
+  border:1.5px solid #4a4f3c !important;
+  background:#101109 !important;
+  color:var(--ink) !important;
+  border-radius:5px !important;
+  padding:11px 12px !important;
+  font-size:16px !important;   /* ⚠ 16px OR A PHONE ZOOMS IN ON FOCUS */
+}
+.achplug input::placeholder{color:#5f6552 !important}
+.achplug input:focus,
+.achplug select:focus{
+  border-color:var(--warm) !important;
+  outline:2px solid rgba(201,162,39,.28) !important;
+  outline-offset:1px !important;
+}
+/* the label above each one, so it reads as a form rather than a wall */
+.achplug-field span{color:var(--ink2) !important;font-size:13px !important;
+  margin-bottom:5px !important}
+.achplug-slip h4{color:var(--ink) !important}
+
+/* ⚠ THE ERROR IS MADE IMPOSSIBLE TO MISS, because the one that was there was a
+   thin red line under a box he could not see. */
+.achplug-err{
+  border-left:3px solid #d9584a !important;
+  background:rgba(217,88,74,.10) !important;
+  padding:10px 12px !important;
+  border-radius:4px !important;
+  font-size:14px !important;
+}
 .miss{background:var(--panel);border-left:3px solid var(--hot);padding:18px 20px;
   color:var(--ink2)}
 .miss b{color:var(--ink);font-weight:400;display:block;margin-bottom:5px}
@@ -311,6 +351,44 @@ if (!list.length) {
   s.setAttribute("data-repeat", "off");
   document.getElementById("pay").appendChild(s);
 }
+
+/* ============================================================
+   ⚠ AN ERROR OFF THE TOP OF THE SCREEN IS NOT AN ERROR MESSAGE. The plug puts
+   its complaint next to the button at the bottom, while the field it is about
+   — the name — is above the fold. So when the message appears, the first empty
+   box is scrolled to and given the cursor.
+
+   ⚠ IT WATCHES RATHER THAN HOOKS. Nothing in the plug is patched or replaced;
+   this only reacts to what appears on the page, so an ACHplug update cannot
+   break it and it cannot break ACHplug.
+   ============================================================ */
+(function(){
+  function firstEmpty(box){
+    var f = box.querySelectorAll("input[type=text], input:not([type]), input[type=email], input[type=tel], input[type=number]");
+    for (var i = 0; i < f.length; i++) {
+      if (f[i].offsetParent === null) continue;      /* hidden */
+      if (!String(f[i].value || "").trim()) return f[i];
+    }
+    return null;
+  }
+  function goTo(el){
+    if (!el) return;
+    try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){ el.scrollIntoView(); }
+    /* ⚠ THE CURSOR GOES IN IT TOO. Scrolling to a box he still has to click is
+       half a fix. */
+    setTimeout(function(){ try { el.focus({ preventScroll:true }); } catch(e){ el.focus(); } }, 260);
+  }
+  var seen = null;
+  new MutationObserver(function(){
+    var err = document.querySelector(".achplug-err");
+    if (!err || !err.textContent.trim()) { seen = null; return; }
+    /* only act when the message is new, not on every repaint */
+    if (err.textContent === seen) return;
+    seen = err.textContent;
+    var box = document.querySelector(".achplug");
+    if (box) goTo(firstEmpty(box) || err);
+  }).observe(document.body, { childList:true, subtree:true, characterData:true });
+})();
 </script>
 </body>
 </html>
