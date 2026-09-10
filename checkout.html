@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire checkout-1b — it holds what was added
+<!-- BUILT 2026-09-11 · warrantwire checkout-1d — the box no longer repeats itself
      Lives at warrantwire.com/checkout.html
 
      ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
@@ -180,10 +180,34 @@ var adding = q.get("buy") || q.get("sku") || "";
 if (adding && PRODUCTS[adding]) {
   var t0   = (q.get("ticker") || q.get("t") || "").toUpperCase().replace(/[^A-Z0-9.\-]/g,"");
   var acc0 = (q.get("acc") || q.get("ref") || "").replace(/[^0-9\-]/g,"");
-  /* the same product for the same company is not two of them */
-  var same = list.some(function(x){
-    return x.sku === adding && (x.ticker||"") === t0 && (x.acc||"") === acc0; });
-  if (!same) list.push({ sku: adding, ticker: t0, acc: acc0 });
+  /* ⚠ THE SAME THING NEVER LANDS ON THIS PAGE TWICE, from whichever page it
+     was pressed. The band on the front page, the search results and the price
+     list all add here, and a man who presses buy in two places has not decided
+     to pay twice.
+
+     ⚠ BUT TWO DIFFERENT COMPANIES ARE TWO PURCHASES. A search is a search OF
+     ONE COMPANY and a read is a read OF ONE FILING — buying TOVX and LEXX is
+     genuinely two, and collapsing those would sell him one and charge him for
+     one when he wanted both.
+
+     ⚠ AND A BARE ONE UPGRADES RATHER THAN DUPLICATES. Pressing buy on the
+     price list gives a search with no company attached; pressing it again on
+     TOVX fills that company in instead of adding a second line. */
+  var i, filled = false;
+  for (i = 0; i < list.length; i++) {
+    if (list[i].sku !== adding) continue;
+    var hasCtx  = !!(list[i].ticker || list[i].acc);
+    var wantCtx = !!(t0 || acc0);
+    /* already there, same company */
+    if (hasCtx && wantCtx && (list[i].ticker||"") === t0 && (list[i].acc||"") === acc0) {
+      filled = true; break;
+    }
+    /* there with no company, and now we know which one */
+    if (!hasCtx && wantCtx) { list[i].ticker = t0; list[i].acc = acc0; filled = true; break; }
+    /* there already, and this press names no company */
+    if (!wantCtx) { filled = true; break; }
+  }
+  if (!filled) list.push({ sku: adding, ticker: t0, acc: acc0 });
   keep(list);
   if (history.replaceState) history.replaceState(null, "", "/checkout.html");
 }
@@ -273,9 +297,16 @@ if (!list.length) {
   var s = document.createElement("script");
   s.src = "https://achplug.com/plug.js";
   s.setAttribute("data-key",    ACH_KEY);
-  s.setAttribute("data-name",   fullName);
+  /* ⚠ NO NAME AND NO DESCRIPTION ON THE BOX. What is being bought is already
+     set out above it, item by item, with a price against each — the box
+     printing the same words again made the page say everything twice.
+
+     ⚠ THE NAME STILL HAS TO REACH THE ORDER THOUGH, so it goes on data-desc,
+     which the box does not print as a heading. Without it the ACHplug journal
+     has a row nobody can match to anything. */
+  s.setAttribute("data-name",   "");
   s.setAttribute("data-price",  String(total));
-  s.setAttribute("data-desc",   fullDesc);
+  s.setAttribute("data-desc",   fullName + " — " + fullDesc);
   s.setAttribute("data-card",   card);
   s.setAttribute("data-repeat", "off");
   document.getElementById("pay").appendChild(s);
