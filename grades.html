@@ -1,0 +1,304 @@
+<!-- BUILT 2026-09-11 02:10 ET · warrantwire grades-1a
+     Lives at warrantwire.com/grades.html
+
+     ⚠ NOTHING HERE IS TYPED IN. The scale, the grades and the counts are all
+     fetched from the grade worker. A table of grades with numbers typed into
+     it is a table that goes stale and then gets quoted.
+
+     ⚠ THE SCALE COMES FROM ?method=1, the same call the worked example and
+     8K10Q make. Six sentences and six marks defined in one place, so the day
+     one of them changes every page changes with it.
+
+     ⚠ AND THE COLOURS ARE TAKEN FROM THE BANDS, not from the rows. ?worst=1
+     returns letters and scores without colours, so the page maps letter to
+     colour using the same bands it drew the key from. Two sources for one
+     colour is how a row ends up amber beside a letter that says F. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Company grades — every filing against the SEC's own plain English rule | Warrant Wire</title>
+<meta name="description" content="Warrant filings graded against 17 CFR 230.421, the SEC's own plain English rule. The method is published in full.">
+<link rel="canonical" href="https://warrantwire.com/grades.html">
+<style>
+:root{
+  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
+  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:16px/1.65 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
+a{color:var(--cool)}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 20px 70px}
+
+header.mast{display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.mark{font:700 22px/1 var(--sans);letter-spacing:.02em;color:var(--ink);text-decoration:none}
+.mark b{color:var(--hot)}
+.back{font-size:13.5px;color:var(--ink3);text-decoration:none}
+.back:hover{color:var(--ink)}
+
+h1{font:400 clamp(28px,4.4vw,42px)/1.12 Georgia,serif;margin:34px 0 10px}
+.lede{color:var(--ink2);max-width:64ch;margin:0 0 26px}
+h2{font:400 23px/1.25 Georgia,serif;margin:46px 0 6px}
+.note{color:var(--ink3);font-size:13.5px;margin:0 0 18px;max-width:74ch}
+
+.counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:0;border-top:2px solid var(--line);border-bottom:2px solid var(--line);
+  margin:0 0 8px}
+.counts div{padding:18px 14px 18px 0;border-right:1px solid var(--line)}
+.counts div:last-child{border-right:0}
+.counts .n{font:700 clamp(22px,3.4vw,34px)/1 var(--mono);letter-spacing:-.02em}
+.counts .l{color:var(--ink3);font-size:12.5px;margin-top:7px;
+  font-family:var(--mono);letter-spacing:.04em}
+
+.key{display:grid;grid-template-columns:repeat(auto-fit,minmax(282px,1fr));
+  gap:0 26px;border-top:1px solid var(--line);margin-top:8px}
+.key div{display:flex;gap:10px;align-items:baseline;padding:11px 0;
+  border-bottom:1px solid var(--line2)}
+.key b{font:700 12.5px var(--mono);min-width:102px}
+.key span{color:var(--ink2);font-size:14.5px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;
+  vertical-align:baseline}
+th{color:var(--ink3);font:400 12.5px var(--sans);white-space:nowrap}
+td.n{text-align:right;font-family:var(--mono);font-size:13.5px}
+td.g{white-space:nowrap;font:700 12.5px var(--mono);letter-spacing:.03em}
+td.f{font-family:var(--mono);font-size:13px;color:var(--ink2);white-space:nowrap}
+tbody tr:hover{background:#1a1c14}
+
+.strip{background:var(--panel);border-left:3px solid var(--warm);padding:16px 20px;
+  margin:26px 0;color:var(--ink2);font-size:14.5px;max-width:78ch}
+.strip b{color:var(--ink);font-weight:400}
+.strip.hot{border-left-color:var(--hot)}
+.rule{font-family:var(--mono);font-size:13px;color:var(--warm)}
+
+.btn{display:inline-block;text-decoration:none;background:transparent;
+  border:1.5px solid var(--hot);color:var(--hot);border-radius:5px;
+  padding:11px 17px;font:600 14.5px var(--sans);margin:4px 8px 4px 0}
+.btn:hover{background:var(--hot);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--ink2)}
+.btn.ghost:hover{border-color:var(--ink2);color:var(--ink)}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:16px;
+  color:var(--ink3);font-size:13px}
+footer em{color:var(--ink2)}
+.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 14px}
+.footnav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0}
+.footnav a:hover{color:var(--ink)}
+.quiet{color:var(--ink3);padding:14px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <a class="mark" href="/">WARRANT<b>WIRE</b></a>
+    <a class="back" href="/">Back to the wire</a>
+  </header>
+
+  <h1>Company grades</h1>
+  <p class="lede">Warrant filings measured against the SEC's own plain English
+    rule &mdash; <span class="rule">17 CFR 230.421</span>. Not a readability
+    formula out of a schoolbook: every parameter traces to a line the
+    Commission wrote, and the method is published in full so anyone can run the
+    same measurement and get the same number.</p>
+
+  <div class="counts" id="counts">
+    <div><div class="n">&mdash;</div><div class="l">LOADING</div></div>
+  </div>
+  <p class="note" id="countnote"></p>
+
+  <h2>What the grades mean</h2>
+  <div class="key" id="key"><div class="quiet">Loading the scale&hellip;</div></div>
+
+  <h2>The worst we have graded</h2>
+  <p class="note">Every ticker links to that company's own page on EDGAR, so
+    any line here can be checked against the document it came from.</p>
+  <div id="table"><div class="quiet">Loading&hellip;</div></div>
+
+  <div class="strip">
+    <b>What a grade is not.</b> It measures how a document is written. It is
+    not a finding that any rule was broken &mdash; that is the Commission's to
+    decide and nobody else's. It is not a view on any company, its business or
+    its share price, and it is not a recommendation to buy or sell anything.
+    Why a document is written this way is not measured here and is not
+    asserted.
+  </div>
+
+  <div class="strip hot">
+    <b>And what the sample is.</b> These are filings that carried warrant
+    financing language, which is what this wire watches. They are not a sample
+    of SEC filings generally and must not be described as one.
+  </div>
+
+  <h2>See it done on one company</h2>
+  <p class="note">Every filing, the people who signed them, and what
+    shareholders have lost &mdash; on the company whose filings we have read
+    every one of.</p>
+  <p>
+    <a class="btn" href="/therivabiologics/tovx">Theriva Biologics &mdash; the full report</a>
+    <a class="btn ghost" href="/">Search your own company</a>
+  </p>
+
+  <h2>How it is measured</h2>
+  <p class="note">Nine parameters, each tied to the part of the rule it comes
+    from. Thresholds, weights and the exact word lists are all published.</p>
+  <div id="params"><div class="quiet">Loading&hellip;</div></div>
+
+  <footer>
+    <div class="footnav">
+      <a href="/">The wire</a>
+      <a href="/therivabiologics/tovx">A worked example</a>
+      <a href="/counter.html">The screw</a>
+      <a href="/readers.html">Become a reader</a>
+      <a href="/prices.html">What it costs</a>
+      <a href="https://8k10q.com">Read a filing</a>
+      <a href="/about.html">Who runs the wire</a>
+    </div>
+    <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
+    Every grade is computed from a document filed with the SEC and recomputed
+    when it is regraded. <span id="asof"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var GRADE = "https://grade.realroofers.workers.dev";
+
+  function esc(t){
+    return String(t == null ? "" : t)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+  function commas(n){
+    n = Math.round(Number(n)||0);
+    var s = String(n), out = "", c = 0;
+    for (var i = s.length-1; i >= 0; i--){
+      out = s[i] + out; if (++c % 3 === 0 && i > 0) out = "," + out;
+    }
+    return out;
+  }
+  function box(id, h){ document.getElementById(id).innerHTML = h; }
+  function dead(id, what){
+    box(id, '<div class="quiet">' + what + ' is not answering. Nothing on this ' +
+            'page is stored here, so there is nothing to show when the ' +
+            'measurement is unavailable.</div>');
+  }
+  /* ⚠ EDGAR ACCEPTS A TICKER IN THE CIK FIELD, which is what lets a row link
+     to the company without this page having to know its CIK. */
+  function edgarCo(ticker){
+    return "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" +
+           encodeURIComponent(ticker) + "&type=&dateb=&owner=include&count=40";
+  }
+  /* ⚠ THE COMPANY NAME AS EDGAR WRITES IT CARRIES THE TICKER AND THE CIK IN
+     BRACKETS. On a page it reads as a database row, not a company. */
+  function tidy(n){ return String(n || "").split("  (")[0].trim(); }
+
+  /* ⚠ ONE SOURCE FOR COLOUR. ?worst=1 returns letters and scores with no
+     colours, so the letter is looked up against the same bands that drew the
+     key. Two sources for one colour is how a row ends up amber beside an F. */
+  var BANDS = null;
+
+  fetch(GRADE + "/?method=1").then(function(r){ return r.json(); }).then(function(m){
+    BANDS = m.bands || [];
+
+    var h = "";
+    BANDS.forEach(function(b){
+      h += '<div>' + (b.mark || "") + '<b style="color:' + esc(b.hex) + '">' +
+           esc(b.grade) + '</b><span>' + esc(b.says) + '</span></div>';
+    });
+    box("key", h);
+
+    var p = '<table><thead><tr><th>What is measured</th><th>The rule</th>' +
+            '<th style="text-align:right">Weight</th></tr></thead><tbody>';
+    (m.parameters || []).forEach(function(x){
+      p += '<tr><td>' + esc(x.measures) + '</td>' +
+           '<td class="f">' + esc(x.rule) + '</td>' +
+           '<td class="n">' + esc(x.weight) + '</td></tr>';
+    });
+    box("params", p + '</tbody></table>' +
+      '<p class="note" style="margin-top:14px">The thresholds, the weights and ' +
+      'the exact words counted are published in full at ' +
+      '<a href="' + GRADE + '/?method=1" target="_blank" rel="noopener">the ' +
+      'method</a>. A grade nobody can reproduce is an opinion wearing a letter.</p>');
+
+    /* the table waits for the bands, so a colour is never guessed */
+    loadWorst();
+  }).catch(function(){
+    dead("key", "The scale");
+    dead("params", "The method");
+    loadWorst();          /* still show the grades, just without colour */
+  });
+
+  function bandOf(grade){
+    if (!BANDS) return {};
+    for (var i = 0; i < BANDS.length; i++)
+      if (BANDS[i].grade === grade) return BANDS[i];
+    return {};
+  }
+
+  function loadWorst(){
+    fetch(GRADE + "/?worst=1&n=50").then(function(r){ return r.json(); })
+      .then(function(d){
+        var rows = (d && d.rows) || [];
+        if (!rows.length) throw new Error("none");
+
+        /* ⚠ THE COUNTS ARE OF WHAT IS SHOWN, AND THE PAGE SAYS SO. This is the
+           WORST fifty, not a distribution — describing it as one would be the
+           easiest thing on this page to get wrong. */
+        var tally = {};
+        rows.forEach(function(x){ tally[x.grade] = (tally[x.grade]||0)+1; });
+
+        var order = (BANDS && BANDS.length)
+          ? BANDS.map(function(b){ return b.grade; })
+          : ["A","B","C","D","F","WORD SALAD"];
+        var ch = "";
+        order.forEach(function(g){
+          if (!tally[g]) return;
+          var b = bandOf(g);
+          ch += '<div><div class="n" style="color:' + esc(b.hex || "#a8aa9a") + '">' +
+                tally[g] + '</div><div class="l">' + esc(g) + '</div></div>';
+        });
+        box("counts", ch);
+        document.getElementById("countnote").textContent =
+          "The worst " + rows.length + " filings we have graded, hardest first. " +
+          "This is not a distribution — it is the bottom of the list.";
+
+        var h = '<table><thead><tr><th>Company</th><th>Ticker</th><th>Form</th>' +
+                '<th>Filed</th><th>Grade</th>' +
+                '<th style="text-align:right">Score</th></tr></thead><tbody>';
+        rows.forEach(function(x){
+          var b = bandOf(x.grade);
+          h += '<tr>' +
+               '<td>' + esc(tidy(x.company)) + '</td>' +
+               '<td class="f">' + (x.ticker
+                  ? '<a href="' + esc(edgarCo(x.ticker)) + '" target="_blank" ' +
+                    'rel="noopener">' + esc(x.ticker) + '</a>'
+                  : '&mdash;') + '</td>' +
+               '<td class="f">' + esc(x.form) + '</td>' +
+               '<td class="f">' + esc(x.filed_on) + '</td>' +
+               '<td class="g" style="color:' + esc(b.hex || "") + '">' +
+                 (b.mark || "") + ' ' + esc(x.grade) + '</td>' +
+               '<td class="n">' + esc(x.score) + '</td>' +
+               '</tr>';
+        });
+        box("table", h + '</tbody></table>');
+        document.getElementById("asof").textContent =
+          "Read " + new Date().toLocaleString() + ".";
+      })
+      .catch(function(){
+        dead("table", "The grades");
+        box("counts", '<div><div class="n">&mdash;</div>' +
+          '<div class="l">NOT ANSWERING</div></div>');
+      });
+  }
+})();
+</script>
+</body>
+</html>
