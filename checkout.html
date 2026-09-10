@@ -1,0 +1,285 @@
+<!-- BUILT 2026-09-11 · warrantwire checkout-1b — it holds what was added
+     Lives at warrantwire.com/checkout.html
+
+     ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
+     The price list says what things cost. This says what YOU are buying and
+     takes the money. Trying to do both on one page is what produced nine
+     payment boxes on a price list and a page nobody could read.
+
+     ⚠ ONE PRODUCT ON IT. That is the whole point. ACHplug's box is built to be
+     the only thing on a page — one script tag, one box, where the tag sits —
+     and on a checkout page that is exactly right rather than a limitation.
+     The line goes on UNCHANGED: no CSS to shrink it, no handler to reveal it,
+     nothing a seller would not paste themselves.
+
+     ⚠ THE BUY BUTTONS STAY ON THE PRODUCTS. His ruling — a man reading about
+     a company presses buy where he is standing, and this page shows him what
+     he has picked before he pays for it. So a button ADDS to this page rather
+     than jumping him to a card form.
+
+     ⚠ MORE THAN ONE THING CAN BE ON IT, AND THE BOX TAKES THE TOTAL. ACHplug
+     charges one amount; that amount is the sum, and the list above it says
+     what the sum is made of.
+
+     ⚠ THE PRODUCT COMES FROM THE ADDRESS. /checkout.html?buy=wire_search
+     Everything about it — the name, the price, the description — is in the
+     one table below, and the price shown to the buyer is the price the pay
+     desk charges. If those two ever disagree it is a chargeback, so there is
+     one table and nowhere else to type a number.
+
+     ⚠ AND THE CONTEXT TRAVELS. A read is a read OF A FILING. ?ticker= and
+     ?acc= come through the address and go into the order, so the ACHplug
+     journal says "One warrant filing read — TOVX" rather than a row nobody
+     can match to anything. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — Warrant Wire</title>
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --paper:#14150f; --panel:#1c1e16; --line:#2e3125;
+  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:16px/1.6 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
+a{color:var(--cool)}
+.wrap{max-width:600px;margin:0 auto;padding:22px 20px 70px}
+header.mast{display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.mark{font:700 21px/1 var(--sans);letter-spacing:.02em;color:var(--ink);text-decoration:none}
+.mark b{color:var(--hot)}
+.back{font-size:13.5px;color:var(--ink3);text-decoration:none}
+.back:hover{color:var(--ink)}
+
+.step{font:600 10.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);margin:32px 0 10px}
+
+/* what you are buying */
+.item{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:20px 22px}
+.item h1{font:400 26px/1.2 Georgia,serif;margin:0}
+.item .ctx{font:600 12px var(--mono);letter-spacing:.1em;color:var(--warm);
+  margin:8px 0 0;text-transform:uppercase}
+.item p{color:var(--ink2);margin:10px 0 0;font-size:15px}
+.line{display:flex;justify-content:space-between;gap:18px;
+  padding:14px 0;border-bottom:1px solid var(--line)}
+.line:first-child{padding-top:0}
+.line b{font:400 19px/1.25 Georgia,serif;color:var(--ink);display:block}
+.line .ctx{display:inline-block;font:600 11px var(--mono);letter-spacing:.1em;
+  color:var(--warm);margin-top:5px;text-transform:uppercase}
+.line p{color:var(--ink2);margin:6px 0 0;font-size:14px}
+.line .right{text-align:right;white-space:nowrap}
+.line .p{font:700 17px var(--mono);color:var(--ink);display:block}
+.rm{margin-top:8px;background:none;border:0;color:var(--ink3);
+  font:400 12.5px var(--sans);cursor:pointer;padding:2px 0;text-decoration:underline}
+.rm:hover{color:var(--hot)}
+.item .amt{font:700 34px/1 var(--mono);color:var(--ink);margin:16px 0 0;
+  font-variant-numeric:tabular-nums}
+.item .amt small{display:block;font:400 12.5px var(--sans);color:var(--ink3);
+  margin-top:6px;letter-spacing:.02em}
+
+.pay{margin-top:6px}
+.miss{background:var(--panel);border-left:3px solid var(--hot);padding:18px 20px;
+  color:var(--ink2)}
+.miss b{color:var(--ink);font-weight:400;display:block;margin-bottom:5px}
+
+.small{color:var(--ink3);font-size:13px;margin:18px 0 0;line-height:1.55}
+footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
+  color:var(--ink3);font-size:13px}
+footer a{color:var(--ink2);text-decoration:none;margin-right:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <a class="mark" href="/">WARRANT<b>WIRE</b></a>
+    <a class="back" href="/prices.html">All prices</a>
+  </header>
+
+  <div id="out"></div>
+
+  <footer>
+    <a href="/prices.html">What it costs</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/about.html">Who runs the wire</a>
+  </footer>
+</div>
+
+<script>
+/* ⚠ ONE TABLE, AND THE PAY DESK IS THE OTHER HALF OF IT. Every price here has
+   to match the SKU of the same name at the desk. A page that says $480 while
+   the card is billed $1,800 is the one mistake on this site that costs money
+   rather than credibility. */
+var PRODUCTS = {
+  wire_search:      { name:"One search", price:12,
+    desc:"Every warrant filing on one company, back to 2021 — which filing, on what day, in what form." },
+  wire_year:        { name:"The year, for a holder", price:480,
+    desc:"Three hundred companies a year, forty a month. A company counts once however often you open it." },
+  wire_year_pro:    { name:"The year, professional volume", price:1200,
+    desc:"Three thousand companies a year, four hundred a month. For somebody covering the space rather than a portfolio." },
+  daily_chart:      { name:"The Daily Chart — one day", price:5,
+    desc:"Today's offerings in plain English, with the new shares as a share of the company." },
+  daily_chart_year: { name:"The Daily Chart — a year", price:310,
+    desc:"Every day for a year. It breaks even at sixty-two days." },
+  wire_read:        { name:"One warrant filing read", price:20,
+    desc:"The filing and its exhibit in plain English, with the parts that matter marked." },
+  wire_opinion:     { name:"An agent's opinion", price:40,
+    desc:"What one of the agents makes of the warrant, beside the read." },
+  deep_dive:        { name:"One company, read deep", price:149,
+    desc:"Every filing a company has made, read and set against what happened next." },
+  k8_year:          { name:"Reads, a year", price:1800,
+    desc:"Any filing read, all year, by 8K10Q. Capped at twenty-five a month and three hundred a year." }
+};
+
+var ACH_KEY = "fjzpem2teh";
+var PAY = "https://pay.realroofers.workers.dev";
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+/* ============================================================
+   WHAT IS ON THE CHECKOUT
+
+   ⚠ KEPT IN THE BROWSER, NOT ON A SERVER. Nobody's basket is worth a database
+   row until it is paid for, and a basket held on a server is a basket that
+   needs a login to find again.
+
+   ⚠ AND IT IS READ BACK THROUGH THE PRODUCT TABLE, NEVER TRUSTED AS STORED.
+   What is kept is a list of SKUs. The name and the price come from the table
+   in this page every time — so a saved basket cannot carry an old price, and
+   editing the stored value cannot change what anything costs.
+   ============================================================ */
+var BASKET = "ww.checkout";
+
+function held(){
+  try {
+    var raw = localStorage.getItem(BASKET);
+    var list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.filter(function(x){ return x && PRODUCTS[x.sku]; }) : [];
+  } catch (e) { return []; }
+}
+function keep(list){
+  try { localStorage.setItem(BASKET, JSON.stringify(list)); } catch (e) {}
+}
+
+var q = new URLSearchParams(location.search);
+var list = held();
+
+/* ⚠ AN ADDRESS CARRYING A PRODUCT ADDS IT, then the address is cleaned so a
+   reload or a back button cannot add the same thing twice. */
+var adding = q.get("buy") || q.get("sku") || "";
+if (adding && PRODUCTS[adding]) {
+  var t0   = (q.get("ticker") || q.get("t") || "").toUpperCase().replace(/[^A-Z0-9.\-]/g,"");
+  var acc0 = (q.get("acc") || q.get("ref") || "").replace(/[^0-9\-]/g,"");
+  /* the same product for the same company is not two of them */
+  var same = list.some(function(x){
+    return x.sku === adding && (x.ticker||"") === t0 && (x.acc||"") === acc0; });
+  if (!same) list.push({ sku: adding, ticker: t0, acc: acc0 });
+  keep(list);
+  if (history.replaceState) history.replaceState(null, "", "/checkout.html");
+}
+
+var p = list.length === 1 ? PRODUCTS[list[0].sku] : null;
+
+/* ⚠ AN UNKNOWN PRODUCT SAYS SO AND SENDS THEM BACK. It never guesses at one:
+   charging somebody for a thing they did not choose is worse than an error. */
+if (!list.length) {
+  document.getElementById("out").innerHTML =
+    '<p class="step">Checkout</p>' +
+    '<div class="miss"><b>Nothing on it yet.</b>' +
+    'Press buy on anything and it will appear here before you pay. ' +
+    'Everything is on <a href="/prices.html">the price list</a>.</div>';
+} else {
+  /* ⚠ THE TOTAL IS ADDED UP HERE, FROM THE TABLE, EVERY TIME. */
+  var total = 0, rows = "";
+  list.forEach(function(x, i){
+    var it  = PRODUCTS[x.sku];
+    var ctx = x.ticker || x.acc || "";
+    total += it.price;
+    rows +=
+      '<div class="line">' +
+        '<div>' +
+          '<b>' + esc(it.name) + '</b>' +
+          (ctx ? '<span class="ctx">' + esc(ctx) + '</span>' : '') +
+          '<p>' + esc(it.desc) + '</p>' +
+        '</div>' +
+        '<div class="right">' +
+          '<span class="p">$' + it.price.toLocaleString() + '</span>' +
+          '<button type="button" class="rm" data-i="' + i + '">Remove</button>' +
+        '</div>' +
+      '</div>';
+  });
+
+  /* ⚠ THE ORDER SAYS WHAT IT WAS FOR. One thing gets its own name; several get
+     a count and the first one, because an ACHplug order carries one line and
+     "3 items" on its own is a row nobody can match to anything later. */
+  var first = PRODUCTS[list[0].sku];
+  var firstCtx = list[0].ticker || list[0].acc || "";
+  var fullName = list.length === 1
+    ? first.name + (firstCtx ? " — " + firstCtx : "")
+    : list.length + " items — " + first.name + (firstCtx ? " — " + firstCtx : "") + " and more";
+  var fullDesc = list.map(function(x){
+    var c = x.ticker || x.acc || "";
+    return PRODUCTS[x.sku].name + (c ? " (" + c + ")" : ""); }).join(", ");
+
+  /* ⚠ THE CARD LINK CARRIES EVERY SKU. One product is ?go=sku as before;
+     several are a comma list, and the pay desk builds a line for each. */
+  var card = PAY + "/?go=" + encodeURIComponent(list.map(function(x){ return x.sku; }).join(","))
+           + (list[0].ticker ? "&ticker=" + encodeURIComponent(list[0].ticker) : "")
+           + (list[0].acc    ? "&ref="    + encodeURIComponent(list[0].acc) : "")
+           + "&on=wire";
+
+  document.getElementById("out").innerHTML =
+    '<p class="step">' + (list.length === 1 ? 'You are buying' : 'You are buying ' + list.length + ' things') + '</p>' +
+    '<div class="item">' + rows +
+      '<p class="amt">$' + total.toLocaleString() +
+        '<small>' + (list.length === 1 ? 'One payment. Nothing renews.'
+                                       : 'One payment for all of it. Nothing renews.') + '</small></p>' +
+    '</div>' +
+    '<p class="step">How you want to pay</p>' +
+    '<div class="pay" id="pay"></div>' +
+    '<p class="small">Paying from your bank takes 2% off. Most bank payments ' +
+      'clear straight away and a few take a day or two &mdash; either way you ' +
+      'get what you bought as soon as you authorise it. ' +
+      'By paying you agree to the <a href="/terms.html">terms</a>, which ' +
+      'include a refund within fourteen days if you want one.</p>' +
+    '<p class="small"><a href="/prices.html">Add something else</a></p>';
+
+  /* ⚠ REMOVING RELOADS THE PAGE. The plug has already drawn a box for the old
+     total by then, and a box showing one number beside a list showing another
+     is how somebody gets charged the wrong amount. */
+  document.getElementById("out").addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest(".rm");
+    if (!b) return;
+    var l = held();
+    l.splice(Number(b.getAttribute("data-i")), 1);
+    keep(l);
+    location.href = "/checkout.html";
+  });
+
+  /* ⚠ THE ACHPLUG LINE, EXACTLY AS THE DASHBOARD GIVES IT. The only reason it
+     is written by script rather than typed into the HTML is that this one page
+     serves nine products and the price has to come from the address. The tag
+     itself is untouched — same attributes, same order, nothing added. */
+  var s = document.createElement("script");
+  s.src = "https://achplug.com/plug.js";
+  s.setAttribute("data-key",    ACH_KEY);
+  s.setAttribute("data-name",   fullName);
+  s.setAttribute("data-price",  String(total));
+  s.setAttribute("data-desc",   fullDesc);
+  s.setAttribute("data-card",   card);
+  s.setAttribute("data-repeat", "off");
+  document.getElementById("pay").appendChild(s);
+}
+</script>
+</body>
+</html>
