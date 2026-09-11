@@ -115,10 +115,12 @@
       +   '</button><span class="spklen" data-acc="' + acc + '"></span></p>'
       +   (f.sector ? '<p class="ind">' + WW.esc(f.sector) + '</p>' : '')
       +   '<div class="marks">' + WW.marks(f.labels) + '</div></div>'
+      /* ⚠ ONE PRICE ON A FREE ROW, AND IT IS THE COMPANY'S. His ruling, 11 Sep:
+         the $20 read is an 8K10Q product for one FILING and it is not shown
+         beside the company as if it were a second price for the same thing.
+         It is offered inside the paid report, beside each filing. */
       + '<div class="go">'
-      +   (page ? '<a class="verdict" href="' + page + '">The verdict &rarr;</a><br>' : '')
-      +   '<button class="wbuy readbtn" data-sku="wire_read" data-t="' + WW.esc(t) + '" data-acc="' + acc + '">'
-      +     'Read this one &middot; $20</button>'
+      +   (page ? '<a class="verdict" href="' + page + '">The verdict &rarr;</a>' : '')
       + '</div></div>';
   };
 
@@ -129,10 +131,10 @@
       + '<p class="g2">The five above are the most recent from today\'s scan, free, and they '
       + 'change every day. <b>Search a company you name and get its verdict &mdash; every '
       + 'filing, every year, and what they add up to.</b></p>'
-      + '<a class="wbuy gold" href="#q" data-focus="q">Search a company &mdash; $12</a>'
-      + '<p class="g3">One payment. Nothing recurring. <b style="color:var(--ink)">A search that '
-      + 'finds nothing costs you nothing.</b> Everything else is on '
-      + '<a href="/prices.html">the price page</a>.</p>'
+      + '<a class="wbuy gold" href="#q" data-focus="q">Search a company &mdash; $12, for a year</a>'
+      + '<p class="g3">The list of its filings, the verdict, and its going concern status &mdash; for 365 days. '
+      + 'One payment. Nothing recurring. <b style="color:var(--ink)">A search that finds nothing costs you nothing.</b> '
+      + 'Everything else is on <a href="/prices.html">the price page</a>.</p>'
       + '</div>';
   };
 

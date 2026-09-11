@@ -18,6 +18,16 @@
 .samplemark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
   color:var(--cool);border:1px solid var(--cool);border-radius:3px;padding:3px 8px;margin:0 0 12px}
 time{font:400 11.5px var(--mono);color:var(--ink3)}
+/* the filings table, for a paid buyer */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ftab{width:100%;border-collapse:collapse;font-size:13.5px}
+.ftab th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:8px 8px;border-bottom:1px solid var(--line)}
+.ftab td{padding:9px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+.ftab td.m{font:400 12.5px var(--mono);white-space:nowrap;color:var(--ink2)}
+.ftab tr.heavy td.m:first-child{color:var(--hot)}
+.ftab td a{color:var(--cool);text-decoration:none}
+.ftab td a.k8{color:var(--warm)}
+.ftab .marks{margin:0}
 /* the urgent warning: red, first, impossible to scroll past */
 .urgent{border:2px solid var(--hot);border-radius:10px;padding:16px 20px;margin:16px 0 0;background:#2b1c18}
 .urgent .k{display:block;font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 6px}
@@ -222,6 +232,30 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           + '</div>';
       })
       .catch(function () {});
+  }
+
+  /* ---- the list of filings: the $12 product, shown only to a paid buyer ----
+     Every warrant filing on record for this company — date, form, the terms
+     in it — with two ways into the document: EDGAR (free, always) and a full
+     read in plain English at 8K10Q, the sister site, $20. His ruling: 8K10Q
+     products take the reader TO 8K10Q for the deeper read; they are not
+     bought here. */
+  function filings(rows, tk, cik) {
+    var list = (rows || []).filter(function (f) { return f.accession; });
+    if (!list.length) return "";
+    return '<section class="verdict" style="border-color:var(--line)"><p class="lbl"><b>Every warrant filing on record</b><span>' + list.length + ' filings &middot; yours for a year</span></p>'
+      + '<div class="tblwrap"><table class="ftab"><thead><tr><th>Filed</th><th>Form</th><th>What is in it</th><th></th></tr></thead><tbody>'
+      + list.map(function (f) {
+          var bare = String(f.accession).replace(/-/g, "");
+          var edgar = cik ? "https://www.sec.gov/Archives/edgar/data/" + encodeURIComponent(cik) + "/" + bare + "/" : "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + encodeURIComponent(tk);
+          var k8 = "https://8k10q.com/?ticker=" + encodeURIComponent(tk) + "&acc=" + encodeURIComponent(f.accession);
+          return '<tr' + (f.heavy ? ' class="heavy"' : '') + '><td class="m">' + esc(f.filed_on || "") + '</td><td class="m">' + esc(f.form || "") + '</td>'
+            + '<td><div class="marks">' + WW.marks(f.labels) + '</div></td>'
+            + '<td class="m"><a href="' + edgar + '" target="_blank" rel="noopener">EDGAR</a> &middot; <a class="k8" href="' + k8 + '" target="_blank" rel="noopener">Read it in full at 8K10Q &middot; $20</a></td></tr>';
+        }).join("")
+      + '</tbody></table></div>'
+      + '<p class="vgap">EDGAR is the document itself, free, always. The read at 8K10Q is the sister site&rsquo;s product: the whole filing in plain English, every section, not only the warrants.</p>'
+      + '</section>';
   }
 
   /* ---- part two, where the hand-built record exists ------------------------ */
@@ -460,6 +494,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + '<div id="concern"></div>'
         + row
         + '<div class="verdicts" id="auto">' + autoBox(v, open, a || {}) + '</div>'
+        + (open ? '<div class="verdicts">' + filings(d.rows, tk, c.cik) + '</div>' : '')
         + '<div class="verdicts" id="humans"></div>'
         + '<div class="vpeople" id="people"></div>';
 

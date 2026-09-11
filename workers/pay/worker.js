@@ -92,9 +92,12 @@ const SKU = {
      export is the one sale that ends the business it came from. */
 
   /* ---------- THE LIST — Warrant Wire's own product ---------- */
+  /* ⚠ A YEAR, NOT A DAY. His ruling, 11 Sep: "a search on a company can be
+     for a full year, firmly." The list, the verdict, and the going concern
+     status of that one company, for 365 days. */
   wire_search:  { site:"wire", cents:  1200, mode:"payment",
-                  label:"Warrant Wire — one search",
-                  grants:"search", days: 1 },
+                  label:"Warrant Wire — one company, for a year",
+                  grants:"search", days: 365 },
 
   /* ---------- THE YEAR, IN TWO SIZES ----------
      ⚠ HIS MODEL, 11 Sep 2026, AND I HAD IT WRONG. The $1,200 is not a
@@ -161,13 +164,19 @@ const SKU = {
 
   /* ---------- THE WARRANT READ — co-branded, sold on the wire ----------
      The year buys the LIST. Reading is priced separately, every time. */
-  wire_read:    { site:"wire", cents:  2000, mode:"payment",
-                  label:"Warrant Wire with 8K10Q — the warrant filing, in plain English",
-                  grants:"read", days: 90 },
+  /* ⚠ AN 8K10Q PRODUCT, SOLD ON THE WIRE. A full read of any filing — all
+     filings, not only warrant paper — and it is described that way wherever
+     it is offered, apart from the wire's own products. */
+  wire_read:    { site:"k8", cents:  2000, mode:"payment",
+                  label:"8K10Q — one filing, read in full, in plain English",
+                  grants:"read", days: 365 },
 
+  /* ⚠ BARRY-L. Not the verdict and not its rules — an AI agent with a
+     personality built on a real person, who looks at the company his own way
+     and at other possibilities. His rules are his own and are published. */
   wire_opinion: { site:"wire", cents:  4000, mode:"payment",
-                  label:"Warrant Wire with 8K10Q — an agent's opinion on the warrant",
-                  grants:"opinion", days: 90 },
+                  label:"Barry-L — his opinion on the company",
+                  grants:"opinion", days: 365 },
 
   /* ---------- 8K10Q — any filing ---------- */
   read:         { site:"k8",   cents:  2000, mode:"payment",

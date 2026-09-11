@@ -94,20 +94,20 @@ footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
     <div class="free">
       <h4>Free, always</h4>
       <ul>
-        <li>The five most recent filings on any company</li>
-        <li>How many filings, how many heavy, and which terms are in them</li>
+        <li>The five most recent filings on the wire, every day</li>
+        <li>For any company: how many filings, how many heavy, which terms are in them, and who signed</li>
         <li>The grades</li>
-        <li>The going concern list</li>
-        <li>Every link to the document on EDGAR</li>
+        <li>How the verdict is rendered, and the pattern book</li>
       </ul>
     </div>
     <div>
       <h4>Paid</h4>
       <ul>
-        <li>Which filing, on what day, in what form</li>
+        <li>One company for a year — every filing, the verdict, its going concern status</li>
+        <li>The going concern list, every company</li>
+        <li>The founder's verdict; a reader's verdict; Barry-L's opinion</li>
         <li>The daily summary</li>
-        <li>The filing read into plain English</li>
-        <li>An agent's opinion on it</li>
+        <li>At 8K10Q: any filing read in full</li>
       </ul>
     </div>
   </div>
@@ -138,25 +138,30 @@ var BASKET = "ww.checkout";
 /* ⚠ SHORT. The long description belongs at the checkout, where a man is
    deciding whether this is the thing he meant to press. */
 var SHORT = {
-  wire_search:      "One company, every warrant filing",
+  wire_search:      "One company for a year: every warrant filing, the verdict, and its going concern status",
   wire_year:        "300 companies a year, 40 a month",
   wire_year_pro:    "3,000 a year, 400 a month",
   concern_year:     "Every going concern, for a year",
   founder_verdict:  "Mark Nejmeh's verdict on one company",
   daily_chart:      "Today's offerings",
   daily_chart_year: "Every day for a year",
-  wire_read:        "One filing, in plain English",
-  wire_opinion:     "What an agent makes of it",
-  deep_dive:        "One company, every filing",
-  k8_year:          "Any filing, all year. 25 a month"
+  wire_opinion:     "Barry-L looks at the company his own way — other possibilities, his own rules",
+  wire_read:        "Any filing read in full, every section — not only the warrants",
+  deep_dive:        "One company, every filing, read",
+  k8_year:          "Any filing read, all year, 25 a month"
 };
 
+/* ⚠ WARRANT WIRE'S OWN PRODUCTS FIRST, 8K10Q'S APART. His ruling, 11 Sep:
+   the $20 read is an 8K10Q product — all filings, not only warrants — and it is
+   said so, and kept out of the bunch of wire products. Those rows send the
+   reader to the sister site for the deeper read. */
 var GROUPS = [
   { title:"The wire",            skus:["wire_search","wire_year","wire_year_pro"] },
-  { title:"The verdicts",        skus:["founder_verdict"] },
+  { title:"The opinions",        skus:["founder_verdict","wire_opinion"] },
   { title:"Going concern",       skus:["concern_year"] },
   { title:"The daily summary",   skus:["daily_chart","daily_chart_year"] },
-  { title:"Reading a filing",    skus:["wire_read","wire_opinion","deep_dive","k8_year"] }
+  { title:"From 8K10Q, the sister site — any filing, read in full", k8:true,
+    skus:["wire_read","deep_dive","k8_year"] }
 ];
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){
@@ -186,6 +191,7 @@ function draw(){
     var rows = g.skus.filter(function(s){ return PRODUCTS[s]; });
     if (!rows.length) return;
     out += '<h2>' + esc(g.title) + '</h2>';
+    if (g.k8) out += '<p style="font-size:14px;color:var(--ink2);margin:-4px 0 12px;max-width:66ch">These are 8K10Q’s products, not the wire’s: the whole filing in plain English, every section, not only the warrants. They are bought at <a href="https://8k10q.com" style="color:var(--cool)">8k10q.com</a> and the receipt is 8K10Q’s.</p>';
     rows.forEach(function(sku){
       var p = PRODUCTS[sku];
       out +=
@@ -193,7 +199,8 @@ function draw(){
           '<div class="amt">$' + p.price.toLocaleString() + '</div>' +
           '<div class="mid"><h3>' + esc(p.name) + '</h3>' +
             '<p>' + esc(SHORT[sku] || "") + '</p></div>' +
-          '<button type="button" class="buy" data-sku="' + sku + '">Buy</button>' +
+          (g.k8 ? '<a class="buy" href="https://8k10q.com/?buy=' + sku + '" style="text-decoration:none;text-align:center">At 8K10Q &rarr;</a>'
+                : '<button type="button" class="buy" data-sku="' + sku + '">Buy</button>') +
         '</div>';
     });
   });
