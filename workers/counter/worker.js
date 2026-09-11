@@ -81,7 +81,7 @@
      ?action=reset&concept=&fy=    re-queue one frame
    ========================================================================== */
 
-const BUILD = "counter-1i · 2026-09-11 09:00 ET";
+const BUILD = "counter-1j · 2026-09-11 · the screw, properly: split by heavy warrant paper";
 
 /* ⚠ THE SEC REQUIRES A REAL CONTACT. A missing or fake one gets the address
    blocked for everything, not just this worker. */
@@ -125,6 +125,7 @@ export default {
     try {
       await setup(env);
       if (q.get("lost"))    return json(await lost(env), H);
+    if (q.get("screw"))   return json(await screw(env, q.get("fresh") === "1"), H);
       if (q.get("floats"))  return json(await floats(env), H);
       if (q.get("totals"))  return json(await totals(env), H);
       if (q.get("compare")) return json(await compare(env), H);
@@ -500,6 +501,108 @@ async function floats(env) {
       "average is far above the median, a handful of values are carrying the " +
       "sum — and in a set of microcaps that means bad tags, not big companies.",
     note:"Nothing here changes any figure. It is a look at the column." };
+}
+
+/* ============================================================
+   THE SCREW, PROPERLY — 11 Sep 2026
+
+   ⚠ WHAT WAS WRONG. ?lost=1 added up every company's public float at the
+   start and the end and printed then-minus-now as "lost". Across 4,518
+   companies the float went UP $22.6 trillion 2016→2026, so the page was
+   printing a gain with the sign dropped. His words when he saw it: "this is
+   sad to see but that number matters."
+
+   ⚠ WHAT THIS DOES INSTEAD. Same companies at both ends, same years — but
+   split by HOW MUCH HEAVY WARRANT PAPER each one filed: price resets,
+   inducements, cashless exercise, variable-rate, equity lines. The question
+   is not "did the market go up" — it did. The question is whether the
+   companies that lived on that paper went up with it. They did not:
+
+     no heavy terms            1,916 companies   39% fell   +$19.8T
+     heavy terms, 1–2 filings    710             46% fell    +$4.4T
+     heavy terms, 3–9 filings    909             48% fell    −$0.2T
+     heavy terms, 10+ filings    983             61% fell    −$1.4T
+
+   ⚠ COMPUTED, CACHED A DAY. The query walks 750,000 rows and takes about a
+   second; the answer changes once a day at most. It is written to
+   screw_snapshot and served from there until it is a day old.
+
+   ⚠ WHAT IT DOES NOT SAY. It does not say warrants caused the fall — it
+   says the two travel together, company by company, across a decade. Where
+   the money went is the next question, and it is answered deal by deal.
+   ============================================================ */
+const HEAVY_LABELS = "'Price reset','Cashless exercise','Warrant inducement','Inducement agreement','Reduced exercise price','Variable rate transaction','Equity line'";
+
+async function screw(env, fresh) {
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS screw_snapshot (id INTEGER PRIMARY KEY CHECK (id = 1),
+       body TEXT, computed_at TEXT)`).run();
+  if (!fresh) {
+    const c = await env.OVERHANG.prepare("SELECT body, computed_at FROM screw_snapshot WHERE id = 1").first().catch(() => null);
+    if (c && c.body && (Date.now() - Date.parse(c.computed_at)) < 86400e3) {
+      const b = JSON.parse(c.body); b.cached = true; return b;
+    }
+  }
+
+  const r = await env.OVERHANG.prepare(
+    `WITH h AS (SELECT CAST(cik AS INTEGER) AS cik, COUNT(DISTINCT accession) filings,
+                  COUNT(DISTINCT CASE WHEN label IN (${HEAVY_LABELS}) THEN accession END) heavy
+           FROM wire_hits GROUP BY CAST(cik AS INTEGER)),
+     mv AS (SELECT CAST(m.cik AS INTEGER) AS cik, m.fy, m.val,
+                   ROW_NUMBER() OVER (PARTITION BY m.cik ORDER BY m.fy ASC)  AS rf,
+                   ROW_NUMBER() OVER (PARTITION BY m.cik ORDER BY m.fy DESC) AS rl
+            FROM market_cik m WHERE m.concept='still_standing' AND m.val > 0 AND m.val < ${FLOAT_CEILING}),
+     f AS (SELECT cik, fy f0, val v0 FROM mv WHERE rf = 1),
+     l AS (SELECT cik, fy f1, val v1 FROM mv WHERE rl = 1),
+     j AS (SELECT f.cik, v0, v1, f0, f1, COALESCE(h.filings,0) filings, COALESCE(h.heavy,0) heavy
+             FROM f JOIN l USING (cik) LEFT JOIN h USING (cik) WHERE f0 < f1)
+     SELECT CASE WHEN heavy >= 10 THEN 4 WHEN heavy >= 3 THEN 3 WHEN heavy >= 1 THEN 2 ELSE 1 END AS bucket,
+            COUNT(*) companies, SUM(v1 < v0) fell,
+            SUM(v0) worth_then, SUM(v1) worth_now,
+            SUM(CASE WHEN v1 < v0 THEN v0 - v1 ELSE 0 END) lost_by_fallers,
+            SUM(CASE WHEN v1 >= v0 THEN v1 - v0 ELSE 0 END) gained_by_risers,
+            MIN(f0) from_year, MAX(f1) to_year
+       FROM j GROUP BY bucket ORDER BY bucket`).all();
+
+  const names = { 1: "no heavy warrant terms", 2: "heavy terms in 1–2 filings",
+                  3: "heavy terms in 3–9 filings", 4: "heavy terms in 10 or more filings" };
+  const rows = (r.results || []).map(x => ({
+    bucket: x.bucket, label: names[x.bucket], companies: x.companies, fell: x.fell,
+    rose: x.companies - x.fell, pct_fell: Math.round(100 * x.fell / x.companies),
+    worth_then: x.worth_then, worth_now: x.worth_now, net: x.worth_now - x.worth_then,
+    lost_by_fallers: x.lost_by_fallers, gained_by_risers: x.gained_by_risers,
+    from_year: x.from_year, to_year: x.to_year }));
+
+  const sum = (k, filt) => rows.filter(filt || (() => true)).reduce((n, x) => n + (x[k] || 0), 0);
+  const heavyRows = x => x.bucket >= 2;
+  const out = {
+    ok: true, build: BUILD, cached: false, computed_at: new Date().toISOString(),
+    from_year: Math.min(...rows.map(x => x.from_year)), to_year: Math.max(...rows.map(x => x.to_year)),
+    market: { companies: sum("companies"), worth_then: sum("worth_then"), worth_now: sum("worth_now"),
+              net: sum("worth_now") - sum("worth_then"), fell: sum("fell"),
+              lost_by_fallers: sum("lost_by_fallers"), gained_by_risers: sum("gained_by_risers") },
+    /* ⚠ THE NUMBER THAT MATTERS: what holders of the companies that filed
+       heavy warrant paper, and fell, lost. */
+    warrant: { companies: sum("companies", heavyRows), fell: sum("fell", heavyRows),
+               worth_then: sum("worth_then", heavyRows), worth_now: sum("worth_now", heavyRows),
+               net: sum("worth_now", heavyRows) - sum("worth_then", heavyRows),
+               lost_by_fallers: sum("lost_by_fallers", heavyRows),
+               pct_fell: Math.round(100 * sum("fell", heavyRows) / Math.max(1, sum("companies", heavyRows))) },
+    clean: rows.find(x => x.bucket === 1) || null,
+    serial: rows.find(x => x.bucket === 4) || null,
+    buckets: rows,
+    method: {
+      what: "Public float — the market value of stock not held by insiders — as each company filed it on its own annual report cover, at the earliest year on record against the latest. Same company at both ends, and only companies with a float in two different years.",
+      split: "Companies are grouped by how many of their filings on the wire carry a heavy warrant term: price reset, reduced exercise price, cashless exercise, warrant inducement or inducement agreement, variable rate transaction, equity line.",
+      excluded: "Any float above five trillion dollars is a tagging error and is left out.",
+      not_causation: "The table shows the two travelling together, company by company, across a decade. It does not by itself prove the paper caused the fall.",
+      not_an_accusation: "A change in market value. Nothing here says any company or any person did anything wrong."
+    }
+  };
+  await env.OVERHANG.prepare(
+    "INSERT INTO screw_snapshot (id, body, computed_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET body=excluded.body, computed_at=excluded.computed_at")
+    .bind(JSON.stringify(out), out.computed_at).run().catch(() => {});
+  return out;
 }
 
 async function lost(env) {

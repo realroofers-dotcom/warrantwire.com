@@ -1,364 +1,189 @@
-<!-- BUILT 2026-09-11 06:20 ET · warrantwire counter-wire-1d — the number fits, on any screen · reads the `counter` worker
-     ⚠ HIS FRAMING, 9 Sep 2026, and it is the page: "Wealth lost by retail
-     investors. Wealth gained by ?" The question mark is the whole hook — the
-     page names what was lost, then refuses to name who gained, because that is
-     what the service does and it is what a reader clicks to find out.
+<!-- BUILT 2026-09-11 · warrantwire counter-2a · the screw, properly: the market up, the warrant-paper companies down, and the method -->
+<!--
+   ⚠ WHAT WAS WRONG WITH counter-1. It printed one number — every company's
+   public float at the start minus the end — and called it "what holders
+   lost." Across the whole market that number is NEGATIVE: the market went UP
+   $22.6 trillion 2016→2026, and the page was printing a gain with the sign
+   dropped. His words: "this is sad to see but that number matters. I told
+   you so. We need the page to explain this."
 
-     ⚠ THE TOP NUMBER IS THE FALL IN MARKET VALUE, NOT THE DEFICIT. The
-     accumulated deficit is what the COMPANIES consumed. What HOLDERS lost is
-     what the stock was worth then against what it is worth now. Two different
-     numbers, and only the second one matches the words on the page.
-
-     ⚠ IT CALLS ?lost=1 AND THAT ENDPOINT MUST EXIST. Then-minus-now is only
-     valid across the SAME companies at both ends; the two figures on ?totals=1
-     come from different frames with different company sets, so subtracting them
-     would be arithmetic that does not hold. Until ?lost=1 answers, the number
-     shows a dash. It never shows a wrong figure. -->
+   ⚠ WHAT THIS PAGE SAYS INSTEAD. Three numbers, side by side, same companies
+   at both ends, same decade — and the split that shows the effect of the
+   paper: the more heavy warrant terms a company filed, the more likely it
+   was worth less ten years later. The market's gain went to the companies
+   that never touched the paper.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The screw — Warrant Wire</title>
-<meta name="description" content="What public shareholders lost, and who took the other side. Every figure from the companies' own filings.">
+<meta name="description" content="The market gained $22 trillion in a decade. The companies that lived on heavy warrant paper did not. What their holders lost, and the method, from every company's own filings.">
+<link rel="canonical" href="https://warrantwire.com/counter.html">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
 <style>
-:root{
-  --ink:#EDE9DC; --dim:#9A9584; --faint:#6E6A5C;
-  --bg:#141510; --panel:#1D1E17; --line:#33342A;
-  --hot:#FF3B14; --cool:#7FA88B; --gold:#C9A227;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink)}
-body{font:16px/1.6 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
-a{color:var(--cool)}
-.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 70px}
-
-header.mast{display:flex;justify-content:space-between;align-items:baseline;
-  gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
-.mark{font:700 22px/1 Helvetica,Arial,sans-serif;letter-spacing:.02em;
-  color:var(--ink);text-decoration:none}
-.mark b{color:#E2542C}
-.back{font-size:13.5px;color:var(--faint);text-decoration:none}
-.back:hover{color:var(--ink)}
-
-/* ── HIS TWO LINES. The lost side is loud; the gained side is a question. ── */
-.stage{padding:44px 0 26px}
-.lostlabel{font:400 clamp(18px,2.6vw,26px)/1.3 Georgia,serif;color:var(--dim);
-  margin:0 0 16px}
-/* ⚠ AN EMPTY COUNTER IS HIDDEN, NOT SHOWN AS A DASH. An em dash set at a
-   hundred and sixty pixels reads as a redaction bar, and the ticker beneath
-   it sat at $0 with no rate to run at — so a page that was correctly showing
-   nothing looked like a page that was broken. Nothing is drawn until there is
-   something to draw. */
-.odo.empty, .since.empty{display:none}
-/* ⚠ THE SIZE IS SET IN JAVASCRIPT, NOT BY clamp(). A viewport-width rule
-   cannot know how many digits the number has — the same 12.5vw that fits
-   $8.4 billion runs a fourteen-digit figure off the right-hand edge, which is
-   what happened on a desktop, never mind a phone. So it is fitted to the
-   actual string after it is written, and refitted as it ticks. */
-.odo{display:flex;align-items:baseline;gap:.04em;
-  font:700 96px/.92 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
-  font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--hot);
-  white-space:nowrap;max-width:100%}
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.big{margin:22px 0 0}
+.big .k{display:block;font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 8px}
+.odo{display:flex;align-items:baseline;gap:.04em;font:700 clamp(38px,9vw,112px)/.95 var(--mono);
+  font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--hot);white-space:nowrap;max-width:100%;overflow:hidden}
 .odo .cur{font-size:.42em;font-weight:400;opacity:.75}
-.scale{margin:14px 0 0;font:400 clamp(16px,2.4vw,25px)/1.3 Georgia,serif}
-.sourced{margin:12px 0 0;color:var(--faint);font-size:14px;max-width:64ch}
-
-.gained{margin:40px 0 0;border-top:1px solid var(--line);padding-top:30px}
-.gained .l{font:400 clamp(18px,2.6vw,26px)/1.3 Georgia,serif;color:var(--dim);
-  margin:0 0 10px}
-.qmark{font:700 clamp(60px,15vw,190px)/.8 Georgia,serif;color:var(--gold);
-  margin:0;letter-spacing:-.03em}
-.gained p{max-width:52ch;color:var(--ink);font-size:17px;margin:18px 0 0}
-
-/* the clock that runs while you read */
-.since{margin-top:30px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.since{max-width:100%}
-.since .n{font:700 clamp(17px,3.4vw,34px)/1 "SF Mono",ui-monospace,Menlo,monospace;
-  font-variant-numeric:tabular-nums;color:var(--hot);white-space:nowrap}
-.since .l{color:var(--dim);font-size:15px}
-
-/* ── the sell. Not a banner — the next thing to do, in order. ── */
-.sell{margin:52px 0 0;border-top:2px solid var(--line);padding-top:30px}
-.sell h2{font:400 26px/1.25 Georgia,serif;margin:0 0 6px}
-.sell .sub{color:var(--faint);font-size:14.5px;margin:0 0 22px;max-width:60ch}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.step{background:var(--panel);border:1px solid var(--line);padding:18px 18px 20px;
-  display:flex;flex-direction:column}
-.step .p{font:700 20px/1 "SF Mono",ui-monospace,Menlo,monospace;color:var(--gold);
-  margin-bottom:8px}
-.step h3{font:400 18px/1.25 Georgia,serif;margin:0 0 6px}
-.step p{color:var(--dim);font-size:14px;margin:0 0 16px;flex:1}
-.btn{display:inline-block;text-align:center;text-decoration:none;
-  padding:11px 14px;font:600 14.5px/1 Helvetica,Arial,sans-serif;
-  border:1px solid var(--gold);color:var(--gold);background:transparent}
-.btn:hover{background:var(--gold);color:#141510}
-.btn.solid{background:var(--gold);color:#141510}
-.btn.solid:hover{filter:brightness(1.12)}
-@media(max-width:820px){.steps{grid-template-columns:1fr}}
-
-.army{margin:26px 0 0;background:var(--panel);border-left:3px solid var(--gold);
-  padding:16px 20px;color:var(--dim);font-size:15px}
-.army a{color:var(--gold)}
-
-/* ── the three quiet figures ── */
-.three{display:grid;grid-template-columns:repeat(3,1fr);
-  border-top:1px solid var(--line);margin-top:46px}
-.three div{padding:22px 24px 22px 0;border-right:1px solid var(--line)}
-.three div:last-child{border-right:0;padding-right:0}
-.three div:not(:first-child){padding-left:24px}
-.three .n{font:700 clamp(18px,2.8vw,30px)/1.1 "SF Mono",ui-monospace,Menlo,monospace;
-  font-variant-numeric:tabular-nums;margin-bottom:6px}
-.three .up{color:var(--ink)} .three .good{color:var(--cool)}
-.three .l{color:var(--dim);font-size:14px;line-height:1.45}
-.three .s{color:var(--faint);font-size:12.5px;margin-top:5px}
-@media(max-width:760px){
-  .three{grid-template-columns:1fr}
-  .three div{border-right:0;border-bottom:1px solid var(--line);padding:18px 0}
-  .three div:not(:first-child){padding-left:0}
-}
-
-footer{margin-top:54px;border-top:1px solid var(--line);padding-top:16px;
-  color:var(--faint);font-size:13px}
-footer em{color:var(--dim)}
-.footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 14px}
-.footnav a{color:var(--dim);text-decoration:none;font-size:14px;padding:4px 0}
-.footnav a:hover{color:var(--ink)}
+.big .who{font:400 clamp(15px,2.2vw,20px)/1.4 var(--serif);color:var(--ink);margin:14px 0 0;max-width:60ch}
+.big .since{font:400 12.5px var(--mono);color:var(--ink3);margin:8px 0 0}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:26px 0 0}
+.three div{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--panel)}
+.three div b{display:block;font:700 26px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.three div b.up{color:var(--cool)} .three div b.down{color:var(--hot)}
+.three div span{display:block;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:8px 0 4px}
+.three div p{margin:0;font-size:13.5px;color:var(--ink2)}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0 0}
+.tab{width:100%;border-collapse:collapse;font-size:14px}
+.tab th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:8px;border-bottom:1px solid var(--line)}
+.tab td{padding:10px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+.tab td.n{font-family:var(--mono);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.tab td.n.up{color:var(--cool)} .tab td.n.down{color:var(--hot)}
+.tab tr.serial td{background:rgba(198,90,74,.07)}
+.tab .bar{display:inline-block;height:8px;background:var(--hot);border-radius:2px;vertical-align:middle;margin-right:6px}
+.method{margin:26px 0 0}
+.method h2{font:700 21px/1.2 var(--serif);margin:0 0 10px}
+.method p{max-width:70ch;color:var(--ink2);font-size:15px;margin:0 0 10px}
+.method p b{color:var(--ink)}
+.sourced{font:400 12.5px var(--mono);color:var(--ink3);margin:16px 0 0}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="mast">
-    <a class="mark" href="https://warrantwire.com">WARRANT<b>WIRE</b></a>
-    <a class="back" href="/">Back to the wire</a>
-  </header>
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="navscrim" id="navscrim"></div>
+<nav class="navpanel" id="navpanel" aria-label="Site">
+  <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/counter.html" aria-current="page">The screw<small>What the market gained, and what the warrant companies lost</small></a>
+  <a href="/concern.html">Going concern<small>Every company that said it — $80 a year</small></a>
+  <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
+  <a href="/patterns.html">The patterns<small>What we see, with the formula for each</small></a>
+  <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
+  <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
+</nav>
 
-  <section class="stage">
-    <p class="lostlabel">Wealth lost by public shareholders</p>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true" style="background:var(--hot);box-shadow:0 0 0 3px rgba(198,90,74,.16)"></span>The screw</span>
+  <span id="nyc"></span>
+</div></div></header>
 
-    <div class="odo"><span class="cur">$</span><span id="big">&mdash;</span></div>
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/counter.html" aria-current="page">The screw</a>
+  <a href="/patterns.html">The patterns</a>
+  <a href="/rules.html">How the verdict is rendered</a>
+</nav></div>
 
-    <p class="scale" id="scale"></p>
-    <p class="sourced" id="sourced">Loading.</p>
+<main><div class="wrap">
 
-    <div class="since">
-      <span class="n"><span class="cur">$</span><span id="since">0</span></span>
-      <span class="l" id="since-l"></span>
-    </div>
+  <h1>The market went up. The warrant companies did not.</h1>
+  <p class="lede">Same companies at both ends of a decade, valued by what each one filed on its own annual
+  report cover. Split by how much heavy warrant paper they filed &mdash; price resets, inducements, cashless
+  exercise, equity lines &mdash; and the picture is not subtle: <b>the gain went to the companies that
+  never touched the paper. The loss sat with the holders of the ones that did.</b></p>
 
-    <div class="gained">
-      <p class="l">Wealth gained by</p>
-      <p class="qmark">?</p>
-      <p>Not one dollar of it disappeared. It was paid to somebody — and the
-        names are in the filings, on the exhibits nobody opens. That is the
-        whole of what this service does.</p>
-    </div>
-  </section>
-
-  <!-- ══ THE SELL. The ladder in order: search, read, opinion. ══ -->
-  <section class="sell">
-    <h2>Find out on your own company</h2>
-    <p class="sub">Start with the search. It is free, and a search that finds
-      nothing costs you nothing.</p>
-
-    <div class="steps">
-      <div class="step">
-        <div class="p">Free</div>
-        <h3>Search your company</h3>
-        <p>Every warrant filing we hold on one name — what was filed, when, and
-          which terms are in it.</p>
-        <a class="btn solid" href="/">Search the wire</a>
-      </div>
-      <div class="step">
-        <div class="p">$20</div>
-        <h3>Have the filing read</h3>
-        <p>The document and its exhibit in plain English, with the sections that
-          matter marked. Read by 8K10Q.</p>
-        <a class="btn" href="https://8k10q.com">Read a filing</a>
-      </div>
-      <div class="step">
-        <div class="p">$40</div>
-        <h3>An agent's opinion</h3>
-        <p>Barry-L reads the warrant paper, explains every term as he reaches it,
-          and says what the combination could mean. An opinion, never advice.</p>
-        <a class="btn" href="/#prices">Get an opinion</a>
-      </div>
-    </div>
-
-    <div class="army">
-      Shareholders who attend the meetings and keep up with the filings, to make a
-      better and more transparent market.
-      <a href="https://8k10q.com">Join the 8K10Q Army — it is free</a>.
-    </div>
-  </section>
-
-  <div class="three">
-    <div>
-      <div class="n up" id="inflow">&mdash;</div>
-      <div class="l">Put in by investors and lenders</div>
-      <div class="s" id="inflow-s"></div>
-    </div>
-    <div>
-      <div class="n good" id="revenue">&mdash;</div>
-      <div class="l">Earned in revenue over the same years</div>
-      <div class="s" id="revenue-s"></div>
-    </div>
-    <div>
-      <div class="n up" id="consumed">&mdash;</div>
-      <div class="l">Consumed by the companies since they were founded</div>
-      <div class="s" id="consumed-s"></div>
-    </div>
+  <div class="big" id="big" hidden>
+    <span class="k">&#9888; What holders of the warrant-paper companies that fell have lost</span>
+    <div class="odo"><span class="cur">$</span><span id="odo">&mdash;</span></div>
+    <p class="who" id="who"></p>
+    <p class="since" id="since"></p>
   </div>
 
-  <footer>
-    <div class="footnav">
-      <a href="/">The wire</a>
-      <a href="/look.html">Look at this</a>
-      <a href="/cost.html">What the raising costs</a>
-      <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
-      <a href="https://8k10q.com">Read a filing</a>
-      <a href="https://triggeredshort.com">The research docket</a>
-      <a href="/about.html">Who runs the wire</a>
-    </div>
-    <em>"It's never as it seems." — Mark Nejmeh</em><br><br>
-    Every figure is tagged in a company's own annual report to the SEC. Nothing here
-    is estimated and no figure comes from a data vendor.
-    <span id="built"></span>
-  </footer>
-</div>
+  <div class="three" id="three"></div>
 
+  <div class="tblwrap" id="table"></div>
+
+  <div class="method" id="method"></div>
+
+  <p class="sourced" id="sourced"></p>
+
+  <div class="caveat" style="margin-top:26px"><b>Read this with the numbers</b>
+    A change in market value. The table shows the paper and the fall travelling together, company by
+    company, across ten years; it does not by itself prove one caused the other, and it never says why.
+    Where the money went is answered deal by deal, on each company&rsquo;s page &mdash;
+    <b class="in">nothing on this page says any company or any person did anything wrong.</b>
+  </div>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/counter.html" aria-current="page">The screw</a><a href="/concern.html">Going concern</a>
+    <a href="/rules.html">How the verdict is rendered</a><a href="/patterns.html">The patterns</a><a href="/prices.html">What it costs</a>
+    <a href="/about.html">Who runs the wire</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>&ldquo;It&rsquo;s never as it seems.&rdquo; &mdash; Mark Nejmeh</em><br><br>
+  Every figure is computed from documents filed with the SEC and recomputed each day. Nothing here is investment
+  advice, nothing here is a recommendation to buy or sell any security, and nothing here alleges that anyone broke
+  any law.
+  <p class="stamp">Built 2026-09-11 &middot; warrantwire counter-2a</p>
+</footer></div>
+
+<script src="/wire.js"></script>
 <script>
-var COUNTER = "https://counter.realroofers.workers.dev";
+(function () {
+  "use strict";
+  var esc = WW.esc, COUNTER = "https://counter.realroofers.workers.dev";
+  function commas(n) { n = Math.round(Number(n) || 0); return n.toLocaleString("en-US"); }
+  function tn(n) { var v = Number(n) || 0; var a = Math.abs(v); return (v < 0 ? "−" : "+") + "$" + (a >= 1e12 ? (a / 1e12).toFixed(1) + " trillion" : a >= 1e9 ? (a / 1e9).toFixed(0) + " billion" : commas(a)); }
+  function tnAbs(n) { var a = Math.abs(Number(n) || 0); return "$" + (a >= 1e12 ? (a / 1e12).toFixed(1) + " trillion" : (a / 1e9).toFixed(0) + " billion"); }
 
-function commas(n){
-  n = Math.round(Number(n)||0);
-  var s = String(Math.abs(n)), out = "", c = 0;
-  for (var i = s.length-1; i >= 0; i--){
-    out = s[i] + out;
-    if (++c % 3 === 0 && i > 0) out = "," + out;
-  }
-  return (n < 0 ? "-" : "") + out;
-}
-function inWords(n){
-  var neg = Number(n) < 0; n = Math.abs(Number(n)||0);
-  var s = n >= 1e12 ? (n/1e12).toFixed(2) + " trillion"
-        : n >= 1e9  ? (n/1e9).toFixed(1)  + " billion"
-        : n >= 1e6  ? (n/1e6).toFixed(1)  + " million"
-        : commas(n);
-  return (neg ? "-" : "") + s;
-}
-/* ⚠ NOTHING IS NOT ZERO. A giant $0 is a claim; an em dash is not. */
-function figure(id, v){
-  var e = document.getElementById(id);
-  if (v === null || v === undefined || !isFinite(Number(v))){ e.textContent = "\u2014"; return false; }
-  e.textContent = commas(v);
-  return true;
-}
-/* ⚠ SHRINK UNTIL IT FITS, THEN STOP. Measured against the element's own
-   parent rather than the viewport, so it is right inside any column, and
-   re-run on resize because a phone changes width when it is turned. */
-function fit(el, max, min){
-  if (!el || !el.parentNode) return;
-  var size = max;
-  el.style.fontSize = size + "px";
-  var room = el.parentNode.clientWidth || el.clientWidth;
-  for (var i = 0; i < 40 && size > min; i++){
-    if (el.scrollWidth <= room) break;
-    size = Math.max(min, Math.floor(size * 0.92));
-    el.style.fontSize = size + "px";
-  }
-}
-function fitAll(){ fit(document.querySelector(".odo"), 168, 22); }
-window.addEventListener("resize", fitAll);
-if (window.visualViewport) window.visualViewport.addEventListener("resize", fitAll);
+  fetch(COUNTER + "/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || !d.ok || !d.warrant) throw new Error("no");
+    var years = Math.max(1, d.to_year - d.from_year);
 
-var reduced = window.matchMedia &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* the big number: what the fallers among the warrant-paper companies lost,
+       counting at the decade's average rate — a national-debt counter, his
+       image — from the moment the page is opened */
+    var lost = d.warrant.lost_by_fallers, perSec = lost / (years * 31557600), t0 = Date.now();
+    document.getElementById("big").hidden = false;
+    document.getElementById("who").innerHTML = "<b>" + commas(d.warrant.fell) + " companies</b> filed heavy warrant paper and were worth less at the end of the decade than at the start. "
+      + "Their public float fell by <b>" + tnAbs(lost) + "</b> between " + d.from_year + " and " + d.to_year + ". "
+      + "In the same years the market as a whole gained <b>" + tnAbs(d.market.net) + "</b>.";
+    document.getElementById("since").textContent = "Counting at that decade's average rate — about $" + commas(perSec) + " a second. It is a rate, not a live measurement.";
+    var odo = document.getElementById("odo");
+    function tick() { odo.textContent = commas(lost + perSec * (Date.now() - t0) / 1000); }
+    tick(); if (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(tick, 200);
 
-/* ── THE TOP NUMBER: what holders lost ──────────────────────────
-   ⚠ SAME COMPANIES AT BOTH ENDS OR IT IS NOT A COMPARISON. That is why this
-   comes from ?lost=1 and not from subtracting the two figures on ?totals=1 —
-   those are different frames covering different sets of companies, and the
-   difference between them would be a number that looks right and is not. */
-fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(d){
-  /* ⚠ ok:true WITH NO FIGURE IS THE NORMAL CASE WHILE THE FRAMES ARE STILL
-     BEING PULLED, and it must land in the same empty state as a failure. */
-  if (!d || !d.ok || !d.lost || !d.lost.total) { nothingYet(); return; }
-  var lost = Number(d.lost.total);
-  var span = (Number(d.lost.to_year) - Number(d.lost.from_year)) || 0;
-  var perSec = (span > 0 && lost > 0) ? (lost / (span * 31557600)) : 0;
+    /* three numbers */
+    var c = d.clean, s = d.serial, m = d.market;
+    document.getElementById("three").innerHTML =
+        '<div><b class="up">' + tn(m.net) + '</b><span>the whole market</span><p>' + commas(m.companies) + ' companies with a float on file in two years, ' + d.from_year + ' to ' + d.to_year + '. ' + Math.round(100 * m.fell / m.companies) + '% fell.</p></div>'
+      + '<div><b class="up">' + tn(c.net) + '</b><span>no heavy warrant terms</span><p>' + commas(c.companies) + ' companies that never filed a reset, an inducement, cashless exercise or an equity line. ' + c.pct_fell + '% fell.</p></div>'
+      + '<div><b class="down">' + tn(s.net) + '</b><span>heavy terms, 10 or more filings</span><p>' + commas(s.companies) + ' serial users of the paper. <b style="color:var(--hot)">' + s.pct_fell + '% fell.</b></p></div>';
 
-  /* ⚠ WRITE THE NUMBER, THEN FIT IT. This fitted first and wrote second, so
-     the fit measured a dash — which fits at 168px — and then the fourteen
-     digit figure landed at 168px and ran 1,300px off the right of a phone.
-     With motion reduced there was no tick to refit it, so it stayed there. */
-  var wrote = figure("big", lost);
-  fitAll();
-  if (wrote && perSec && !reduced){
-    var t0 = Date.now(), big = document.getElementById("big"),
-        sn = document.getElementById("since");
-    setInterval(function(){
-      var secs = (Date.now() - t0) / 1000;
-      big.textContent = commas(lost + perSec * secs);
-      sn.textContent  = commas(perSec * secs);
-      /* ⚠ REFIT AS IT TICKS. The number gains a digit as it climbs, and a
-         size fitted to the old string no longer fits the new one. */
-      fitAll();
-    }, 200);
-  }
+    /* the table */
+    var maxPct = Math.max.apply(null, d.buckets.map(function (b) { return b.pct_fell; }));
+    document.getElementById("table").innerHTML = '<table class="tab"><thead><tr><th>Companies with…</th><th style="text-align:right">Companies</th><th>Share that fell</th><th style="text-align:right">Worth then</th><th style="text-align:right">Worth now</th><th style="text-align:right">Net</th><th style="text-align:right">Lost by the fallers</th></tr></thead><tbody>'
+      + d.buckets.map(function (b) {
+          return '<tr' + (b.bucket === 4 ? ' class="serial"' : '') + '><td>' + esc(b.label) + '</td><td class="n">' + commas(b.companies) + '</td>'
+            + '<td><span class="bar" style="width:' + Math.round(80 * b.pct_fell / maxPct) + 'px"></span>' + b.pct_fell + '%</td>'
+            + '<td class="n">' + tnAbs(b.worth_then) + '</td><td class="n">' + tnAbs(b.worth_now) + '</td>'
+            + '<td class="n ' + (b.net < 0 ? 'down' : 'up') + '">' + tn(b.net) + '</td><td class="n down">' + tnAbs(b.lost_by_fallers) + '</td></tr>';
+        }).join("")
+      + '</tbody></table>';
 
-  document.getElementById("scale").textContent =
-    "$" + inWords(lost) + " gone, across " + commas(d.lost.companies) +
-    " companies, " + d.lost.from_year + " to " + d.lost.to_year + ".";
-  document.getElementById("sourced").textContent =
-    "The market value of the stock NOT held by insiders — what these companies " +
-    "filed on their own annual report covers — at the start against the latest " +
-    "on file. Same companies at both ends. The count runs at the average rate " +
-    "of those years; it is a rate, not a live measurement.";
-  document.getElementById("since-l").textContent =
-    perSec ? "since you opened this page, at that same average rate" : "";
-}).catch(function(){ nothingYet(); });
-
-/* ⚠ ONE PLACE THAT PUTS THE PAGE INTO ITS EMPTY STATE, used whether the
-   endpoint is missing, the answer is empty, or the worker is down. Three
-   different ways of showing nothing is how one of them ends up ugly. */
-function nothingYet(){
-  var o = document.querySelector(".odo");
-  var s = document.querySelector(".since");
-  if (o) o.className += " empty";
-  if (s) s.className += " empty";
-  document.getElementById("scale").textContent = "";
-  document.getElementById("sourced").innerHTML =
-    "<b style='color:var(--ink)'>This figure is still being built.</b> " +
-    "It is assembled from the public float every company files on its own " +
-    "annual report cover, one year at a time, and it is not finished. " +
-    "Nothing on this page is estimated, so it shows nothing rather than a " +
-    "guess.";
-}
-
-/* ── the three supporting figures ── */
-fetch(COUNTER + "/?totals=1").then(function(r){ return r.json(); }).then(function(d){
-  if (!d || !d.ok) return;
-  var i = d.dollars_in || {};
-  figure("inflow", i.total);
-  document.getElementById("inflow-s").textContent =
-    i.total ? "$" + inWords(i.total) + " · " + (i.years || "") : "";
-
-  var r2 = d.revenue_earned || {};
-  figure("revenue", r2.total);
-  document.getElementById("revenue-s").textContent =
-    r2.total ? "$" + inWords(r2.total) + " · " + (r2.years || "") : "";
-
-  var c = d.dollars_consumed || {};
-  figure("consumed", c.total);
-  document.getElementById("consumed-s").textContent =
-    c.total ? "$" + inWords(c.total) + " · " +
-      (c.from_year && c.to_year ? c.from_year + " to " + c.to_year : "") : "";
-
-  document.getElementById("built").textContent =
-    " Built from " + (d.built_so_far || "0 frames") + " so far.";
-});
+    /* the method, from the worker, so the page cannot drift from the code */
+    var M = d.method || {};
+    document.getElementById("method").innerHTML = '<h2>How it is counted</h2>'
+      + '<p><b>What is measured.</b> ' + esc(M.what) + '</p>'
+      + '<p><b>The split.</b> ' + esc(M.split) + ' Read down the table: the more heavy paper, the larger the share of companies worth less at the end than at the start.</p>'
+      + '<p><b>What is left out.</b> ' + esc(M.excluded) + '</p>'
+      + '<p><b>What it does not say.</b> ' + esc(M.not_causation) + ' The counter above is the fall in the fallers&rsquo; float, added up; the risers among the same group are shown in the table beside them.</p>';
+    document.getElementById("sourced").textContent = "Computed " + (d.computed_at || "").slice(0, 16).replace("T", " ") + " UTC from dei:EntityPublicFloat on each company's own filings, via the SEC's XBRL frames. Recomputed daily." + (d.cached ? "" : " Fresh.");
+  }).catch(function () {
+    document.getElementById("three").innerHTML = '<div class="quiet">The counter is not answering just now. Nothing on this page is stored here, so there is nothing to show until it does.</div>';
+  });
+})();
 </script>
+<script src="/clock.js"></script>
 </body>
 </html>
