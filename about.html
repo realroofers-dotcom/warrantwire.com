@@ -68,7 +68,13 @@ h2{font:700 clamp(21px,3vw,27px)/1.2 var(--serif);margin:0 0 12px}
 .facts li{display:flex;gap:18px;padding:11px 0;border-top:1px solid var(--line2);font-size:15.5px}
 .facts li:first-child{border-top:0}
 .facts .k{flex:0 0 172px;color:var(--ink);font-weight:600}
-.facts span:last-child{color:var(--ink2)}
+.facts span:last-child{color:var(--ink2);min-width:0;overflow-wrap:anywhere}
+/* ⚠ THE PHONE. A 172px label beside an email address is wider than 375px,
+   and an address does not break. The label goes above the value instead. */
+@media(max-width:560px){
+  .facts li{flex-direction:column;gap:3px}
+  .facts .k{flex:none}
+}
 
 .adslot{min-height:90px;margin:30px 0;display:flex;align-items:center;justify-content:center;
   border:1px solid var(--line2);border-radius:4px;padding:10px}

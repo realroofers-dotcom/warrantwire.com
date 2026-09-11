@@ -289,8 +289,13 @@ fetch(COUNTER + "/?lost=1").then(function(r){ return r.json(); }).then(function(
   var span = (Number(d.lost.to_year) - Number(d.lost.from_year)) || 0;
   var perSec = (span > 0 && lost > 0) ? (lost / (span * 31557600)) : 0;
 
+  /* ⚠ WRITE THE NUMBER, THEN FIT IT. This fitted first and wrote second, so
+     the fit measured a dash — which fits at 168px — and then the fourteen
+     digit figure landed at 168px and ran 1,300px off the right of a phone.
+     With motion reduced there was no tick to refit it, so it stayed there. */
+  var wrote = figure("big", lost);
   fitAll();
-  if (figure("big", lost) && perSec && !reduced){
+  if (wrote && perSec && !reduced){
     var t0 = Date.now(), big = document.getElementById("big"),
         sn = document.getElementById("since");
     setInterval(function(){

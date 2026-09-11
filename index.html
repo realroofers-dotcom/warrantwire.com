@@ -271,7 +271,7 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .pbfree{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;
   border:1px solid var(--cool);border-radius:6px;padding:16px 20px;
   background:var(--panel);max-width:860px;margin:0 0 18px}
-.pbfree b{font:700 22px/1 var(--mono);color:var(--cool);white-space:nowrap}
+.pbfree > b{font:700 22px/1 var(--mono);color:var(--cool);white-space:nowrap}
 .pbfree p{margin:0;font-size:14.5px;color:var(--ink2)}
 .pbcols{display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:940px}
 @media(max-width:820px){.pbcols{grid-template-columns:1fr;gap:20px}}
@@ -279,8 +279,13 @@ header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#19
 .pbcol .who{margin:0 0 12px;font-size:13px;color:var(--ink3);max-width:44ch}
 .pbrow{display:grid;grid-template-columns:78px 1fr;gap:14px;align-items:baseline;
   padding:12px 0;border-top:1px solid var(--line)}
-.pbrow b{font:700 19px/1.1 var(--mono);color:var(--ink);white-space:nowrap}
-.pbrow b small{display:block;font:400 11px/1.4 var(--sans);color:var(--ink3);margin-top:4px}
+/* ⚠ THE PRICE IS THE DIRECT CHILD. `.pbrow b` caught every <b> inside the
+   row — including bold words in the paragraphs — and made them nowrap. One
+   long bold phrase then held the whole column open at 650px on a phone and
+   the page scrolled sideways. The price alone is the thing that must not
+   break. */
+.pbrow > b{font:700 19px/1.1 var(--mono);color:var(--ink);white-space:nowrap}
+.pbrow > b small{display:block;font:400 11px/1.4 var(--sans);color:var(--ink3);margin-top:4px}
 .pbrow h4{margin:0 0 3px;font:600 14.5px var(--sans);color:var(--ink)}
 .pbrow p{margin:0 0 9px;font-size:13.5px;line-height:1.55;color:var(--ink2)}
 .pbrow .wbuy{padding:8px 13px;font-size:13px}
@@ -765,6 +770,77 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
 @media(max-width:620px){
   .bkcorner{width:auto}
 }
+
+/* ============================================================
+   ⚠ THE PHONE. 11 Sep 2026.
+
+   At 375px the page was 735px wide and scrolled sideways — the search
+   button, the buy buttons and half of every sentence were off the right
+   edge. Not one big mistake; a handful of small ones that only show up
+   when the screen is narrower than the widest thing on it.
+
+   THE GRID CHILDREN COULD NOT SHRINK. A grid item is `min-width:auto`
+   by default, which means "as wide as my widest unbreakable thing". One
+   nowrap button inside the column and the whole column, the rail and the
+   page went with it. `min-width:0` lets the column be the width of the
+   screen and makes the contents deal with it — which the rest of this
+   block does.
+
+   Everything here sits LAST in the stylesheet on purpose, so it wins
+   without touching the rules above it.
+   ============================================================ */
+.shell > *{min-width:0}
+.about,.gate,.caveat,.pbsum,.pbfree,.rung,.prow{min-width:0}
+
+/* tables scroll inside their own box; the page never does */
+.pbsamp,.gigsplit{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pbsamp thead,.pbsamp tbody,.pbsamp tr,.gigsplit thead,.gigsplit tbody,.gigsplit tr{display:table;width:100%;table-layout:fixed}
+
+@media(max-width:620px){
+  /* the logo's nudge is for lining up over "Every" on a wide screen; on a
+     phone there is nothing to line up with and 24px is the difference
+     between fitting and not */
+  .logo{margin-left:0}
+
+  /* buttons wrap their words rather than hold the page open */
+  .wbuy,.go,.finder button,.topbuy button{white-space:normal}
+  .go{text-align:left}
+
+  /* the free-search box: price, words and button stack */
+  .pbfree{grid-template-columns:1fr;gap:10px}
+
+  /* the search box and its button: on a narrow screen the button goes
+     under the box at full width, not beside it at a third of it */
+  .finder{flex-wrap:wrap}
+  .finder input{flex:1 1 100%}
+  .finder button{flex:1 1 100%}
+
+  /* price rows: the price sits above the words, not beside them */
+  .pbrow{grid-template-columns:1fr;gap:6px}
+  .prow{grid-template-columns:1fr}
+
+  /* the rail's contents never need to be wider than the screen */
+  .rail{padding:16px 14px}
+  .k8 svg{max-width:100%}
+}
+
+/* ⚠ THE FLAG AND THE MENU SAT ON THE PLAYER. On a phone the player is in
+   the flow at the top of the page, and the two fixed buttons in the top
+   right corner landed straight on its title — "Amalia — The Mo[rning
+   Squawk]" with a Look-at-this button over the rest. The stack starts
+   below them now. When the player and the bulletin are both hidden the
+   stack has no height, but the margin still holds — so the masthead
+   clears the buttons too, with no second rule needed. */
+@media(max-width:820px){
+  #topstack{margin-top:72px}
+}
+
+/* ⚠ THE NET. Every cause above is fixed by name; this is for the one that
+   is not, so a stray nowrap somewhere can never again make the whole page
+   scroll sideways. It hides horizontal overflow at the body, nothing
+   else. */
+html,body{overflow-x:clip}
+@supports not (overflow-x:clip){ html,body{overflow-x:hidden} }
 </style>
 </head>
 <body>
@@ -1814,10 +1890,20 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
         /* ⚠ THE TERMS COME OFF THE FILINGS WE ARE NOT SHOWING. A reader learns
            WHAT is in this company's paper without learning WHICH document it is
            in — which is exactly the line between the free answer and the $12. */
-        var allMarks = [];
+        /* ⚠ DEDUPED IN PLAIN ENGLISH, THE SAME WAY THE FREE ROWS ARE. This
+           deduped the raw phrases only, so a search for TOVX printed "Paid
+           to convert early" twice — "Warrant inducement" and "Inducement
+           agreement" are two phrases with one meaning. The free rows had
+           this fixed already; the search result had not. The first raw
+           phrase wins and keeps its own tooltip. */
+        var allMarks = [], seenPlain = {};
         (d.rows || []).forEach(function (f) {
           String(f.labels || "").split(" | ").forEach(function (l) {
-            if (l && allMarks.indexOf(l) < 0) allMarks.push(l);
+            if (!l) return;
+            var pl = String(plainTag(l)).toLowerCase();
+            if (seenPlain[pl]) return;
+            seenPlain[pl] = 1;
+            allMarks.push(l);
           });
         });
 

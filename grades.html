@@ -92,6 +92,13 @@ footer em{color:var(--ink2)}
 .footnav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0}
 .footnav a:hover{color:var(--ink)}
 .quiet{color:var(--ink3);padding:14px 0;font-size:14px}
+/* ⚠ THE PHONE, 11 Sep 2026. A table of filings is wider than a phone and
+   always will be — dates, forms, grades and names do not fit in 375px. It
+   scrolls inside its own box now, with the rest of the page standing still,
+   instead of dragging the whole page sideways. */
+#table,#firms,#key{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html,body{overflow-x:clip}
+@supports not (overflow-x:clip){ html,body{overflow-x:hidden} }
 </style>
 </head>
 <body>
