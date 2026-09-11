@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-2o · 2026-09-11 · the verdicts, the gig ledger, Stripe Connect onboarding and payouts";
+const BUILD = "pay-3a · 2026-09-11 · Wall St Domains listings (wsd_*), a subscription with add-ons, ?paid= for the seller page";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -76,7 +76,14 @@ const BUILD = "pay-2o · 2026-09-11 · the verdicts, the gig ledger, Stripe Conn
 const SITE = {
   wire:  { name: "Warrant Wire",   suffix: "WIRE",    home: "https://warrantwire.com" },
   k8:    { name: "8K10Q",          suffix: "8K10Q",   home: "https://8k10q.com" },
-  ts:    { name: "Triggered Short",suffix: "RESEARCH",home: "https://triggeredshort.com" }
+  ts:    { name: "Triggered Short",suffix: "RESEARCH",home: "https://triggeredshort.com" },
+  /* ⚠ WALL ST DOMAINS — 11 Sep 2026. The domain marketplace. Its seller
+     checkout was a form that took a card number and charged nothing; the
+     money now comes through here, same account, same webhook, same books.
+     `back` is where the buyer lands afterwards — that site has no
+     thanks.html, it has a seller page that reads the session id. */
+  wsd:   { name: "Wall St Domains", suffix: "WALLSTDOM", home: "https://wallstdomains.com",
+           back: "/list-domain?paid={CHECKOUT_SESSION_ID}", off: "/list-domain?cancelled=1" }
 };
 
 /* THE PRICE LIST. The pages must match this; this is what charges.
@@ -199,7 +206,29 @@ const SKU = {
 
   watch:        { site:"k8",   cents:  6600, mode:"subscription",
                   label:"8K10Q — watch a company",
-                  grants:"watch", days: 30 }
+                  grants:"watch", days: 30 },
+
+  /* ---------- WALL ST DOMAINS — a seller's listing, 11 Sep 2026 ----------
+     The prices the site has shown since March and never once charged:
+     $15 a month on a card, or $240 for the year paid once; the Premium
+     badge $99 a year and the Partnership option $60 a year as add-ons.
+     `ref` on the sale is the seller's submission id on the marketplace, so
+     the listing that was paid for is the one that goes live. */
+  wsd_month:    { site:"wsd",  cents:  1500, mode:"subscription",
+                  label:"Wall St Domains — your listing, monthly",
+                  grants:"listing", days: 31 },
+
+  wsd_year:     { site:"wsd",  cents: 24000, mode:"payment",
+                  label:"Wall St Domains — your listing, one year, paid once",
+                  grants:"listing", days: 365 },
+
+  wsd_premium:  { site:"wsd",  cents:  9900, mode:"payment",
+                  label:"Wall St Domains — Premium listing, one year",
+                  grants:"premium", days: 365 },
+
+  wsd_partner:  { site:"wsd",  cents:  6000, mode:"payment",
+                  label:"Wall St Domains — Partnership option, one year",
+                  grants:"partner", days: 365 }
 
   /* RETIRED, kept as history: opinion_10 ($129 for ten when one was $16),
      reader ($1,340) and pro ($3,990) — none can be sold against an $1,800
@@ -269,6 +298,10 @@ export default {
         return new Response(null, { status: 303, headers: { location: made.url } });
       }
       if (q.get("me"))  return json(await me(env, q), cors);
+      /* the seller page on Wall St Domains, back from Stripe: was this session paid? */
+      if (q.get("paid")) return json(await sessionPaid(env, q), cors);
+      /* the admin desk there: every payment recorded against one submission id */
+      if (q.get("listing")) return json(await listingPaid(env, q), cors);
       /* the buyer's say on a reader's verdict: worth it, or not */
       if (q.get("verdict_ok")) return json(await buyerSays(env, q), cors);
       /* a reader setting up payouts: Stripe Connect Express onboarding */
@@ -415,11 +448,14 @@ async function buy(env, q, request) {
     items[rv].reader = w.email;
   }
 
-  /* ⚠ A SUBSCRIPTION CANNOT SHARE A SESSION WITH A ONE-OFF PAYMENT. Stripe
-     refuses it, and it would refuse it AFTER the buyer had pressed pay. Better
-     to say so here. */
-  if (items.length > 1 && items.some(x => x.mode === "subscription"))
-    throw new Error("a subscription has to be bought on its own");
+  /* ⚠ TWO SUBSCRIPTIONS CANNOT SHARE A SESSION. One subscription CAN carry
+     one-off lines — Stripe puts them on the first invoice — which is how a
+     monthly listing takes its add-ons (11 Sep 2026). The subscription has to
+     be the first thing, because the first thing sets the session's mode. */
+  const subs = items.filter(x => x.mode === "subscription").length;
+  if (subs > 1) throw new Error("one subscription at a time");
+  if (subs === 1 && sku.mode !== "subscription")
+    throw new Error("the subscription goes first");
 
   /* ⚠ STRIPE COLLECTS THE ADDRESS ON A PLAIN LINK. Every page that has already
      asked for one still passes it and behaves exactly as before; only the link
@@ -441,8 +477,8 @@ async function buy(env, q, request) {
      brands — this is what stops a chargeback from confusion. */
   const descriptor = ("TS " + site.suffix).slice(0, 22);
 
-  const back = site.home + "/thanks.html?s={CHECKOUT_SESSION_ID}";
-  const off  = site.home + "/?cancelled=1";
+  const back = site.home + (site.back || "/thanks.html?s={CHECKOUT_SESSION_ID}");
+  const off  = site.home + (site.off  || "/?cancelled=1");
 
   const form = new URLSearchParams();
   form.set("mode", sku.mode);
@@ -476,7 +512,12 @@ async function buy(env, q, request) {
   });
 
   if (sku.mode === "subscription") {
-    form.set("line_items[0][price_data][recurring][interval]", "month");
+    /* only the subscription lines recur; the add-ons on the same session are
+       one-off and land on the first invoice */
+    items.forEach((it, i) => {
+      if (it.mode === "subscription")
+        form.set("line_items[" + i + "][price_data][recurring][interval]", "month");
+    });
   } else {
     /* a one-off payment can carry its own descriptor */
     form.set("payment_intent_data[statement_descriptor_suffix]", site.suffix.slice(0, 10));
@@ -561,6 +602,13 @@ async function webhook(env, request) {
       } catch (e) { had = null; }
       if (had) continue;
       await grant(env, m.email, name, one, m.ref, o.id + "#" + name, one.cents, one.reader || null);
+      /* ⚠ A SUBSCRIPTION'S ID IS KEPT so that when it is cancelled the
+         entitlement ends with it (see customer.subscription.deleted). Before
+         this it was never written, so nothing ever ended. */
+      if (one.mode === "subscription" && o.subscription) {
+        await env.OVERHANG.prepare("UPDATE entitlements SET stripe_sub=? WHERE stripe_session=?")
+          .bind(String(o.subscription), o.id + "#" + name).run().catch(()=>{});
+      }
       await log(env, { kind:"paid", sku:name, email:m.email, ref:m.ref,
                        cents:one.cents, session:o.id + "#" + name,
                        live: o.livemode ? 1 : 0 });
@@ -583,7 +631,7 @@ async function webhook(env, request) {
           session: o.id + "#" + name, on: m.on || "wire", live: o.livemode ? 1 : 0 });
       }
       await toAccountant(env, {
-        business: one.site === "k8" ? "8k10q" : "wire",
+        business: one.site === "k8" ? "8k10q" : one.site === "wsd" ? "wallstdomains" : "wire",
         source: "stripe", gross: one.cents / 100,
         sku: name, ref: m.ref || "", who: m.email || "",
         id: o.id + "#" + name, live: o.livemode ? 1 : 0 });
@@ -854,6 +902,47 @@ async function refund(env, q) {
   await env.OVERHANG.prepare("UPDATE entitlements SET status='refunded' WHERE stripe_session=?").bind(row.session).run().catch(()=>{});
   await log(env, { kind:"refunded", email: row.buyer, ref: row.ticker, cents: row.gross, session: row.session, note: "verdict by " + row.reader });
   return { ok:true, refund: j.id, row };
+}
+
+/* ⚠ WHAT ONE CHECKOUT SESSION BOUGHT — asked by the Wall St Domains seller
+   page when Stripe sends the buyer back with the session id in the address.
+   The session id is Stripe's own unguessable token; nothing is granted here,
+   the webhook did that. If the webhook has not landed yet (it is usually a
+   second or two behind the redirect), `paid` is false and the page asks
+   again. Returns the submission id (`ref`) so the page can mark the right
+   listing paid, and the email so the seller's record and the receipt agree. */
+async function sessionPaid(env, q) {
+  const s = String(q.get("paid") || "").trim();
+  if (!/^cs_(live|test)_[A-Za-z0-9]+$/.test(s)) throw new Error("that is not a checkout session");
+  const r = await env.OVERHANG.prepare(
+    `SELECT email, sku, grants, ref, ends_on, cents, stripe_sub
+       FROM entitlements WHERE stripe_session LIKE ? AND status='active'`)
+    .bind(s + "#%").all().catch(()=>({results:[]}));
+  const rows = r.results || [];
+  if (!rows.length) return { ok:true, paid:false, session:s,
+    note:"not recorded yet — Stripe's confirmation may still be on its way; ask again in a moment" };
+  return { ok:true, paid:true, session:s, email: rows[0].email, ref: rows[0].ref || null,
+    skus: rows.map(x => x.sku), grants: rows.map(x => x.grants),
+    ends_on: rows[0].ends_on, cents: rows.reduce((n, x) => n + (x.cents || 0), 0),
+    subscription: rows.some(x => x.stripe_sub) };
+}
+
+/* ⚠ THE PAYMENT RECORD FOR ONE LISTING, by the marketplace's submission id
+   (a UUID it made itself — not guessable, and it names nothing but that one
+   seller's own listing). The marketplace database cannot be told "paid" from
+   a browser, and should not be; this is where the truth of a listing's
+   payment lives, and its admin desk reads it from here. */
+async function listingPaid(env, q) {
+  const ref = String(q.get("listing") || "").trim();
+  if (!/^[0-9a-fA-F-]{36}$/.test(ref)) throw new Error("that is not a submission id");
+  const r = await env.OVERHANG.prepare(
+    `SELECT email, sku, grants, started_on, ends_on, cents, status, stripe_sub, stripe_session
+       FROM entitlements WHERE ref = ? AND sku LIKE 'wsd_%' ORDER BY id`)
+    .bind(ref).all().catch(()=>({results:[]}));
+  const rows = (r.results || []).map(x => ({ paid: x.status === "active", email: x.email, sku: x.sku,
+    grants: x.grants, started_on: x.started_on, ends_on: x.ends_on, cents: x.cents, status: x.status,
+    subscription: !!x.stripe_sub, session: String(x.stripe_session || "").split("#")[0] }));
+  return { ok:true, ref, paid: rows.some(x => x.paid), rows };
 }
 
 async function me(env, q) {
