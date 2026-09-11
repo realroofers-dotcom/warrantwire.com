@@ -73,14 +73,20 @@ function Deploy-One([string]$n) {
   $file = Join-Path $root "workers\$n\worker.js"
   if (-not (Test-Path $file)) { throw "no such file: $file" }
   $code = [IO.File]::ReadAllText($file, [Text.Encoding]::UTF8)
-  # keep whatever the live worker is bound to
+  # keep whatever the live worker is bound to; on a FIRST deploy there is
+  # nothing live yet, so the bindings come from workers/<name>/bindings.json
   $live = @()
   try { $live = (Invoke-RestMethod "$api/scripts/$n/bindings" -Headers $H).result } catch {}
+  $bfile = Join-Path $root "workers\$n\bindings.json"
+  if ((-not $live -or $live.Count -eq 0) -and (Test-Path $bfile)) {
+    $live = Get-Content $bfile -Raw -Encoding utf8 | ConvertFrom-Json
+    if ($live -isnot [array]) { $live = @($live) }
+  }
   $keep = @()
   foreach ($b in $live) {
     switch ($b.type) {
       "d1"            { $keep += @{ type="d1"; name=$b.name; id=$b.id } }
-      "r2_bucket"     { $keep += @{ type="r2_bucket"; name=$b.name; bucket_name=$b.bucket_name } }
+      "r2_bucket"     { $keep += @{ type="r2_bucket"; name=$b.name; bucket_name=$(if ($b.bucket_name) { $b.bucket_name } else { $b.bucket }) } }
       "kv_namespace"  { $keep += @{ type="kv_namespace"; name=$b.name; namespace_id=$b.namespace_id } }
       "secret_text"   { $keep += @{ type="secret_text"; name=$b.name } }   # value stays on Cloudflare
       "plain_text"    { $keep += @{ type="plain_text"; name=$b.name; text=$b.text } }
