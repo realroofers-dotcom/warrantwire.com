@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire checkout-1k — Cancel where a man can see it
+<!-- BUILT 2026-09-11 · warrantwire checkout-1l — Cancel where a man can see it
      Lives at warrantwire.com/checkout.html
 
      ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
@@ -45,7 +45,7 @@
      hesitate at the worst possible moment. This is a proper grey: the page
      light, the card lighter still, the panels holding the detail sitting a
      shade below, and the fields below those. Four steps, all of them visible. */
-  --paper:#3b4034; --panel:#474d3e; --line:#6a7157;
+  --paper:#3f4539; --panel:#4d5443; --line:#7d8568;
   --ink:#f7f6ee; --ink2:#d3d5c4; --ink3:#a1a690;
   --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
@@ -60,8 +60,10 @@ a{color:var(--cool)}
    card IS the page — one lighter grey field holding the header, what he is
    buying and how he pays, so the eye has an edge to work against. */
 .page{max-width:600px;margin:26px auto 60px;padding:6px;
-  background:#545b48;border:1px solid #757d61;border-radius:12px;
-  box-shadow:0 10px 34px rgba(0,0,0,.30)}
+  /* ⚠ FLAT. A shadow under a light panel reads as a fade into the page, which
+     is what made it look washed rather than grey. One solid colour, one
+     border, nothing bleeding. */
+  background:#5a6150;border:1px solid #7d8568;border-radius:10px}
 .wrap{max-width:none;margin:0;padding:16px 20px 22px;
   background:var(--panel);border-radius:9px}
 header.mast{display:flex;justify-content:space-between;align-items:baseline;
@@ -82,7 +84,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
   padding-top:12px;border-top:1px solid var(--line)}
 
 /* what you are buying */
-.item{background:#3d4335;border:1px solid var(--line);border-radius:8px;
+.item{background:#434a3a;border:1px solid var(--line);border-radius:8px;
   padding:17px 20px}
 .item h1{font:400 26px/1.2 Georgia,serif;margin:0}
 .item .ctx{font:600 12px var(--mono);letter-spacing:.1em;color:var(--warm);
@@ -129,7 +131,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
    border and no background of its own, so it sat straight on the page and the
    whole lower half read as one flat sheet. Making the page grey was not enough
    — the eye needs an edge to know where the form starts. */
-.pay{margin-top:0;background:#3d4335;border:1px solid var(--line);
+.pay{margin-top:0;background:#434a3a;border:1px solid var(--line);
   border-radius:8px;padding:4px 10px 8px}
 
 /* ============================================================
@@ -144,7 +146,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 /* ⚠ THE TWO CHOICES NEED EDGES TOO. Card and bank sat on the same colour as
    everything around them, so there was nothing to tell a man they were two
    things to choose between. */
-.achplug-opt{border:1px solid #757d61 !important;background:#4b5241 !important;
+.achplug-opt{border:1px solid #7d8568 !important;background:#525a47 !important;
   border-radius:7px !important}
 .achplug-bank{border-color:var(--cool) !important;
   background:rgba(111,168,140,.10) !important}
@@ -155,7 +157,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
      somewhere to write rather than a shaded rectangle. */
   border:1px solid #8a9270 !important;
   border-bottom:2.5px solid #b6c092 !important;
-  background:#2d3227 !important;
+  background:#333a2b !important;
   color:var(--ink) !important;
   border-radius:5px !important;
   padding:12px 13px !important;
@@ -209,7 +211,7 @@ footer a{color:var(--ink2);text-decoration:none;margin-right:20px}
        uploaded and the old page was still being served, and there was no way
        to tell that apart from the change not working. Now there is. -->
   <p style="color:var(--ink3);font:11px var(--mono);margin:26px 0 0;
-            letter-spacing:.08em">checkout-1k</p>
+            letter-spacing:.08em">checkout-1l</p>
 
   <footer>
     <a href="/prices.html">What it costs</a>
