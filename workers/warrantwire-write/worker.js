@@ -8,7 +8,7 @@
    property can be sold on its own without untangling anything from
    the others. Nothing here is shared.
 
-   Built 2026-09-05 · build 1a
+   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts)
 
    BINDINGS   DB         D1  → warrantwire_writing (this site's own)
    SECRETS    LOG_KEY        master key, admin only
@@ -96,6 +96,32 @@ async function setup(env) {
     `CREATE TABLE IF NOT EXISTS w_corrections (
        id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT, wrong TEXT, right_text TEXT,
        made TEXT DEFAULT (datetime('now')))`).run();
+
+  /* ============================================================
+     ⚠ THE VERDICTS — added 11 Sep 2026, build 1b.
+     A human verdict on one company, under a real name, dated. One row per
+     (company, author): the founder's is kind 'house', a reader's is 'guest'.
+     ⚠ NEVER SILENTLY REWRITTEN. Every save of an existing verdict copies the
+     old text into w_verdict_history first, with its dates, so the record of
+     what a named person said, and when, is never lost.
+     ⚠ WARRANTS ONLY, OPINION NOT ADVICE. `advice` is 1 only for a writer whose
+     role carries the word "licensed" — set by the editor, never by the writer.
+     ============================================================ */
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS w_verdicts (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       ticker TEXT NOT NULL, company TEXT,
+       author TEXT NOT NULL, name TEXT, title TEXT, kind TEXT,
+       advice INTEGER DEFAULT 0, price INTEGER,
+       verdict TEXT, notes TEXT,
+       status TEXT DEFAULT 'published',
+       written TEXT DEFAULT (datetime('now')), revised TEXT,
+       UNIQUE(ticker, author))`).run();
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS w_verdict_history (
+       id INTEGER PRIMARY KEY AUTOINCREMENT, verdict_id INTEGER, ticker TEXT, author TEXT,
+       verdict TEXT, notes TEXT, written TEXT, revised TEXT,
+       replaced TEXT DEFAULT (datetime('now')))`).run();
   ready = true;
 }
 
@@ -160,6 +186,7 @@ export default {
       if (p === '/write/logout') return new Response(null, { status: 303,
         headers: [['location', '/write/login'], ['set-cookie', 'tswrite=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax']] });
       if (p === '/write/set')    return req.method === 'POST' ? setPost(req, env) : setForm(u, env);
+      if (p === '/write/verdict') return verdictDesk(env, req, u);
       if (p === '/write')        return desk(env, req);
 
       /* ---------- api ---------- */
@@ -231,7 +258,14 @@ async function api(action, req, env, u, SITE) {
     return json({ ok: true, email, link, note: 'Send them this link if the email did not arrive.' });
   }
 
+  /* ⚠ THE VERDICTS ARE PUBLIC TO READ. The company page on the site asks for
+     them, and so may a page on localhost while it is being built — hence the
+     open CORS header on this one route and no other. */
+  if (action === 'verdicts') return verdictsPublic(env, u);
+
   if (!me) return json({ ok: false, error: 'sign in first' }, 401);
+
+  if (action === 'verdict') return req.method === 'POST' ? verdictSave(req, env, me) : verdictMine(env, me, u);
 
   if (action === 'upload' && req.method === 'POST') return upload(req, env, me);
 
@@ -336,6 +370,211 @@ async function api(action, req, env, u, SITE) {
   }
 
   return json({ ok: false, error: 'unknown action' }, 404);
+}
+
+/* ============================================================
+   THE VERDICTS — build 1b, 11 Sep 2026
+
+   /write/verdict            the desk: type a ticker, see the automatic
+                             verdict, write yours, publish. Login required.
+   GET  /api/w/verdicts?ticker=TOVX   public: the founder's and the readers'
+   GET  /api/w/verdict?ticker=TOVX    mine, for editing
+   POST /api/w/verdict {ticker, company, verdict, notes}  save and publish
+   ============================================================ */
+const tick = s => String(s || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12);
+
+function verdictShape(r) {
+  return { name: r.name, title: r.title || null, kind: r.kind,
+    advice: !!r.advice, price: r.price || null,
+    verdict: r.verdict || '', notes: r.notes || '',
+    written: r.written ? r.written.replace(' ', 'T') + 'Z' : null,
+    revised: r.revised ? r.revised.replace(' ', 'T') + 'Z' : null };
+}
+
+async function verdictsPublic(env, u) {
+  const t = tick(u.searchParams.get('ticker'));
+  const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
+  if (!t) return new Response(JSON.stringify({ ok: false, error: 'a ticker, please' }), { status: 400, headers: CORS });
+  const r = await env.DB.prepare(
+    `SELECT * FROM w_verdicts WHERE ticker=? AND status='published' ORDER BY (kind='house') DESC, written ASC`)
+    .bind(t).all();
+  const rows = r.results || [];
+  const founder = rows.find(x => x.kind === 'house');
+  return new Response(JSON.stringify({ ok: true, ticker: t,
+    company: rows.length ? rows[0].company : null,
+    founder: founder ? verdictShape(founder) : null,
+    readers: rows.filter(x => x.kind !== 'house').map(verdictShape),
+    note: 'Opinions under a name, dated. Not advice unless marked by a registered licensed professional. Warrants only.'
+  }), { headers: CORS });
+}
+
+async function verdictMine(env, me, u) {
+  const t = tick(u.searchParams.get('ticker'));
+  if (!t) return json({ ok: false, error: 'a ticker, please' }, 400);
+  const row = await env.DB.prepare('SELECT * FROM w_verdicts WHERE ticker=? AND author=?').bind(t, me.email).first();
+  return json({ ok: true, ticker: t, mine: row ? verdictShape(row) : null });
+}
+
+async function verdictSave(req, env, me) {
+  const b = await req.json().catch(() => ({}));
+  const t = tick(b.ticker);
+  const text = String(b.verdict || '').trim().slice(0, 4000);
+  const notes = String(b.notes || '').trim().slice(0, 12000);
+  const company = String(b.company || '').trim().slice(0, 160);
+  if (!t) return json({ ok: false, error: 'a ticker, please' }, 400);
+  if (text.length < 20) return json({ ok: false, error: 'the verdict itself — at least a sentence' }, 400);
+
+  /* ⚠ ADVICE IS A WORD ONLY A LICENSED, REGISTERED PROFESSIONAL MAY USE, and
+     the editor marks them by putting "licensed" in their role. A writer cannot
+     grant it to himself. */
+  const advice = /licensed/i.test(me.role || '') ? 1 : 0;
+  const title = me.kind === 'house' ? 'founder' : (me.role || 'reader');
+
+  const had = await env.DB.prepare('SELECT * FROM w_verdicts WHERE ticker=? AND author=?').bind(t, me.email).first();
+  if (had) {
+    /* the old words go to history before the new ones land */
+    await env.DB.prepare(
+      `INSERT INTO w_verdict_history (verdict_id, ticker, author, verdict, notes, written, revised)
+       VALUES (?,?,?,?,?,?,?)`).bind(had.id, t, me.email, had.verdict, had.notes, had.written, had.revised).run();
+    await env.DB.prepare(
+      `UPDATE w_verdicts SET company=COALESCE(NULLIF(?, ''), company), name=?, title=?, advice=?,
+         verdict=?, notes=?, status='published', revised=datetime('now') WHERE id=?`)
+      .bind(company, me.name || me.email, title, advice, text, notes, had.id).run();
+  } else {
+    await env.DB.prepare(
+      `INSERT INTO w_verdicts (ticker, company, author, name, title, kind, advice, verdict, notes)
+       VALUES (?,?,?,?,?,?,?,?,?)`)
+      .bind(t, company || null, me.email, me.name || me.email, title, me.kind, advice, text, notes).run();
+  }
+  const row = await env.DB.prepare('SELECT * FROM w_verdicts WHERE ticker=? AND author=?').bind(t, me.email).first();
+  return json({ ok: true, ticker: t, mine: verdictShape(row),
+    url: SITES['warrantwire'].url + '/company.html?t=' + t,
+    note: had ? 'Revised. The earlier words are kept in the record with their date.' : 'Published under your name.' });
+}
+
+/* ⚠ THE DESK IS ONE SCREEN. His instruction: it should be simple. A ticker
+   box, what the machine says, a box for what he says, one button. */
+async function verdictDesk(env, req, u) {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  const t = tick(u.searchParams.get('t'));
+  return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Write a verdict — Warrant Wire</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/wire.css">
+<style>
+main{padding:22px 0 60px}
+.bar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.bar b{color:var(--ink)}
+.bar a{color:var(--cool);text-decoration:none}
+.bar .who{margin-left:auto}
+.finder{max-width:420px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin:18px 0 0}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.box{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:var(--panel)}
+.box.auto{border-color:var(--cool)} .box.me{border-color:var(--warm)}
+.box .lbl{font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 10px}
+.box.auto .lbl{color:var(--cool)} .box.me .lbl{color:var(--warm)}
+.vlead{font:400 18px/1.45 var(--serif);color:var(--ink);margin:0 0 12px}
+textarea{width:100%;min-height:150px;background:#101208;border:1px solid var(--line);color:var(--ink);
+  padding:12px 13px;border-radius:4px;font:16px/1.55 var(--serif);resize:vertical}
+textarea.notes{min-height:110px;font:14.5px/1.55 var(--sans)}
+textarea:focus{outline:none;border-color:var(--warm)}
+label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:12px 0 5px}
+.pub{margin:14px 0 0;background:var(--gold);color:#14150f;border:0;border-radius:5px;padding:12px 20px;font:700 15px var(--sans);cursor:pointer}
+.pub:hover{filter:brightness(1.08)}
+.msg{margin:10px 0 0;font-size:14px;color:var(--cool);min-height:1.4em}
+.msg.bad{color:var(--hot)}
+.fine{font-size:12.5px;color:var(--ink3);margin:10px 0 0}
+.count{font:400 11px var(--mono);color:var(--ink3);text-align:right;margin:4px 0 0}
+</style></head><body>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>The desk</span>
+</div></div></header>
+<main><div class="wrap">
+  <div class="bar"><b>Write a verdict</b>
+    <a href="/write">Pieces</a>
+    <span class="who">${esc(me.name || me.email)} · ${me.kind === 'house' ? 'founder' : esc(me.role || 'reader')} · <a href="/write/logout">sign out</a></span>
+  </div>
+
+  <div class="finder">
+    <input id="q" type="text" placeholder="TICKER" maxlength="12" value="${esc(t)}" autocapitalize="characters" autocorrect="off" spellcheck="false">
+    <button id="go" type="button">Open</button>
+  </div>
+  <p class="fine">Warrants only. What the paper adds up to &mdash; not the company&rsquo;s products. An opinion under your name, dated. Nothing here is advice${/licensed/i.test(me.role || '') ? '' : ', and the word is not available to you'}.</p>
+
+  <div class="two" id="two" hidden>
+    <section class="box auto">
+      <p class="lbl">The automatic verdict &mdash; what the rules say</p>
+      <p class="vlead" id="alead">&hellip;</p>
+      <div id="arules" style="font-size:13.5px;color:var(--ink2)"></div>
+      <div id="adeep" style="font-size:13.5px;color:var(--ink2);margin-top:10px"></div>
+    </section>
+    <section class="box me">
+      <p class="lbl">Your verdict &mdash; <span id="mname">${esc(me.name || me.email)}</span></p>
+      <label for="v">The verdict &mdash; one to three sentences</label>
+      <textarea id="v" maxlength="4000" placeholder="What the warrant paper adds up to."></textarea>
+      <p class="count" id="vc">0</p>
+      <label for="n">Notes &mdash; optional, as long as you like</label>
+      <textarea id="n" class="notes" maxlength="12000" placeholder="The reasoning, the filings you read, anything the sentence leaves out."></textarea>
+      <button class="pub" id="pub" type="button">Publish under my name</button>
+      <p class="msg" id="msg"></p>
+      <p class="fine" id="was"></p>
+    </section>
+  </div>
+</div></main>
+<script src="/wire.js"></script>
+<script src="/verdict.js"></script>
+<script>
+(function(){
+  var esc = WW.esc, q = document.getElementById('q'), two = document.getElementById('two');
+  var company = '';
+  function open(t){
+    t = String(t||'').trim().toUpperCase(); if (!t) return;
+    q.value = t; history.replaceState(null, '', '/write/verdict?t=' + encodeURIComponent(t));
+    two.hidden = false;
+    document.getElementById('alead').textContent = 'Reading the wire…';
+    document.getElementById('arules').innerHTML = ''; document.getElementById('adeep').innerHTML = '';
+    fetch(WW.API + '?wire=1&q=' + encodeURIComponent(t)).then(function(r){return r.json()}).then(function(d){
+      company = (d.company && d.company.name) || (d.about && d.about.company) || '';
+      var v = WWVerdict.render(d);
+      document.getElementById('alead').textContent = v.none ? v.fired[0].text : (v.sentence || 'Not enough on file to reach a verdict.');
+      document.getElementById('arules').innerHTML = v.fired.map(function(r){ return '<div><b style="color:var(--warm);font-family:var(--mono)">' + esc(r.id) + '</b> ' + esc(r.text) + '</div>'; }).join('')
+        + '<div style="margin-top:6px;color:var(--ink3)">Rules v' + v.version + ' · <a href="/rules.html" target="_blank" style="color:var(--cool)">how it is rendered</a></div>';
+    }).catch(function(){ document.getElementById('alead').textContent = 'The wire is not answering.'; });
+    fetch('https://verdict.realroofers.workers.dev/?ticker=' + encodeURIComponent(t)).then(function(r){ return r.ok ? r.json() : null; }).then(function(v){
+      if (!v || !v.lines) return;
+      document.getElementById('adeep').innerHTML = '<b style="color:var(--ink)">From the record built by hand:</b> ' + (v.verdict ? esc(v.verdict) + ' ' : '')
+        + v.lines.map(function(l){ return esc(l.label) + ' — ' + esc(l.value); }).join(' · ')
+        + (v.missing && v.missing.length ? ' · not on file: ' + esc(v.missing.join(', ')) : '');
+    }).catch(function(){});
+    fetch('/api/w/verdict?ticker=' + encodeURIComponent(t)).then(function(r){return r.json()}).then(function(d){
+      var m = d.mine;
+      document.getElementById('v').value = m ? m.verdict : '';
+      document.getElementById('n').value = m ? m.notes : '';
+      document.getElementById('was').textContent = m ? ('On the page since ' + m.written.slice(0,16).replace('T',' ') + ' UTC' + (m.revised ? ', revised ' + m.revised.slice(0,16).replace('T',' ') + ' UTC' : '') + '. Saving again keeps the earlier words in the record.') : 'Nothing under your name on this company yet.';
+      count();
+    }).catch(function(){});
+  }
+  function count(){ document.getElementById('vc').textContent = document.getElementById('v').value.length + ' / 4000'; }
+  document.getElementById('v').addEventListener('input', count);
+  document.getElementById('go').addEventListener('click', function(){ open(q.value); });
+  q.addEventListener('keydown', function(e){ if (e.key === 'Enter') open(q.value); });
+  document.getElementById('pub').addEventListener('click', function(){
+    var msg = document.getElementById('msg'); msg.className = 'msg'; msg.textContent = 'Publishing…';
+    fetch('/api/w/verdict', { method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ ticker: q.value, company: company, verdict: document.getElementById('v').value, notes: document.getElementById('n').value }) })
+    .then(function(r){return r.json()}).then(function(d){
+      if (!d.ok) { msg.className = 'msg bad'; msg.textContent = d.error || 'Not saved.'; return; }
+      msg.innerHTML = esc(d.note) + ' <a href="' + esc(d.url) + '" target="_blank" style="color:var(--cool)">See it on the company page →</a>';
+      open(q.value);
+    }).catch(function(){ msg.className = 'msg bad'; msg.textContent = 'Could not reach the desk.'; });
+  });
+  if (q.value) open(q.value);
+})();
+</script>
+</body></html>`, { headers: H.html });
 }
 
 /* ============================================================
@@ -824,6 +1063,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.55}
 </style></head><body>
 
 <div class="bar"><b>Dashboard</b>
+  <a href="/write/verdict"><b>Write a verdict</b></a>
   <span class="who">${esc(me.name || me.email)} · ${me.kind === 'house' ? 'editor' : 'contributing writer'}</span>
   <a href="/writing" target="_blank">See the site</a>
 

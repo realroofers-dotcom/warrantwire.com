@@ -242,7 +242,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       .catch(function () {});
   }
 
-  /* ---- the human verdicts: a dated file per company, under a name ---------- */
+  /* ---- the human verdicts: written at /write/verdict, under a name, dated --
+     The desk lives in the warrantwire-write worker on this domain; the read
+     route is public and answers any origin, so this works on localhost too. */
+  var DESK = "https://warrantwire.com/api/w/verdicts";
   function humanBox(cls, label, kindText, v) {
     var kind = v.advice ? '<span class="kind advice">advice &middot; licensed</span>' : '<span class="kind">opinion, not advice</span>';
     return '<section class="verdict ' + cls + '">'
@@ -254,7 +257,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   }
   function humans(ticker, open) {
     var el = document.getElementById("humans");
-    fetch("/verdicts/" + encodeURIComponent(ticker) + ".json", { cache: "no-store" })
+    fetch(DESK + "?ticker=" + encodeURIComponent(ticker), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         var h = "";
