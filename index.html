@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bn · bm + the checkout button comes from the cart worker -->
+<!-- BUILT 2026-09-10 03:10 ET · warrantwire index-bo · bn + buying adds it and leaves you on the page -->
 <!-- BUILT 2026-09-01 19:05 ET  |  companion sites copy -->
 <!DOCTYPE html>
 <html lang="en">
@@ -1957,12 +1957,65 @@ footer em{font-family:var(--serif);font-style:italic;color:var(--ink2)}
      ⚠ AND NO EMAIL IS ASKED FOR HERE ANY MORE. The checkout takes it, once,
      where a person expects to be asked — not in a browser prompt three clicks
      earlier. */
+  /* ⚠ IT ADDS AND LEAVES HIM WHERE HE IS. Pressing buy used to throw a man
+     off the page he was reading and onto the checkout — so wanting two things
+     meant going there and coming back, and wanting to keep reading meant
+     pressing the back button. He goes to the checkout when HE decides he is
+     done, using the button at the top right.
+
+     ⚠ THE CONTEXT STILL TRAVELS. The company and the filing go on the line, so
+     the checkout says what was actually bought. */
+  var WWBASKET = "ww.checkout";
+  function wwHeld(){
+    try { var r = localStorage.getItem(WWBASKET); var l = r ? JSON.parse(r) : [];
+          return Array.isArray(l) ? l : []; } catch (e) { return []; }
+  }
   function wbuy(sku, ticker, accession, reader){
     var t = ticker || (document.getElementById("q").value || "").trim().toUpperCase();
-    location.href = "/checkout.html?buy=" + encodeURIComponent(sku)
-      + (t ? "&ticker=" + encodeURIComponent(t) : "")
-      + (accession ? "&acc=" + encodeURIComponent(accession) : "")
-      + (reader ? "&reader=" + encodeURIComponent(reader) : "");
+    var acc = accession || "";
+    var l = wwHeld();
+
+    /* the same thing for the same company is not two of them; a line with no
+       company attached gets the company filled in rather than duplicated */
+    var i, done = false;
+    for (i = 0; i < l.length; i++) {
+      if (l[i].sku !== sku) continue;
+      var has = !!(l[i].ticker || l[i].acc), want = !!(t || acc);
+      if (has && want && (l[i].ticker||"") === t && (l[i].acc||"") === acc) { done = true; break; }
+      if (!has && want) { l[i].ticker = t; l[i].acc = acc; done = true; break; }
+      if (!want) { done = true; break; }
+    }
+    if (!done) l.push({ sku: sku, ticker: t, acc: acc });
+    try { localStorage.setItem(WWBASKET, JSON.stringify(l)); } catch (e) {}
+
+    wmsg("Added. " + l.length + " on the checkout \u2014 the button is at the top right.");
+    wwRefreshCart();
+  }
+
+  /* ⚠ THE BUTTON AT THE TOP IS REDRAWN, NOT RELOADED. A man halfway down a
+     search result should not be sent back to the top to see a count change. */
+  function wwRefreshCart(){
+    var l = wwHeld();
+    var el = document.getElementById("wwcart");
+    if (!l.length) { if (el) el.parentNode.removeChild(el); return; }
+    if (!el) {
+      el = document.createElement("a");
+      el.id = "wwcart"; el.href = "/checkout.html";
+      document.body.appendChild(el);
+    }
+    /* the total needs the price table, which lives on the checkout page */
+    fetch("/checkout.html").then(function(r){ return r.text(); }).then(function(t){
+      var m = t.match(/var PRODUCTS = (\{[\s\S]*?\n\};)/);
+      var total = 0, known = 0;
+      if (m) {
+        var P = new Function("return " + m[1].replace(/;$/, ""))();
+        l.forEach(function(x){ if (P[x.sku]) { total += P[x.sku].price; known++; } });
+      }
+      el.innerHTML = '<span class="n">' + l.length + '</span><span>Checkout</span>' +
+        (known === l.length && known ? '<b>$' + total.toLocaleString() + '</b>' : '');
+    }).catch(function(){
+      el.innerHTML = '<span class="n">' + l.length + '</span><span>Checkout</span>';
+    });
   }
   document.addEventListener("click", function(e){
     var b = e.target.closest ? e.target.closest("button.wbuy") : null;

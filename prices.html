@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire prices-2h — back to dark; only the checkout is light
+<!-- BUILT 2026-09-11 · warrantwire prices-2i — buying adds it and leaves you where you are
      Lives at warrantwire.com/prices.html
 
      ⚠ PRICES AND BUY BUTTONS. Nothing else. No payment box, no discount pitch,
@@ -115,7 +115,7 @@ footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
   <div id="board"></div>
 
   <p style="color:var(--ink3);font:11px var(--mono);margin:26px 0 0;
-            letter-spacing:.08em">prices-2h</p>
+            letter-spacing:.08em">prices-2i</p>
 
   <footer>
     <div class="footnav">
@@ -212,9 +212,14 @@ function mark(){
   });
 }
 
-/* ⚠ PRESSING IT AGAIN TAKES IT OFF, AND STAYS ON THIS PAGE. Choosing and
-   un-choosing belong in the same place and should cost the same one click.
-   Only adding sends him to the checkout — that is the point of adding. */
+/* ⚠ BUYING ADDS IT AND LEAVES HIM WHERE HE IS. Pressing Buy used to carry him
+   straight to the checkout, so a man who wanted two things had to go there,
+   come back, go there again — and a man who only wanted to keep reading was
+   thrown off the page for pressing one button.
+
+   ⚠ NOTHING NAVIGATES FROM THIS PAGE. Adding, removing and changing his mind
+   all happen here. The Checkout button at the top right is how he leaves, when
+   he has decided he is done. */
 document.addEventListener("click", function(e){
   var b = e.target.closest && e.target.closest(".buy");
   if (!b) return;
@@ -223,19 +228,35 @@ document.addEventListener("click", function(e){
   var at = -1;
   for (var i = 0; i < l.length; i++) if (l[i].sku === sku) { at = i; break; }
 
-  if (at > -1) {
-    /* ⚠ TAKING IT OFF HERE ONLY REMOVES A LINE WITH NO COMPANY ATTACHED, or
-       the first one if that is all there is. A man who added TOVX and LEXX
-       separately should lose one, not both — and this page cannot tell him
-       which, so it removes one and leaves the rest visible on the checkout. */
-    l.splice(at, 1);
-    try { localStorage.setItem(BASKET, JSON.stringify(l)); } catch (err) {}
-    mark();
-    return;
-  }
+  if (at > -1) l.splice(at, 1);
+  else l.push({ sku: sku, ticker: "", acc: "" });
 
-  location.href = "/checkout.html?buy=" + encodeURIComponent(sku);
+  try { localStorage.setItem(BASKET, JSON.stringify(l)); } catch (err) {}
+  mark();
+
+  /* ⚠ THE BUTTON AT THE TOP HAS TO KNOW. It is drawn by the cart worker on
+     page load and would otherwise sit there saying the old number until he
+     moved to another page. */
+  refreshCart();
 });
+
+/* ⚠ REDRAWN IN PLACE, NOT RELOADED. Reloading the page to update a count is
+   how a man loses his place halfway down a price list. */
+function refreshCart(){
+  var el = document.getElementById("wwcart");
+  var l = held();
+  if (!l.length) { if (el) el.parentNode.removeChild(el); return; }
+  var total = 0, known = 0;
+  l.forEach(function(x){ if (PRODUCTS && PRODUCTS[x.sku]) { total += PRODUCTS[x.sku].price; known++; } });
+  if (!el) {
+    /* it was not there because the basket was empty when the page loaded */
+    el = document.createElement("a");
+    el.id = "wwcart"; el.href = "/checkout.html";
+    document.body.appendChild(el);
+  }
+  el.innerHTML = '<span class="n">' + l.length + '</span><span>Checkout</span>' +
+    (known === l.length ? '<b>$' + total.toLocaleString() + '</b>' : '');
+}
 </script>
 <!-- ⚠ THE CHECKOUT BUTTON, ON EVERY PAGE. One line. It draws itself only when
      something has been picked, and it is what gets a man back to what he chose
