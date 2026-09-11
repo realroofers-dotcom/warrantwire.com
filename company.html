@@ -205,10 +205,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   function concern(ticker) {
     var el = document.getElementById("concern");
     if (!el) return;
-    fetch(CONCERN + "/?company=" + encodeURIComponent(ticker))
+    fetch(withEmail(CONCERN + "/?company=" + encodeURIComponent(ticker)))
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d || !d.ok || !d.times) return;
+        if (!d || !d.ok || d.paid === false || !d.times) return;
         var last = (d.rows || [])[0] || {};
         var by = last.said_by === "both" ? "the auditor and the company" : last.said_by === "auditor" ? "the auditor" : "the company itself";
         el.innerHTML = '<div class="urgent" role="alert">'

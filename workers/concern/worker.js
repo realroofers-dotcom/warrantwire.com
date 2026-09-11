@@ -129,7 +129,16 @@ export default {
           return json(await veiled(env, +(q.get("days") || 1), gate), H);
         }
         if (q.get("league"))  return json(await league(env, +(q.get("days") || 365)), H);
-        if (q.get("company")) return json(await oneCompany(env, q.get("company")), H);
+        /* ⚠ NOT A FREE SEARCH. His correction: one company's going concern
+           record comes with its paid report — a $12 search on that ticker, a
+           year, the $80 list, the owner key, or the open sample. */
+        if (q.get("company")) {
+          const tk = String(q.get("company") || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+          const gate = await paidFor(env, q, req, tk);
+          if (gate.paid || tk === "TOVX") return json(await oneCompany(env, tk), H);
+          return json({ ok:true, build: BUILD, ticker: tk, paid: false, why: gate.why,
+            note: "This company's going concern record is part of its $12 report, highlighted as an urgent warning." }, H);
+        }
       }
 
       const key = req.headers.get("X-Auth-Key") || q.get("key");
@@ -395,7 +404,7 @@ function pad10(c) { return String(c).replace(/\D/g, "").padStart(10, "0"); }
 /* ⚠ ONE FUNCTION DECIDES WHO HAS PAID, the same way the wire does: the owner
    key, or an email with a live `concern` entitlement at the pay desk. */
 const PAY_DEFAULT = "https://pay.realroofers.workers.dev";
-async function paidFor(env, q, req) {
+async function paidFor(env, q, req, ticker) {
   const key = (req && req.headers.get("X-Auth-Key")) || q.get("key") || "";
   if (key && env.LOG_KEY && key === env.LOG_KEY) return { paid: true, how: "owner key" };
   const email = String(q.get("email") || "").trim().toLowerCase();
@@ -403,7 +412,16 @@ async function paidFor(env, q, req) {
   try {
     const r = await fetch((env.PAY || PAY_DEFAULT) + "/?me=1&email=" + encodeURIComponent(email));
     const j = await r.json();
-    if (j && j.has && j.has.concern) return { paid: true, how: "entitlement", email };
+    const has = (j && j.has) || {};
+    if (has.concern) return { paid: true, how: "the list", email };
+    /* for one company: the $12 search on that ticker, or a year of the wire */
+    if (ticker) {
+      if (has.wire) return { paid: true, how: "the year", email };
+      const rows = (j && j.entitlements) || [];
+      if (rows.some(e => e && e.status === "active" && (e.sku === "wire_search" || e.sku === "deep_dive")
+                          && String(e.ref || "").toUpperCase() === ticker))
+        return { paid: true, how: "the report", email };
+    }
     return { paid: false, why: "nothing on that address yet", email };
   } catch (e) { return { paid: false, why: "could not reach the payment desk" }; }
 }
