@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-2n · 2026-09-11 · the verdicts, the gig ledger, Stripe Connect payouts";
+const BUILD = "pay-2o · 2026-09-11 · the verdicts, the gig ledger, Stripe Connect onboarding and payouts";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -254,6 +254,9 @@ export default {
       if (q.get("me"))  return json(await me(env, q), cors);
       /* the buyer's say on a reader's verdict: worth it, or not */
       if (q.get("verdict_ok")) return json(await buyerSays(env, q), cors);
+      /* a reader setting up payouts: Stripe Connect Express onboarding */
+      if (q.get("connect")) return connectStart(env, q, request);
+      if (q.get("connected")) return connectBack(env, q);
     } catch (e) {
       return json({ ok:false, error:String(e) }, cors, 400);
     }
@@ -679,6 +682,74 @@ async function owe(env, r) {
     `INSERT OR IGNORE INTO gig_payouts (reader, ticker, buyer, gross, house, net, session, site, live, hold_until)
      VALUES (?,?,?,?,?,?,?,?,?, datetime('now','+2 days'))`)
     .bind(r.reader, r.ticker || null, r.buyer || null, r.gross || 0, r.house || 0, net, r.session, r.on || "wire", r.live || 0).run();
+}
+
+/* ============================================================
+   STRIPE CONNECT — a reader's payout account, set up once
+
+   The writing desk sends the reader here with a ten-minute one-time token
+   (?connect=connect-…). This worker asks the desk whose token it is, makes
+   an Express account under the platform (named Nujobi on Stripe), saves
+   acct_… on the writer's row, and hands the reader to Stripe's own
+   onboarding — identity, bank account, tax details, all Stripe's. Stripe
+   returns them to ?connected=1&acct=…, which confirms and sends them back
+   to the desk. No secret is shared between the two workers.
+   ============================================================ */
+const WRITE_DESK = "https://warrantwire.com";
+
+async function stripe(env, path, form) {
+  const r = await fetch("https://api.stripe.com/v1/" + path, { method: "POST",
+    headers: { "Authorization": "Bearer " + env.STRIPE_KEY, "Content-Type": "application/x-www-form-urlencoded" },
+    body: form ? form.toString() : "" });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((j.error && j.error.message) || ("Stripe " + r.status));
+  return j;
+}
+
+async function connectStart(env, q, request) {
+  const bad = m => new Response("Payout setup could not start: " + m + "\n\nGo back to the desk and try again.", { status: 400, headers: { "content-type": "text/plain" } });
+  if (!env.STRIPE_KEY || !env.WRITING) return bad("the pay desk is not configured");
+  const t = String(q.get("connect") || "");
+  let who;
+  try { who = await (await fetch(WRITE_DESK + "/api/w/connect-token?t=" + encodeURIComponent(t))).json(); } catch (e) { who = null; }
+  if (!who || !who.ok || !who.email) return bad("that link has expired");
+
+  let acct = who.stripe_account;
+  try {
+    if (!acct) {
+      const f = new URLSearchParams({ type: "express", email: who.email });
+      f.set("capabilities[transfers][requested]", "true");
+      f.set("business_type", "individual");
+      f.set("metadata[writer]", who.email);
+      f.set("settings[payouts][schedule][interval]", "daily");
+      const a = await stripe(env, "accounts", f);
+      acct = a.id;
+      await env.WRITING.prepare("UPDATE w_writers SET stripe_account=? WHERE email=?").bind(acct, who.email).run();
+      await log(env, { kind: "connect-created", email: who.email, note: acct });
+    }
+    const origin = new URL(request.url).origin;
+    const l = await stripe(env, "account_links", new URLSearchParams({
+      account: acct, type: "account_onboarding",
+      refresh_url: WRITE_DESK + "/write/verdict?payouts=again",
+      return_url: origin + "/?connected=1&acct=" + encodeURIComponent(acct) }));
+    return new Response(null, { status: 303, headers: { location: l.url } });
+  } catch (e) {
+    return bad(String(e.message || e));
+  }
+}
+
+/* back from Stripe: is the account able to receive transfers yet? */
+async function connectBack(env, q) {
+  const acct = String(q.get("acct") || "");
+  let ready = false;
+  try {
+    const r = await fetch("https://api.stripe.com/v1/accounts/" + encodeURIComponent(acct), { headers: { "Authorization": "Bearer " + env.STRIPE_KEY } });
+    const a = await r.json();
+    ready = !!(a && a.payouts_enabled);
+    if (a && a.metadata && a.metadata.writer)
+      await log(env, { kind: ready ? "connect-ready" : "connect-pending", email: a.metadata.writer, note: acct });
+  } catch (e) {}
+  return new Response(null, { status: 303, headers: { location: WRITE_DESK + "/write/verdict?payouts=" + (ready ? "ready" : "pending") } });
 }
 
 /* ⚠ THE BUYER'S SAY. ok=1 approves and releases; ok=0 disputes and holds it

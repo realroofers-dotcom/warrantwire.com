@@ -349,6 +349,17 @@ async function api(action, req, env, u, SITE) {
      open CORS header on this one route and no other. */
   if (action === 'verdicts') return verdictsPublic(env, u);
 
+  /* the pay desk asks whose connect token this is — answered once, then gone */
+  if (action === 'connect-token') {
+    const t = String(u.searchParams.get('t') || '');
+    if (!/^connect-[a-z0-9]{20,}$/.test(t)) return json({ ok: false }, 400);
+    const s = await env.DB.prepare("SELECT email FROM w_sessions WHERE token=? AND expires > datetime('now')").bind(t).first();
+    if (!s) return json({ ok: false, error: 'expired' }, 404);
+    await env.DB.prepare('DELETE FROM w_sessions WHERE token=?').bind(t).run();
+    const w = await env.DB.prepare('SELECT email, name, stripe_account FROM w_writers WHERE email=?').bind(s.email).first();
+    return json({ ok: true, email: s.email, name: (w && w.name) || null, stripe_account: (w && w.stripe_account) || null });
+  }
+
   /* ---- ratings: public to read, public to give, one per email per writer ---- */
   const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*',
                  'access-control-allow-headers': 'content-type', 'cache-control': 'no-store' };
@@ -425,6 +436,21 @@ async function api(action, req, env, u, SITE) {
       .bind(b.level, b.licence ? String(b.licence).slice(0, 120) : null, b.level === 'founder' || b.level === 'writer' ? 'house' : 'guest', email).run();
     return json({ ok: !!(r.meta && r.meta.changes), email, level: b.level, label: LEVELS[b.level].label });
   }
+  /* ============================================================
+     ⚠ PAYOUTS, WITHOUT A SHARED SECRET. The reader presses "Set up payouts"
+     here; this worker mints a ten-minute one-time token and sends them to
+     the pay desk with it; the pay desk asks THIS worker (connect-token,
+     public) whose token it is, consumes it, creates the Stripe Express
+     account, saves acct_… on the writer's row, and hands the reader to
+     Stripe's onboarding. Nothing secret crosses between the two workers.
+     ============================================================ */
+  if (action === 'payouts-start') {
+    const t = 'connect-' + rnd(28);
+    await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)')
+      .bind(t, me.email, new Date(Date.now() + 10 * 60e3).toISOString()).run();
+    return new Response(null, { status: 303, headers: { location: (env.PAY || PAY_DEFAULT) + '/?connect=' + t } });
+  }
+
   /* everyone sets their own price, in whole dollars */
   if (action === 'price' && req.method === 'POST') {
     const b = await req.json().catch(() => ({}));
@@ -815,6 +841,9 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
       <input id="pr" type="number" min="1" max="5000" value="${esc(me.price || 50)}" style="width:120px;background:#101208;border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:3px;font:14px var(--mono)">
       <button type="button" id="prb" style="background:transparent;border:1px solid var(--line);color:var(--ink2);padding:8px 12px;border-radius:3px;font:13px var(--sans);cursor:pointer;margin-left:6px">Save price</button>
       <button class="pub" id="pub" type="button">Publish under my name</button>
+      ${levelOf(me) === 'founder' ? '' : (me.stripe_account
+        ? '<p class="fine">Payouts go to your bank through Stripe (account on file). <a href="/api/w/payouts-start" style="color:var(--cool)">Update bank details</a></p>'
+        : '<p class="fine" style="color:var(--warm)">Not yet set up to be paid. <a href="/api/w/payouts-start" style="color:var(--cool);font-weight:600">Set up payouts &rarr;</a> — Stripe takes your bank details once; your share of every sale is sent there two days after the sale.</p>')}
       <p class="msg" id="msg"></p>
       <p class="fine" id="was"></p>
     </section>
