@@ -283,7 +283,17 @@ export default {
           return "set, " + t.length + " chars, starts " + t.slice(0, 8) + "…";
         };
         const wh = env.STRIPE_WH ? String(env.STRIPE_WH) : "";
-        return json({ ok:true, build: BUILD,
+        /* which Stripe account the key belongs to — its id and name, never the key */
+        let acct = null;
+        try {
+          const a = await (await fetch("https://api.stripe.com/v1/account", { headers: { "Authorization": "Bearer " + env.STRIPE_KEY } })).json();
+          if (a && a.id) acct = { id: a.id, name: (a.settings && a.settings.dashboard && a.settings.dashboard.display_name) || a.business_profile && a.business_profile.name || null };
+          /* the real test: can this account list connected accounts? Stripe
+             refuses the call outright until Connect is switched on. */
+          const c = await (await fetch("https://api.stripe.com/v1/accounts?limit=1", { headers: { "Authorization": "Bearer " + env.STRIPE_KEY } })).json();
+          if (acct) acct.connect = c && c.object === "list" ? "ON — " + (c.data ? c.data.length : 0) + " connected account(s) so far" : "OFF — " + ((c.error && c.error.message) || "refused");
+        } catch (e) {}
+        return json({ ok:true, build: BUILD, stripe_account: acct,
           stripe_key: env.STRIPE_KEY ? (isLive(env) ? "LIVE key set" : "test key set") : "MISSING",
           webhook_secret: shape(env.STRIPE_WH),
           webhook_secret_looks_right: wh.startsWith("whsec_"),
