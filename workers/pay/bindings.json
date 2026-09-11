@@ -4,5 +4,9 @@
   { "name": "STRIPE_KEY", "type": "secret_text" },
   { "name": "STRIPE_WH", "type": "secret_text" },
   { "name": "LOG_KEY", "type": "secret_text" },
-  { "name": "ACCOUNTANT", "type": "plain_text" }
+  { "name": "ACCOUNTANT", "type": "plain_text" },
+  { "name": "EMAIL", "type": "send_email" },
+  { "name": "SUPABASE_URL", "type": "plain_text", "text": "https://kkeoleeuujsvbjhcsyuq.supabase.co" },
+  { "name": "FOUNDER_EMAIL", "type": "plain_text", "text": "realroofers@gmail.com" },
+  { "name": "SUPABASE_SERVICE_KEY", "type": "secret_text" }
 ]

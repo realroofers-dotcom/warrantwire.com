@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3a · 2026-09-11 · Wall St Domains listings (wsd_*), a subscription with add-ons, ?paid= for the seller page";
+const BUILD = "pay-3b · 2026-09-11 · paid listings publish themselves on Wall St Domains (Supabase service key), founder emailed, ?action=publish / unpublish";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -380,6 +380,19 @@ export default {
         return json({ ok:true, row }, cors);
       }
 
+      /* the marketplace: publish a paid listing by hand, or take one down */
+      if (a === "publish") {
+        const ref = q.get("ref") || "";
+        const pays = await listingPaid(env, new URLSearchParams({ listing: ref }));
+        if (!pays.paid && q.get("force") !== "1")
+          return json({ ok:false, error:"that listing has not been paid for (add &force=1 to publish it anyway)" }, cors, 400);
+        const skus = pays.rows.filter(x => x.paid).map(x => x.sku);
+        return json(await publishListing(env, ref, { premium: skus.includes("wsd_premium"),
+          partner: skus.includes("wsd_partner"), email: (pays.rows[0] || {}).email || "",
+          session: "by hand", cents: 0, live: 1 }), cors);
+      }
+      if (a === "unpublish") return json(await unpublishListing(env, q.get("ref") || "", q.get("why") || "taken down by the founder"), cors);
+
       if (a === "orders") return json(await orders(env), cors);
       if (a === "grant")  return json(await handGrant(env, q), cors);
       if (a === "journal") return json(await journal(env, q), cors);
@@ -635,6 +648,25 @@ async function webhook(env, request) {
         source: "stripe", gross: one.cents / 100,
         sku: name, ref: m.ref || "", who: m.email || "",
         id: o.id + "#" + name, live: o.livemode ? 1 : 0 });
+    }
+
+    /* ⚠ A PAID LISTING GOES LIVE BY ITSELF. His rule, 11 Sep 2026: "would
+       rather it went live and then I could take it down if false" — so the
+       moment the listing plan is paid, the domain is written to the
+       marketplace and he is emailed. Nothing here throws: a failure to
+       publish is logged as publish-failed and can be retried by hand with
+       ?action=publish&ref=. The payment stands either way. */
+    if (bought.some(n => n === "wsd_month" || n === "wsd_year") && m.ref) {
+      try {
+        const out = await publishListing(env, m.ref, {
+          premium: bought.includes("wsd_premium"),
+          partner: bought.includes("wsd_partner"),
+          email: buyerEmail, session: o.id, cents: o.amount_total, live: o.livemode ? 1 : 0 });
+        await log(env, { kind: out.ok ? "published" : "publish-failed", email: buyerEmail,
+          ref: m.ref, session: o.id, note: out.ok ? out.name : out.error });
+      } catch (e) {
+        await log(env, { kind:"publish-failed", email: buyerEmail, ref: m.ref, session: o.id, note: String(e) });
+      }
     }
 
     /* ⚠ A COMPLETED SESSION THAT GRANTED NOTHING IS RECORDED, NOT IGNORED.
@@ -943,6 +975,148 @@ async function listingPaid(env, q) {
     grants: x.grants, started_on: x.started_on, ends_on: x.ends_on, cents: x.cents, status: x.status,
     subscription: !!x.stripe_sub, session: String(x.stripe_session || "").split("#")[0] }));
   return { ok:true, ref, paid: rows.some(x => x.paid), rows };
+}
+
+/* ============================================================
+   PUBLISHING A PAID LISTING ON WALL ST DOMAINS — 11 Sep 2026
+
+   The marketplace keeps its data in Supabase. The browser may add a seller's
+   submission but may not read it back or write the domains table; only the
+   service key may, and it lives here as a secret (SUPABASE_SERVICE_KEY,
+   pasted by the founder — never in code). SUPABASE_URL is a plain variable.
+
+   publishListing: read the submission by id, write one row to `domains`
+   (the name, category, prices, the seller's story and video, the Premium
+   badge and the Partnership option as paid), mark the submission approved
+   and paid, and email the founder. Written so a second call does not make a
+   second row.
+   ============================================================ */
+const WSD_HOME = "https://wallstdomains.com";
+
+function sb(env) {
+  const url = String(env.SUPABASE_URL || "").replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_KEY || "";
+  if (!url || !key) return null;
+  return {
+    url,
+    headers: { "apikey": key, "Authorization": "Bearer " + key, "Content-Type": "application/json" }
+  };
+}
+
+async function sbGet(s, path) {
+  const r = await fetch(s.url + "/rest/v1/" + path, { headers: s.headers });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error("Supabase " + r.status + ": " + ((j && (j.message || j.error)) || "refused"));
+  return j;
+}
+async function sbWrite(s, method, path, body, prefer) {
+  const r = await fetch(s.url + "/rest/v1/" + path, {
+    method, headers: { ...s.headers, "Prefer": prefer || "return=representation" },
+    body: body == null ? undefined : JSON.stringify(body) });
+  const t = await r.text();
+  let j = null; try { j = JSON.parse(t); } catch (e) {}
+  if (!r.ok) throw new Error("Supabase " + r.status + ": " + ((j && (j.message || j.error)) || t.slice(0, 200)));
+  return j;
+}
+
+/* the number in "asking $12,000" and its kin, when the old form put prices in the notes */
+function notesNumber(notes, label) {
+  const m = new RegExp(label + "\\s*\\$\\s*([0-9][0-9,]*(?:\\.[0-9]+)?)", "i").exec(String(notes || ""));
+  return m ? Number(m[1].replace(/,/g, "")) : 0;
+}
+
+async function publishListing(env, ref, opts) {
+  const s = sb(env);
+  if (!s) return { ok:false, error:"SUPABASE_URL / SUPABASE_SERVICE_KEY not set on the pay worker — the listing is paid and waiting; set the secret and run ?action=publish&ref=" + ref };
+  if (!/^[0-9a-fA-F-]{36}$/.test(String(ref))) return { ok:false, error:"that is not a submission id" };
+
+  const rows = await sbGet(s, "domain_sell_submissions?id=eq." + ref + "&select=*");
+  const sub = Array.isArray(rows) ? rows[0] : null;
+  if (!sub) return { ok:false, error:"no submission " + ref };
+
+  const name = String(sub.domains || "").trim().split(/[\s,]+/)[0];
+  if (!name) return { ok:false, error:"the submission names no domain" };
+
+  const buy   = Number(sub.sell_price)    || notesNumber(sub.notes, "asking");
+  const m1    = Number(sub.rent_price_1m) || notesNumber(sub.notes, "rent") ;
+  const m6    = Number(sub.rent_price_6m) || 0;
+  const m12   = Number(sub.rent_price_12m)|| 0;
+  const story = sub.domain_story || ("Listed by " + (sub.seller_name || sub.name || "its owner") + ".");
+  const premium = !!(opts.premium || sub.is_premium_listing);
+  const partner = !!(opts.partner || sub.partnership_offered);
+
+  /* one row per name: a re-run updates instead of duplicating */
+  const had = await sbGet(s, "domains?name=ilike." + encodeURIComponent(name) + "&select=id,name");
+  const row = {
+    name, category: sub.category || "unique",
+    buy_price: buy, rent_price: m6, monthly_rent_price: m1, yearly_rent_price: m12,
+    is_sold: false, is_premium: premium, section: premium ? "premium" : "portfolio",
+    origin_story: story, video_url: sub.video_url || null,
+    meta_title: name + " — for sale on Wall St Domains",
+    meta_description: story.slice(0, 155), keywords: [name, sub.category].filter(Boolean).join(", "),
+    partnership_available: partner,
+    partnership_terms: partner ? "The owner will consider equity in the business built on this name." : null,
+    seller_email: sub.email || opts.email || null, seller_name: sub.seller_name || sub.name || null
+  };
+  let dom;
+  if (Array.isArray(had) && had.length) {
+    dom = await sbWrite(s, "PATCH", "domains?id=eq." + had[0].id, row);
+    dom = Array.isArray(dom) ? dom[0] : dom;
+  } else {
+    dom = await sbWrite(s, "POST", "domains", row);
+    dom = Array.isArray(dom) ? dom[0] : dom;
+  }
+
+  await sbWrite(s, "PATCH", "domain_sell_submissions?id=eq." + ref, {
+    status: "approved", approved: true, approved_at: new Date().toISOString(), approved_by: "paid — published automatically",
+    payment_status: "paid", partnership_fee_paid: partner, domain_pointed: false
+  }, "return=minimal").catch(() => {});
+
+  const page = WSD_HOME + "/domain/" + encodeURIComponent(name);
+  await mailFounder(env, "New paid listing: " + name + (premium ? " (Premium)" : ""),
+    [ name + " is live: " + page,
+      "",
+      "Seller: " + (sub.seller_name || sub.name || "?") + " · " + (sub.email || "?") + " · " + (sub.phone || sub.tel_number || "?") + (sub.whatsapp_number ? " · WhatsApp " + sub.whatsapp_number : ""),
+      "Plan paid: " + (opts.cents ? "$" + (opts.cents / 100) : "(by hand)") + (premium ? " + Premium" : "") + (partner ? " + Partnership" : "") + " · Stripe " + (opts.session || ""),
+      "Asking $" + buy + (m1 ? " · rent $" + m1 + "/mo" : "") + (m6 ? " · $" + m6 + "/6mo" : "") + (m12 ? " · $" + m12 + "/yr" : ""),
+      "",
+      "Story: " + story,
+      sub.video_url ? "Video: " + sub.video_url : "",
+      "",
+      "Call the seller. If it is false, take it down:",
+      "  https://pay.realroofers.workers.dev/?action=unpublish&ref=" + ref + "&key=YOUR-KEY",
+      "(the listing comes off the site; the submission stays in the queue as rejected)"
+    ].filter(x => x !== null).join("\n"));
+
+  return { ok:true, name, page, domain_id: dom && dom.id, premium, partner, submission: ref };
+}
+
+async function unpublishListing(env, ref, why) {
+  const s = sb(env);
+  if (!s) return { ok:false, error:"SUPABASE_URL / SUPABASE_SERVICE_KEY not set on the pay worker" };
+  if (!/^[0-9a-fA-F-]{36}$/.test(String(ref))) return { ok:false, error:"that is not a submission id" };
+  const rows = await sbGet(s, "domain_sell_submissions?id=eq." + ref + "&select=id,domains,name,email");
+  const sub = Array.isArray(rows) ? rows[0] : null;
+  if (!sub) return { ok:false, error:"no submission " + ref };
+  const name = String(sub.domains || "").trim().split(/[\s,]+/)[0];
+  /* off the site — the row in domains goes; the submission stays, marked */
+  const gone = await sbWrite(s, "DELETE", "domains?name=ilike." + encodeURIComponent(name), null);
+  await sbWrite(s, "PATCH", "domain_sell_submissions?id=eq." + ref, {
+    status: "rejected", approved: false, approved_at: null, approved_by: why
+  }, "return=minimal").catch(() => {});
+  await log(env, { kind:"unpublished", ref, email: sub.email || null, note: name + " — " + why });
+  return { ok:true, name, removed: Array.isArray(gone) ? gone.length : null, submission: ref, why };
+}
+
+/* Cloudflare Email Service: the EMAIL send_email binding, from warrantwire.com,
+   the same way the wire worker writes to readers. To the founder only. */
+async function mailFounder(env, subject, text) {
+  const to = env.FOUNDER_EMAIL || "realroofers@gmail.com";
+  if (!(env.EMAIL && env.EMAIL.send)) { await log(env, { kind:"mail-skipped", note: subject }); return false; }
+  try {
+    await env.EMAIL.send({ from: { email: "desk@warrantwire.com", name: "Wall St Domains desk" }, to, subject, text });
+    return true;
+  } catch (e) { await log(env, { kind:"mail-failed", note: subject + " — " + String(e) }); return false; }
 }
 
 async function me(env, q) {

@@ -91,7 +91,10 @@ function Deploy-One([string]$n) {
       elseif ($w.type -eq "r2_bucket" -and $w.bucket) { $live += [pscustomobject]@{ type="r2_bucket"; name=$w.name; bucket_name=$w.bucket } }
       elseif ($w.type -eq "kv_namespace" -and $w.namespace) { $live += [pscustomobject]@{ type="kv_namespace"; name=$w.name; namespace_id=$w.namespace } }
       elseif ($w.type -eq "send_email") { $live += [pscustomobject]@{ type="send_email"; name=$w.name } }
-      # plain_text and secret_text are never added from the file - they carry values
+      # a plain_text variable CAN be added from the file when the file carries its text
+      # (a URL, an address - nothing secret); once live, Cloudflare's copy wins
+      elseif ($w.type -eq "plain_text" -and $null -ne $w.text) { $live += [pscustomobject]@{ type="plain_text"; name=$w.name; text=[string]$w.text } }
+      # secret_text is never added from the file - it carries a value
     }
   }
   $keep = @()
