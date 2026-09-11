@@ -8,7 +8,7 @@
    property can be sold on its own without untangling anything from
    the others. Nothing here is shared.
 
-   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts) · 1c: password reset (/write/reset, /write/resets, /api/w/resetlink) and the auth check (/api/w/whoami) · 1d: the authenticator (/write/2fa, /write/code, /api/w/2fa-off) · 1e: levels, prices, enrolment (/write/enrol), the roster (/write/writers)
+   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts) · 1c: password reset (/write/reset, /write/resets, /api/w/resetlink) and the auth check (/api/w/whoami) · 1d: the authenticator (/write/2fa, /write/code, /api/w/2fa-off) · 1e: levels, prices, enrolment (/write/enrol), the roster (/write/writers) · 1f: sign in with Google (/write/google), on when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set · 1g: investor declaration, five-star ratings with comments (/api/w/rating, /api/w/rate)
 
    BINDINGS   DB         D1  → warrantwire_writing (this site's own)
    SECRETS    LOG_KEY        master key, admin only
@@ -141,6 +141,20 @@ async function setup(env) {
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN nomad INTEGER DEFAULT 0").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN seen_from TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN seen_at TEXT").run(); } catch (e) {}
+  /* ⚠ THIS IS ALL ABOUT INVESTMENTS, so everyone declares what they are:
+     a retail investor, a professional, or a GIG reader. It is on the profile
+     and beside everything they write. */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN investor TEXT").run(); } catch (e) {}
+  /* ⚠ RATINGS FOR EVERYONE. Five stars and a comment, one per rater per
+     writer, dated, under the rater's email. The average and the count go
+     beside the name; the comments are public. The founder can remove one. */
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS w_ratings (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       writer TEXT NOT NULL, by_email TEXT NOT NULL, by_name TEXT,
+       stars INTEGER NOT NULL, comment TEXT, ticker TEXT,
+       at TEXT DEFAULT (datetime('now')), removed TEXT,
+       UNIQUE(writer, by_email))`).run();
   /* anyone without a level yet: the house is the founder, guests are amateurs */
   await env.DB.prepare("UPDATE w_writers SET level = CASE WHEN kind='house' THEN 'founder' ELSE 'gig_amateur' END WHERE level IS NULL").run();
   await env.DB.prepare("UPDATE w_writers SET price = CASE WHEN level='founder' THEN 200 ELSE 50 END WHERE price IS NULL").run();
@@ -221,12 +235,15 @@ export default {
       if (p.startsWith('/writing/'))    return piece(env, S, p.slice('/writing/'.length));
 
       /* ---------- the desk ---------- */
-      if (p === '/write/login')  return req.method === 'POST' ? loginPost(req, env) : page('Sign in', loginForm());
+      if (p === '/write/login')  return req.method === 'POST' ? loginPost(req, env) : page('Sign in', loginForm(await googleButton(env, req)));
       if (p === '/write/logout') return new Response(null, { status: 303,
         headers: [['location', '/write/login'], ['set-cookie', 'tswrite=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax']] });
       if (p === '/write/set')    return req.method === 'POST' ? setPost(req, env) : setForm(u, env);
       if (p === '/write/reset')  return req.method === 'POST' ? resetPost(req, env, SITE) : page('Reset your password', resetForm());
-      if (p === '/write/enrol')  return req.method === 'POST' ? enrolPost(req, env) : page('Enrol as a GIG reader', enrolForm());
+      if (p === '/write/enrol')  return req.method === 'POST' ? enrolPost(req, env)
+        : page('Enrol as a GIG reader', enrolForm(await googleButton(env, req), { email: u.searchParams.get('email') || '', name: u.searchParams.get('name') || '' }));
+      if (p === '/write/google') return googleStart(env, req, u, SITE);
+      if (p === '/write/google/back') return googleBack(env, req, u, SITE);
       if (p === '/write/writers') return rosterPage(env, req, SITE);
       if (p.startsWith('/writing/gig/')) return gigImg(env, p.slice('/writing/gig/'.length));
       if (p === '/write/2fa')    return req.method === 'POST' ? totpEnrolPost(req, env) : totpEnrolPage(env, req);
@@ -308,6 +325,38 @@ async function api(action, req, env, u, SITE) {
      them, and so may a page on localhost while it is being built — hence the
      open CORS header on this one route and no other. */
   if (action === 'verdicts') return verdictsPublic(env, u);
+
+  /* ---- ratings: public to read, public to give, one per email per writer ---- */
+  const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*',
+                 'access-control-allow-headers': 'content-type', 'cache-control': 'no-store' };
+  if (action === 'rating' || action === 'rate') {
+    if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+    if (action === 'rating') {
+      const wr = String(u.searchParams.get('writer') || '').trim().toLowerCase();
+      if (!wr) return new Response(JSON.stringify({ ok: false, error: 'writer?' }), { status: 400, headers: CORS });
+      const s = await ratingOf(env, wr);
+      const c = await env.DB.prepare(
+        `SELECT by_name, stars, comment, ticker, at FROM w_ratings WHERE writer=? AND removed IS NULL ORDER BY at DESC LIMIT 50`).bind(wr).all();
+      return new Response(JSON.stringify({ ok: true, writer: wr, ...s, comments: c.results || [] }), { headers: CORS });
+    }
+    if (req.method !== 'POST') return new Response(JSON.stringify({ ok: false, error: 'POST' }), { status: 405, headers: CORS });
+    const b = await req.json().catch(() => ({}));
+    const wr = String(b.writer || '').trim().toLowerCase();
+    const by = String(b.email || '').trim().toLowerCase();
+    const stars = Math.round(Number(b.stars));
+    if (!wr || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(by)) return new Response(JSON.stringify({ ok: false, error: 'a writer and your email' }), { status: 400, headers: CORS });
+    if (!(stars >= 1 && stars <= 5)) return new Response(JSON.stringify({ ok: false, error: 'one to five stars' }), { status: 400, headers: CORS });
+    if (by === wr) return new Response(JSON.stringify({ ok: false, error: 'not your own' }), { status: 400, headers: CORS });
+    const w = await env.DB.prepare("SELECT email FROM w_writers WHERE email=? AND status='active'").bind(wr).first();
+    if (!w) return new Response(JSON.stringify({ ok: false, error: 'no such writer' }), { status: 404, headers: CORS });
+    await env.DB.prepare(
+      `INSERT INTO w_ratings (writer, by_email, by_name, stars, comment, ticker) VALUES (?,?,?,?,?,?)
+       ON CONFLICT(writer, by_email) DO UPDATE SET stars=excluded.stars, comment=excluded.comment,
+         by_name=excluded.by_name, ticker=excluded.ticker, at=datetime('now'), removed=NULL`)
+      .bind(wr, by, String(b.name || '').slice(0, 80) || null, stars, String(b.comment || '').slice(0, 1500) || null, tick(b.ticker) || null).run();
+    const s = await ratingOf(env, wr);
+    return new Response(JSON.stringify({ ok: true, writer: wr, ...s, note: 'Thank you. One rating per person per writer; rating again replaces yours.' }), { headers: CORS });
+  }
 
   /* ⚠ THE AUTH CHECK. Answers whether this browser is signed in, and as whom.
      Same-origin only — it reflects the cookie, so no CORS header, ever. A
@@ -519,8 +568,14 @@ const LEVELS = {
 };
 const levelOf = w => LEVELS[w && w.level] ? w.level : (w && w.kind === 'house' ? 'founder' : 'gig_amateur');
 
+async function ratingOf(env, writer) {
+  const s = await env.DB.prepare('SELECT COUNT(*) n, AVG(stars) avg FROM w_ratings WHERE writer=? AND removed IS NULL').bind(writer).first();
+  return { stars: s && s.n ? Math.round(s.avg * 10) / 10 : null, ratings: (s && s.n) || 0 };
+}
+
 function verdictShape(r) {
-  return { name: r.name, title: r.title || null, kind: r.kind, level: r.level || null,
+  return { name: r.name, author: r.author, title: r.title || null, kind: r.kind, level: r.level || null,
+    investor: r.investor || null, stars: r.stars != null ? Math.round(r.stars * 10) / 10 : null, ratings: r.ratings || 0,
     advice: !!r.advice, price: r.price || null,
     verdict: r.verdict || '', notes: r.notes || '',
     written: r.written ? r.written.replace(' ', 'T') + 'Z' : null,
@@ -531,8 +586,13 @@ async function verdictsPublic(env, u) {
   const t = tick(u.searchParams.get('ticker'));
   const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
   if (!t) return new Response(JSON.stringify({ ok: false, error: 'a ticker, please' }), { status: 400, headers: CORS });
+  /* each verdict carries its writer's declared investor type and rating */
   const r = await env.DB.prepare(
-    `SELECT * FROM w_verdicts WHERE ticker=? AND status='published' ORDER BY (kind='house') DESC, written ASC`)
+    `SELECT v.*, w.investor,
+            (SELECT AVG(stars) FROM w_ratings WHERE writer=v.author AND removed IS NULL) AS stars,
+            (SELECT COUNT(*)   FROM w_ratings WHERE writer=v.author AND removed IS NULL) AS ratings
+       FROM w_verdicts v LEFT JOIN w_writers w ON w.email = v.author
+      WHERE v.ticker=? AND v.status='published' ORDER BY (v.kind='house') DESC, v.written ASC`)
     .bind(t).all();
   const rows = r.results || [];
   const founder = rows.find(x => x.kind === 'house');
@@ -743,17 +803,24 @@ function whereFrom(req) {
   return [c.city, c.region, c.country].filter(Boolean).join(', ') || null;
 }
 
-function enrolForm(msg = '') {
+function enrolForm(msg = '', pre = {}) {
   return `<h1>Read under your own name</h1>${msg}
     <p class="quiet" style="margin:0 0 14px">Nobody here is anonymous. A real name, a telephone number that reaches you,
     and a picture — checked by the founder before you can write. Everything you publish carries your name.</p>
     <form method="post" action="/write/enrol" class="card" enctype="multipart/form-data">
-      <label>Full legal name<input name="name" required autocomplete="name"></label>
-      <label>Email<input name="email" type="email" required autocomplete="email"></label>
+      <label>Full legal name<input name="name" required autocomplete="name" value="${esc(pre.name || '')}"></label>
+      <label>Email<input name="email" type="email" required autocomplete="email" value="${esc(pre.email || '')}"></label>
       <label>Telephone<input name="phone" type="tel" required autocomplete="tel"></label>
       <label>Where you are from — city and state, or country<input name="origin" required autocomplete="address-level2"></label>
       <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="nomad" value="1" style="width:auto;margin:0"> <span>Nomad — no fixed base. Your current location is read from your connection each time you sign in.</span></label>
       <label>Your picture (JPEG or PNG)<input name="photo" type="file" accept="image/jpeg,image/png" required></label>
+      <label>What you are — declared on your profile and beside everything you write
+        <select name="investor" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff">
+          <option value="">Choose one</option>
+          <option value="retail">Retail investor</option>
+          <option value="professional">Investment professional</option>
+          <option value="gig_reader">GIG reader — I read filings, I do not hold</option>
+        </select></label>
       <label>Licence, if you hold one — CRD, bar or CPA number and the state<input name="licence" placeholder="leave blank if none"></label>
       <label>Bio — two or three sentences a buyer reads before trusting you<textarea name="bio" rows="3" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
       <label>Background — what you did before this, and what you have read<textarea name="background" rows="4" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
@@ -795,16 +862,17 @@ async function enrolPost(req, env) {
   const price = Math.min(5000, Math.max(1, Math.round(Number(g('price')) || 50)));
   const licence = g('licence').slice(0, 120) || null;
   await env.DB.prepare(
-    `INSERT INTO w_writers (email, name, city, origin, nomad, bio, background, photo, kind, status, level, price, licence, phone, role, seen_from, seen_at)
-     VALUES (?,?,?,?,?,?,?,?,'guest','pending',?,?,?,?,?,?,datetime('now'))
+    `INSERT INTO w_writers (email, name, city, origin, nomad, bio, background, photo, kind, status, level, price, licence, phone, role, seen_from, seen_at, investor)
+     VALUES (?,?,?,?,?,?,?,?,'guest','pending',?,?,?,?,?,?,datetime('now'),?)
      ON CONFLICT(email) DO UPDATE SET name=excluded.name, city=excluded.city, origin=excluded.origin, nomad=excluded.nomad,
-       bio=excluded.bio, background=excluded.background,
+       bio=excluded.bio, background=excluded.background, investor=excluded.investor,
        photo=COALESCE(excluded.photo, photo), level=excluded.level, price=excluded.price,
        licence=excluded.licence, phone=excluded.phone, status='pending', seen_from=excluded.seen_from, seen_at=datetime('now')`)
     .bind(email, g('name').slice(0, 120), here, g('origin').slice(0, 120), g('nomad') === '1' ? 1 : 0,
           g('bio').slice(0, 1200), g('background').slice(0, 4000), photo,
           licence ? 'gig_professional' : 'gig_amateur', price, licence, g('phone').slice(0, 40),
-          licence ? 'GIG reader · licence to be checked' : 'GIG reader', here).run();
+          licence ? 'GIG reader · licence to be checked' : 'GIG reader', here,
+          ['retail', 'professional', 'gig_reader'].indexOf(g('investor')) > -1 ? g('investor') : 'retail').run();
   return page('Enrol', `<h1>Sent to the founder</h1>
     <p class="quiet">Thank you, ${esc(g('name'))}. Your enrolment is with Mark Nejmeh. When it is validated you will get a
     link to choose a password${licence ? ', and your licence will be checked before the professional level is granted' : ''}.
@@ -887,6 +955,80 @@ async function setPost(req, env) {
     .bind(tok, s.email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
   return new Response(null, { status: 303, headers: [['location', '/write'],
     ['set-cookie', `tswrite=${tok}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`]] });
+}
+
+/* ============================================================
+   SIGN IN WITH GOOGLE — build 1f, 11 Sep 2026
+
+   His ask: one click if you are already signed in to your email. Standard
+   OpenID Connect against Google. Nothing here stores a Google password;
+   Google says who the person is, and the email has to match a writer who
+   has been validated. Somebody who is not enrolled is sent to enrol with
+   the name and email already filled in.
+
+   ⚠ SWITCHED ON BY TWO SECRETS on this worker, set by the founder in the
+   Cloudflare dashboard, never in a file:
+     GOOGLE_CLIENT_ID      from console.cloud.google.com, an OAuth client of
+     GOOGLE_CLIENT_SECRET  type "Web application", with this redirect URI:
+                           https://warrantwire.com/write/google/back
+   Until they exist the button is simply not shown.
+
+   ⚠ THE STATE COOKIE. A random value goes out with the request and must
+   come back with the answer, so a link somebody else built cannot sign
+   you in as them. It lives ten minutes.
+   ⚠ THE AUTHENTICATOR STILL APPLIES. Google proves the email; if the
+   writer turned on the app, the six digits are still asked for.
+   ============================================================ */
+async function googleButton(env, req) {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return '';
+  return `<p style="margin:0 0 14px"><a href="/write/google" class="primary" style="display:block;text-align:center;background:#fff;color:#15181B;border:1.5px solid var(--rule);padding:12px 18px;text-decoration:none;font-weight:600">Continue with Google</a></p>
+    <p class="quiet" style="margin:0 0 14px;text-align:center">or with your password</p>`;
+}
+async function googleStart(env, req, u, SITE) {
+  if (!env.GOOGLE_CLIENT_ID) return page('Sign in', loginForm('<p class="err">Google sign-in is not switched on yet.</p>'));
+  const state = rnd(24);
+  const back = SITE + '/write/google/back';
+  const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
+    client_id: env.GOOGLE_CLIENT_ID, redirect_uri: back, response_type: 'code',
+    scope: 'openid email profile', state, prompt: 'select_account', access_type: 'online' }).toString();
+  return new Response(null, { status: 303, headers: [['location', url],
+    ['set-cookie', `gstate=${state}; Path=/write; Max-Age=600; Secure; HttpOnly; SameSite=Lax`]] });
+}
+async function googleBack(env, req, u, SITE) {
+  const bad = m => page('Sign in', loginForm('<p class="err">' + m + '</p>'));
+  const state = (/(?:^|;\s*)gstate=([a-z0-9]+)/.exec(req.headers.get('cookie') || '') || [])[1] || '';
+  if (!state || state !== u.searchParams.get('state')) return bad('That sign-in did not start here. Try again.');
+  const code = u.searchParams.get('code');
+  if (!code) return bad('Google did not sign you in.');
+  const tokRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ code, client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: SITE + '/write/google/back', grant_type: 'authorization_code' }).toString() });
+  const tok = await tokRes.json().catch(() => ({}));
+  if (!tok.id_token) return bad('Google did not answer. Try again.');
+  /* the id_token is a signed JWT; Google's tokeninfo endpoint checks the
+     signature and the audience for us, which is simpler than shipping JWKS */
+  const info = await (await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(tok.id_token))).json().catch(() => ({}));
+  if (!info.email || info.aud !== env.GOOGLE_CLIENT_ID || info.email_verified !== 'true') return bad('That Google account could not be verified.');
+  const email = String(info.email).toLowerCase();
+  const w = await env.DB.prepare('SELECT * FROM w_writers WHERE email=?').bind(email).first();
+  const clear = ['set-cookie', 'gstate=; Path=/write; Max-Age=0; Secure; HttpOnly; SameSite=Lax'];
+  if (!w) {
+    /* not enrolled: to the enrolment with what Google told us filled in */
+    return new Response(null, { status: 303, headers: [['location', '/write/enrol?email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(info.name || '')], clear] });
+  }
+  if (w.status !== 'active') return bad('Your enrolment is with the founder and has not been validated yet.');
+  await env.DB.prepare("UPDATE w_writers SET seen_from=?, seen_at=datetime('now') WHERE email=?").bind(whereFrom(req), email).run().catch(() => {});
+  if (w.totp_on) {
+    const half = 'code-' + rnd(28);
+    await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)').bind(half, email, new Date(Date.now() + 5 * 60e3).toISOString()).run();
+    return new Response(null, { status: 303, headers: [['location', '/write/code'],
+      ['set-cookie', `tswrite=${half}; Path=/; Max-Age=300; Secure; HttpOnly; SameSite=Lax`], clear] });
+  }
+  const t = rnd(28);
+  await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)').bind(t, email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
+  return new Response(null, { status: 303, headers: [['location', '/write'],
+    ['set-cookie', `tswrite=${t}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`], clear] });
 }
 
 /* a GIG reader's picture, out of the gig bucket, with a fixed type */

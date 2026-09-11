@@ -18,6 +18,17 @@
 .samplemark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
   color:var(--cool);border:1px solid var(--cool);border-radius:3px;padding:3px 8px;margin:0 0 12px}
 time{font:400 11.5px var(--mono);color:var(--ink3)}
+/* ratings */
+.verdict .lbl .rate{margin-left:auto;letter-spacing:0;text-transform:none}
+.stars{color:var(--warm);font-size:14px;letter-spacing:.06em}
+.stars.none{color:var(--ink3);font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.rate i{font-style:normal;color:var(--ink3);font-size:11px}
+.linkbtn{background:none;border:0;padding:0;color:var(--cool);font:inherit;cursor:pointer;text-decoration:underline}
+.rateform{display:grid;gap:8px;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line2);max-width:520px}
+.rateform .pick button{background:none;border:0;color:var(--warm);font-size:26px;line-height:1;cursor:pointer;padding:0 2px}
+.rateform input,.rateform textarea{background:#101208;border:1px solid var(--line);color:var(--ink);padding:9px 11px;border-radius:3px;font:14px var(--sans)}
+.rateform textarea{min-height:70px;resize:vertical}
+.rateform .ratemsg{font-size:13px;color:var(--cool)}
 </style>
 </head>
 <body>
@@ -246,15 +257,63 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      The desk lives in the warrantwire-write worker on this domain; the read
      route is public and answers any origin, so this works on localhost too. */
   var DESK = "https://warrantwire.com/api/w/verdicts";
+  var INVESTOR = { retail: "retail investor", professional: "investment professional", gig_reader: "GIG reader" };
+  function stars(n) {
+    if (n == null) return '<span class="stars none">not yet rated</span>';
+    var full = Math.round(n), s = "";
+    for (var i = 1; i <= 5; i++) s += i <= full ? "★" : "☆";
+    return '<span class="stars" title="' + n + ' out of 5">' + s + '</span>';
+  }
   function humanBox(cls, label, kindText, v) {
     var kind = v.advice ? '<span class="kind advice">advice &middot; licensed</span>' : '<span class="kind">opinion, not advice</span>';
-    return '<section class="verdict ' + cls + '">'
-      + '<p class="lbl"><b>' + esc(label) + '</b><span>' + esc(v.name) + (v.title ? ", " + esc(v.title) : "") + '</span>' + kind + '</p>'
+    var who = esc(v.name) + (v.title ? ", " + esc(v.title) : "") + (v.investor && INVESTOR[v.investor] ? " &middot; " + INVESTOR[v.investor] : "");
+    return '<section class="verdict ' + cls + '" data-writer="' + esc(v.author || "") + '">'
+      + '<p class="lbl"><b>' + esc(label) + '</b><span>' + who + '</span>' + kind
+      + '<span class="rate">' + stars(v.stars) + (v.ratings ? ' <i>' + v.ratings + '</i>' : '') + '</span></p>'
       + '<p class="vlead">' + esc(v.verdict) + '</p>'
       + (v.notes ? '<p>' + esc(v.notes) + '</p>' : '')
-      + '<p class="by">Written by <b>' + esc(v.name) + '</b> ' + when(v.written) + (v.revised ? ' &middot; revised ' + when(v.revised) : '') + '</p>'
+      + '<p class="by">Written by <b>' + esc(v.name) + '</b> ' + when(v.written) + (v.revised ? ' &middot; revised ' + when(v.revised) : '')
+      + (v.author ? ' &middot; <button type="button" class="linkbtn ratebtn">Rate ' + esc(v.name.split(" ")[0]) + '</button>' : '') + '</p>'
+      + (v.author ? '<form class="rateform" hidden>'
+          + '<span class="pick" role="radiogroup" aria-label="Stars">'
+          + [1,2,3,4,5].map(function (i) { return '<button type="button" data-s="' + i + '" aria-label="' + i + ' star' + (i === 1 ? "" : "s") + '">☆</button>'; }).join("")
+          + '</span>'
+          + '<input type="email" name="email" placeholder="your email — one rating per person" required>'
+          + '<input type="text" name="name" placeholder="your name (optional)" maxlength="80">'
+          + '<textarea name="comment" placeholder="A comment, if you have one. It is published." maxlength="1500"></textarea>'
+          + '<button type="submit" class="wbuy ghost">Send the rating</button>'
+          + '<span class="ratemsg"></span></form>' : '')
       + '</section>';
   }
+  /* ratings: open the form, pick stars, send */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".ratebtn, .pick button") : null;
+    if (!b) return;
+    var sec = b.closest(".verdict"), form = sec && sec.querySelector(".rateform");
+    if (!form) return;
+    if (b.classList.contains("ratebtn")) { form.hidden = !form.hidden; return; }
+    var n = +b.getAttribute("data-s");
+    form.setAttribute("data-stars", n);
+    form.querySelectorAll(".pick button").forEach(function (x) { x.textContent = +x.getAttribute("data-s") <= n ? "★" : "☆"; });
+  });
+  document.addEventListener("submit", function (e) {
+    var form = e.target.closest ? e.target.closest(".rateform") : null;
+    if (!form) return;
+    e.preventDefault();
+    var sec = form.closest(".verdict"), msg = form.querySelector(".ratemsg");
+    var s = +form.getAttribute("data-stars");
+    if (!s) { msg.textContent = "Pick the stars first."; return; }
+    msg.textContent = "Sending…";
+    fetch("https://warrantwire.com/api/w/rate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ writer: sec.getAttribute("data-writer"), email: form.email.value, name: form.name.value,
+                             comment: form.comment.value, stars: s, ticker: T }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        msg.textContent = d.ok ? d.note : (d.error || "Not saved.");
+        if (d.ok) { sec.querySelector(".rate").innerHTML = stars(d.stars) + ' <i>' + d.ratings + '</i>'; form.hidden = true; }
+      })
+      .catch(function () { msg.textContent = "Could not reach the desk."; });
+  });
   function humans(ticker, open) {
     var el = document.getElementById("humans");
     fetch(DESK + "?ticker=" + encodeURIComponent(ticker), { cache: "no-store" })
