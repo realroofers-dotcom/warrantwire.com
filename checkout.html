@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire checkout-1f — grey not black, and you can change your mind
+<!-- BUILT 2026-09-11 · warrantwire checkout-1k — Cancel where a man can see it
      Lives at warrantwire.com/checkout.html
 
      ⚠ THIS PAGE EXISTS BECAUSE EVERY SITE WITH MORE THAN ONE PRODUCT HAS ONE.
@@ -40,13 +40,13 @@
 <meta name="robots" content="noindex">
 <style>
 :root{
-  /* ⚠ NOT BLACK. A page about to take somebody's bank details was near-black
-     with near-black panels on it, which reads as cheap and makes a man
-     hesitate at exactly the wrong moment. The page is grey, the panel he is
-     reading sits lighter than the page, and the fields sit darker than the
-     panel — three levels, so the eye knows where it is. */
-  --paper:#1e211a; --panel:#2a2e24; --line:#464b3a;
-  --ink:#f0efe6; --ink2:#b9bcab; --ink3:#8b8f7c;
+  /* ⚠ MUCH LIGHTER. A page taking somebody's bank details was reading as
+     near-black with darker holes in it, which looks unfinished and makes a man
+     hesitate at the worst possible moment. This is a proper grey: the page
+     light, the card lighter still, the panels holding the detail sitting a
+     shade below, and the fields below those. Four steps, all of them visible. */
+  --paper:#3b4034; --panel:#474d3e; --line:#6a7157;
+  --ink:#f7f6ee; --ink2:#d3d5c4; --ink3:#a1a690;
   --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -55,7 +55,15 @@
 html,body{margin:0;background:var(--paper);color:var(--ink)}
 body{font:16px/1.6 Georgia,"Iowan Old Style",serif;-webkit-font-smoothing:antialiased}
 a{color:var(--cool)}
-.wrap{max-width:600px;margin:0 auto;padding:22px 20px 70px}
+/* ⚠ EVERYTHING SITS ON ONE LIGHTER CARD. Separate panels floating on a dark
+   page left the whole thing reading as a hole with boxes dropped in it. The
+   card IS the page — one lighter grey field holding the header, what he is
+   buying and how he pays, so the eye has an edge to work against. */
+.page{max-width:600px;margin:26px auto 60px;padding:6px;
+  background:#545b48;border:1px solid #757d61;border-radius:12px;
+  box-shadow:0 10px 34px rgba(0,0,0,.30)}
+.wrap{max-width:none;margin:0;padding:16px 20px 22px;
+  background:var(--panel);border-radius:9px}
 header.mast{display:flex;justify-content:space-between;align-items:baseline;
   gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
 .mark{font:700 21px/1 var(--sans);letter-spacing:.02em;color:var(--ink);text-decoration:none}
@@ -63,19 +71,27 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 .back{font-size:13.5px;color:var(--ink3);text-decoration:none}
 .back:hover{color:var(--ink)}
 
-.step{font:600 10.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ink3);margin:32px 0 10px}
+/* ⚠ THE TWO STEPS ARE NUMBERED. A checkout with unlabelled sections is a
+   page a man reads twice to work out where he is. */
+.step{font:600 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--warm);margin:24px 0 9px;display:flex;align-items:center;gap:9px}
+.step i{font-style:normal;display:inline-flex;width:19px;height:19px;
+  align-items:center;justify-content:center;border-radius:50%;
+  background:var(--warm);color:#1e211a;font:700 11px var(--sans)}
+.once{color:var(--ink3);font-size:13px;margin:12px 0 0;
+  padding-top:12px;border-top:1px solid var(--line)}
 
 /* what you are buying */
-.item{background:var(--panel);border:1px solid var(--line);border-radius:8px;
-  padding:20px 22px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+.item{background:#3d4335;border:1px solid var(--line);border-radius:8px;
+  padding:17px 20px}
 .item h1{font:400 26px/1.2 Georgia,serif;margin:0}
 .item .ctx{font:600 12px var(--mono);letter-spacing:.1em;color:var(--warm);
   margin:8px 0 0;text-transform:uppercase}
 .item p{color:var(--ink2);margin:10px 0 0;font-size:15px}
 .line{display:flex;justify-content:space-between;gap:18px;
-  padding:14px 0;border-bottom:1px solid var(--line)}
+  padding:13px 0;border-bottom:1px solid var(--line)}
 .line:first-child{padding-top:0}
+.line:last-of-type{border-bottom:0}
 .line b{font:400 19px/1.25 Georgia,serif;color:var(--ink);display:block}
 .line .ctx{display:inline-block;font:600 11px var(--mono);letter-spacing:.1em;
   color:var(--warm);margin-top:5px;text-transform:uppercase}
@@ -94,15 +110,27 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
    of not buying. */
 .away{display:flex;justify-content:space-between;align-items:center;
   gap:14px;flex-wrap:wrap;margin:14px 0 0}
-.clear{background:none;border:0;color:var(--ink3);cursor:pointer;
-  font:400 13px var(--sans);text-decoration:underline;padding:4px 0}
-.clear:hover{color:var(--hot)}
+
+/* ⚠ THE STEP AND THE WAY OUT ON THE SAME LINE. */
+.steprow{display:flex;align-items:center;justify-content:space-between;
+  gap:14px;margin:24px 0 9px}
+.steprow .step{margin:0}
+.cancel{background:transparent;border:1px solid var(--line);
+  color:var(--ink2);border-radius:5px;cursor:pointer;
+  font:600 12px var(--sans);padding:7px 14px}
+.cancel:hover{border-color:var(--hot);color:var(--hot);
+  background:rgba(198,90,74,.09)}
 .item .amt{font:700 34px/1 var(--mono);color:var(--ink);margin:16px 0 0;
   font-variant-numeric:tabular-nums}
 .item .amt small{display:block;font:400 12.5px var(--sans);color:var(--ink3);
   margin-top:6px;letter-spacing:.02em}
 
-.pay{margin-top:6px}
+/* ⚠ THE PAYMENT AREA IS A PANEL NOW, NOT A HOLE. ACHplug draws its box with a
+   border and no background of its own, so it sat straight on the page and the
+   whole lower half read as one flat sheet. Making the page grey was not enough
+   — the eye needs an edge to know where the form starts. */
+.pay{margin-top:0;background:#3d4335;border:1px solid var(--line);
+  border-radius:8px;padding:4px 10px 8px}
 
 /* ============================================================
    ⚠ THE FIELDS HAD NO EDGES. ACHplug draws its inputs with a border colour
@@ -112,21 +140,34 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 
    ⚠ ALL OF IT IS CSS ON THIS PAGE. Not a line of the plug is touched.
    ============================================================ */
-.achplug{--ach-line:#565c47}
+.achplug{--ach-line:#8a9270}
+/* ⚠ THE TWO CHOICES NEED EDGES TOO. Card and bank sat on the same colour as
+   everything around them, so there was nothing to tell a man they were two
+   things to choose between. */
+.achplug-opt{border:1px solid #757d61 !important;background:#4b5241 !important;
+  border-radius:7px !important}
+.achplug-bank{border-color:var(--cool) !important;
+  background:rgba(111,168,140,.10) !important}
 .achplug input,
 .achplug select{
-  border:1.5px solid #565c47 !important;
-  background:#171a12 !important;
+  /* ⚠ A BOX AND A HEAVIER LINE UNDER IT. A thin even border on a dark panel
+     is nearly invisible — the underline is what makes a field look like
+     somewhere to write rather than a shaded rectangle. */
+  border:1px solid #8a9270 !important;
+  border-bottom:2.5px solid #b6c092 !important;
+  background:#2d3227 !important;
   color:var(--ink) !important;
   border-radius:5px !important;
-  padding:11px 12px !important;
+  padding:12px 13px !important;
   font-size:16px !important;   /* ⚠ 16px OR A PHONE ZOOMS IN ON FOCUS */
 }
-.achplug input::placeholder{color:#787f66 !important}
+.achplug input::placeholder{color:#9ba284 !important}
 .achplug input:focus,
 .achplug select:focus{
   border-color:var(--warm) !important;
-  outline:2px solid rgba(201,162,39,.28) !important;
+  border-bottom-color:var(--warm) !important;
+  background:#353c2c !important;
+  outline:2px solid rgba(201,162,39,.30) !important;
   outline-offset:1px !important;
 }
 /* the label above each one, so it reads as a form rather than a wall */
@@ -147,13 +188,14 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
   color:var(--ink2)}
 .miss b{color:var(--ink);font-weight:400;display:block;margin-bottom:5px}
 
-.small{color:var(--ink3);font-size:13px;margin:18px 0 0;line-height:1.55}
+.small{color:var(--ink3);font-size:12.5px;margin:14px 0 0;line-height:1.5}
 footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
   color:var(--ink3);font-size:13px}
 footer a{color:var(--ink2);text-decoration:none;margin-right:20px}
 </style>
 </head>
 <body>
+<div class="page">
 <div class="wrap">
 
   <header class="mast">
@@ -163,12 +205,19 @@ footer a{color:var(--ink2);text-decoration:none;margin-right:20px}
 
   <div id="out"></div>
 
+  <!-- ⚠ THE VERSION, WHERE A PERSON CAN SEE IT. Twice today a change was
+       uploaded and the old page was still being served, and there was no way
+       to tell that apart from the change not working. Now there is. -->
+  <p style="color:var(--ink3);font:11px var(--mono);margin:26px 0 0;
+            letter-spacing:.08em">checkout-1k</p>
+
   <footer>
     <a href="/prices.html">What it costs</a>
     <a href="/terms.html">Terms</a>
     <a href="/privacy.html">Privacy</a>
     <a href="/about.html">Who runs the wire</a>
   </footer>
+</div>
 </div>
 
 <script>
@@ -320,22 +369,37 @@ if (!list.length) {
            + "&on=wire";
 
   document.getElementById("out").innerHTML =
-    '<p class="step">' + (list.length === 1 ? 'You are buying' : 'You are buying ' + list.length + ' things') + '</p>' +
-    '<div class="item">' + rows +
-      '<p class="amt">$' + total.toLocaleString() +
-        '<small>' + (list.length === 1 ? 'One payment. Nothing renews.'
-                                       : 'One payment for all of it. Nothing renews.') + '</small></p>' +
+    /* ⚠ CANCEL SITS AT THE TOP, WHERE HE IS LOOKING. It was small underlined
+       text at the bottom of the page, BELOW the payment form — so a man who
+       had changed his mind had to scroll past the thing he no longer wanted
+       to find the way out. */
+    '<div class="steprow">' +
+      '<p class="step"><i>1</i>' +
+        (list.length === 1 ? 'What you are buying' : 'What you are buying — ' + list.length + ' things') +
+      '</p>' +
+      '<button type="button" class="cancel" id="clear">Cancel</button>' +
     '</div>' +
-    '<p class="step">How you want to pay</p>' +
+    '<div class="item">' + rows +
+      /* ⚠ ONE THING DOES NOT NEED A TOTAL. The price was on the line, then
+         again underneath, then twice more on the payment boxes — four times
+         for a twelve dollar search. A total belongs where there is something
+         to add up. */
+      (list.length > 1
+        ? '<p class="amt">$' + total.toLocaleString() +
+            '<small>One payment for all of it. Nothing renews.</small></p>'
+        : '<p class="once">One payment. Nothing renews.</p>') +
+    '</div>' +
+    '<p class="step"><i>2</i>How you want to pay</p>' +
     '<div class="pay" id="pay"></div>' +
     '<p class="small">Paying from your bank takes 2% off. Most bank payments ' +
       'clear straight away and a few take a day or two &mdash; either way you ' +
       'get what you bought as soon as you authorise it. ' +
       'By paying you agree to the <a href="/terms.html">terms</a>, which ' +
       'include a refund within fourteen days if you want one.</p>' +
+    /* ⚠ ONE CANCEL, NOT TWO. Two buttons doing the same thing is one of them
+       that somebody has to think about. */
     '<div class="away">' +
       '<a class="small" style="margin:0" href="/prices.html">Add something else</a>' +
-      '<button type="button" class="clear" id="clear">Empty the checkout</button>' +
     '</div>';
 
   /* ⚠ REMOVING RELOADS THE PAGE. The plug has already drawn a box for the old
@@ -346,10 +410,13 @@ if (!list.length) {
 
     /* ⚠ EMPTYING IT ASKS FIRST. One stray click should not throw away a
        hundred pounds of choices he spent ten minutes making. */
+    /* ⚠ CANCELLING ASKS FIRST, AND SENDS HIM SOMEWHERE. An empty checkout page
+       is a dead end; the price list is where a man who cancelled one thing
+       goes to choose another. */
     if (t.id === "clear") {
-      if (!confirm("Take everything off the checkout?")) return;
+      if (!confirm("Cancel this order and take everything off the checkout?")) return;
       keep([]);
-      location.href = "/checkout.html";
+      location.href = "/prices.html";
       return;
     }
 
@@ -378,9 +445,12 @@ if (!list.length) {
      ⚠ THE NAME STILL HAS TO REACH THE ORDER THOUGH, so it goes on data-desc,
      which the box does not print as a heading. Without it the ACHplug journal
      has a row nobody can match to anything. */
+  /* ⚠ THE BOX PRINTED "One search — One search". fullName and fullDesc were
+     both built from the product name, so passing both put it on the page
+     twice. The order needs ONE line that says what it was for. */
   s.setAttribute("data-name",   "");
   s.setAttribute("data-price",  String(total));
-  s.setAttribute("data-desc",   fullName + " — " + fullDesc);
+  s.setAttribute("data-desc",   fullDesc);
   s.setAttribute("data-card",   card);
   s.setAttribute("data-repeat", "off");
   document.getElementById("pay").appendChild(s);

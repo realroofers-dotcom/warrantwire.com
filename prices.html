@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire prices-2b
+<!-- BUILT 2026-09-11 · warrantwire prices-2g — and the page says which version it is
      Lives at warrantwire.com/prices.html
 
      ⚠ PRICES AND BUY BUTTONS. Nothing else. No payment box, no discount pitch,
@@ -21,8 +21,13 @@
 <link rel="canonical" href="https://warrantwire.com/prices.html">
 <style>
 :root{
-  --paper:#14150f; --panel:#1c1e16; --line:#2e3125;
-  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
+  /* ⚠ MUCH LIGHTER. A page taking somebody's bank details was reading as
+     near-black with darker holes in it, which looks unfinished and makes a man
+     hesitate at the worst possible moment. This is a proper grey: the page
+     light, the card lighter still, the panels holding the detail sitting a
+     shade below, and the fields below those. Four steps, all of them visible. */
+  --paper:#3b4034; --panel:#474d3e; --line:#6a7157;
+  --ink:#f7f6ee; --ink2:#d3d5c4; --ink3:#a1a690;
   --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -66,16 +71,7 @@ h2{font:400 18px/1.3 Georgia,serif;margin:30px 0 2px;color:var(--warm)}
   font:600 13px var(--sans);cursor:pointer;white-space:nowrap}
 .buy:hover{background:var(--cool);color:#14150f}
 .buy.on{border-color:var(--warm);color:var(--warm)}
-
-.cart{position:sticky;top:0;z-index:5;background:var(--panel);
-  border:1px solid var(--line);border-top:0;border-radius:0 0 7px 7px;
-  padding:10px 15px;display:none;align-items:center;justify-content:space-between;
-  gap:12px;flex-wrap:wrap}
-.cart.on{display:flex}
-.cart span{color:var(--ink2);font-size:14px}
-.cart b{color:var(--ink);font-weight:400}
-.cart a{background:var(--hot);color:#14150f;text-decoration:none;border-radius:5px;
-  padding:7px 15px;font:600 13px var(--sans)}
+.buy.on:hover{background:var(--hot);border-color:var(--hot);color:#14150f}
 
 footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
   color:var(--ink3);font-size:13px}
@@ -86,8 +82,9 @@ footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
 </head>
 <body>
 
-<div class="cart" id="cart"></div>
-
+<!-- ⚠ NO BAR OF ITS OWN HERE ANY MORE. cart.js draws the checkout button on
+     every page including this one, and two things saying the same thing is one
+     of them going stale. -->
 <div class="wrap">
   <header class="mast">
     <a class="mark" href="/">WARRANT<b>WIRE</b></a>
@@ -119,6 +116,9 @@ footer{margin-top:44px;border-top:1px solid var(--line);padding-top:14px;
   </div>
 
   <div id="board"></div>
+
+  <p style="color:var(--ink3);font:11px var(--mono);margin:26px 0 0;
+            letter-spacing:.08em">prices-2g</p>
 
   <footer>
     <div class="footnav">
@@ -206,23 +206,47 @@ function mark(){
   l.forEach(function(x){ have[x.sku] = true; });
   document.querySelectorAll(".buy").forEach(function(b){
     var on = have[b.getAttribute("data-sku")];
-    b.textContent = on ? "Added" : "Buy";
+    /* ⚠ IT SAYS WHAT PRESSING IT WILL DO. "Added" is a label; a man who
+       changed his mind pressed it and was carried to the checkout again
+       instead of being let out. */
+    b.textContent = on ? "Remove" : "Buy";
     b.classList.toggle("on", !!on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
   });
-  var c = document.getElementById("cart");
-  if (!l.length || !PRODUCTS) { c.className = "cart"; c.innerHTML = ""; return; }
-  var total = l.reduce(function(n,x){
-    return n + (PRODUCTS[x.sku] ? PRODUCTS[x.sku].price : 0); }, 0);
-  c.className = "cart on";
-  c.innerHTML = '<span><b>' + l.length + ' on the checkout</b> &mdash; $' +
-    total.toLocaleString() + '</span><a href="/checkout.html">Checkout</a>';
 }
 
+/* ⚠ PRESSING IT AGAIN TAKES IT OFF, AND STAYS ON THIS PAGE. Choosing and
+   un-choosing belong in the same place and should cost the same one click.
+   Only adding sends him to the checkout — that is the point of adding. */
 document.addEventListener("click", function(e){
   var b = e.target.closest && e.target.closest(".buy");
   if (!b) return;
-  location.href = "/checkout.html?buy=" + encodeURIComponent(b.getAttribute("data-sku"));
+  var sku = b.getAttribute("data-sku");
+  var l = held();
+  var at = -1;
+  for (var i = 0; i < l.length; i++) if (l[i].sku === sku) { at = i; break; }
+
+  if (at > -1) {
+    /* ⚠ TAKING IT OFF HERE ONLY REMOVES A LINE WITH NO COMPANY ATTACHED, or
+       the first one if that is all there is. A man who added TOVX and LEXX
+       separately should lose one, not both — and this page cannot tell him
+       which, so it removes one and leaves the rest visible on the checkout. */
+    l.splice(at, 1);
+    try { localStorage.setItem(BASKET, JSON.stringify(l)); } catch (err) {}
+    mark();
+    return;
+  }
+
+  location.href = "/checkout.html?buy=" + encodeURIComponent(sku);
 });
 </script>
+<!-- ⚠ THE CHECKOUT BUTTON, ON EVERY PAGE. One line. It draws itself only when
+     something has been picked, and it is what gets a man back to what he chose
+     after he wandered off to read a filing. -->
+<!-- ⚠ FROM THE CART WORKER, NOT A FILE IN THIS REPO. One copy serves
+     warrantwire, 8k10q and triggeredshort — three copies would be two of them
+     going stale. It fetches the prices from whichever site it is loaded on, so
+     each one shows its own. -->
+<script src="https://cart.realroofers.workers.dev/" defer></script>
 </body>
 </html>
