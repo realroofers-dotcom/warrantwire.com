@@ -8,7 +8,7 @@
    property can be sold on its own without untangling anything from
    the others. Nothing here is shared.
 
-   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts) · 1c: password reset (/write/reset, /write/resets, /api/w/resetlink) and the auth check (/api/w/whoami) · 1d: the authenticator (/write/2fa, /write/code, /api/w/2fa-off) · 1e: levels, prices, enrolment (/write/enrol), the roster (/write/writers) · 1f: sign in with Google (/write/google), on when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set · 1g: investor declaration, five-star ratings with comments (/api/w/rating, /api/w/rate)
+   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts) · 1c: password reset (/write/reset, /write/resets, /api/w/resetlink) and the auth check (/api/w/whoami) · 1d: the authenticator (/write/2fa, /write/code, /api/w/2fa-off) · 1e: levels, prices, enrolment (/write/enrol), the roster (/write/writers) · 1f: sign in with Google (/write/google), on when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set · 1g: investor declaration, five-star ratings with comments (/api/w/rating, /api/w/rate) · 1h: the system verifies (Google makes the account), a person verifies by telephone (/api/w/called) before anything publishes; /write/profile; sign-in pages in wire.css
 
    BINDINGS   DB         D1  → warrantwire_writing (this site's own)
    SECRETS    LOG_KEY        master key, admin only
@@ -145,6 +145,13 @@ async function setup(env) {
      a retail investor, a professional, or a GIG reader. It is on the profile
      and beside everything they write. */
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN investor TEXT").run(); } catch (e) {}
+  /* ⚠ VERIFIED BY A CALL. His ruling, 11 Sep: the system checks the email and
+     the profile; a PERSON checks the person, on the telephone. Nothing is
+     published until somebody from the desk has spoken to them and said so
+     here, with the date and their own name on it. */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN called TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN called_by TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN call_note TEXT").run(); } catch (e) {}
   /* ⚠ RATINGS FOR EVERYONE. Five stars and a comment, one per rater per
      writer, dated, under the rater's email. The average and the count go
      beside the name; the comments are public. The founder can remove one. */
@@ -242,6 +249,14 @@ export default {
       if (p === '/write/reset')  return req.method === 'POST' ? resetPost(req, env, SITE) : page('Reset your password', resetForm());
       if (p === '/write/enrol')  return req.method === 'POST' ? enrolPost(req, env)
         : page('Enrol as a GIG reader', enrolForm(await googleButton(env, req), { email: u.searchParams.get('email') || '', name: u.searchParams.get('name') || '' }));
+      if (p === '/write/profile') {
+        const me = await who(env, req);
+        if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+        const gaps = profileGaps(me);
+        return page('Your profile', enrolForm(gaps.length
+          ? '<p class="err">Before you can publish, the system needs: ' + esc(gaps.join('; ')) + '.</p>'
+          : '<p class="quiet">Your profile is complete. <a href="/write/verdict">Write a verdict</a>.</p>', me, true));
+      }
       if (p === '/write/google') return googleStart(env, req, u, SITE);
       if (p === '/write/google/back') return googleBack(env, req, u, SITE);
       if (p === '/write/writers') return rosterPage(env, req, SITE);
@@ -423,6 +438,22 @@ async function api(action, req, env, u, SITE) {
     const link = await makeReset(env, email, SITE, req, 24 * 7);
     return json({ ok: true, email, level, label: LEVELS[level].label, link, note: 'Validated. Send them this link; it works once, for seven days.' });
   }
+  /* ⚠ "I SPOKE TO THEM." The founder, or a house writer, records the call:
+     the date, who made it, and a line about it. From then on the writer may
+     publish. Undoing it is the same call with called=false. */
+  if (action === 'called' && req.method === 'POST') {
+    if (!(levelOf(me) === 'founder' || levelOf(me) === 'writer')) return json({ ok: false, error: 'the desk does this' }, 403);
+    const b = await req.json().catch(() => ({}));
+    const email = String(b.email || '').trim().toLowerCase();
+    if (b.called === false) {
+      await env.DB.prepare('UPDATE w_writers SET called=NULL, called_by=NULL, call_note=NULL WHERE email=?').bind(email).run();
+      return json({ ok: true, email, called: false });
+    }
+    const r = await env.DB.prepare("UPDATE w_writers SET called=datetime('now'), called_by=?, call_note=? WHERE email=? AND status='active'")
+      .bind(me.name || me.email, String(b.note || '').slice(0, 500) || null, email).run();
+    return json({ ok: !!(r.meta && r.meta.changes), email, called: true, by: me.name || me.email });
+  }
+
   if (action === 'decline' && req.method === 'POST') {
     if (levelOf(me) !== 'founder') return json({ ok: false, error: 'the founder does this' }, 403);
     const b = await req.json().catch(() => ({}));
@@ -619,6 +650,13 @@ async function verdictSave(req, env, me) {
   const company = String(b.company || '').trim().slice(0, 160);
   if (!t) return json({ ok: false, error: 'a ticker, please' }, 400);
   if (text.length < 20) return json({ ok: false, error: 'the verdict itself — at least a sentence' }, 400);
+  /* ⚠ THE TWO GATES BEFORE ANYTHING IS PUBLISHED: a complete profile, and a
+     telephone call. The founder's own account passes both by definition. */
+  if (levelOf(me) !== 'founder') {
+    const gaps = profileGaps(me);
+    if (gaps.length) return json({ ok: false, error: 'Not published. Your profile still needs ' + gaps.join('; ') + '.', profile: '/write/profile' }, 400);
+    if (!me.called) return json({ ok: false, error: 'Not published yet. The desk telephones every writer before the first verdict goes up — expect a call at ' + (me.phone || 'the number on your profile') + '. Your words are kept here as a draft.', draft: true }, 403);
+  }
 
   /* ⚠ ADVICE IS A WORD ONLY A GIG PROFESSIONAL MAY USE — a level the founder
      sets after checking the licence. A writer cannot grant it to himself, and
@@ -803,45 +841,51 @@ function whereFrom(req) {
   return [c.city, c.region, c.country].filter(Boolean).join(', ') || null;
 }
 
-function enrolForm(msg = '', pre = {}) {
-  return `<h1>Read under your own name</h1>${msg}
+function enrolForm(msg = '', pre = {}, mine = false) {
+  const sel = v => pre.investor === v ? ' selected' : '';
+  return `<h1>${mine ? 'Your profile' : 'Read under your own name'}</h1>${msg}
     <p class="quiet" style="margin:0 0 14px">Nobody here is anonymous. A real name, a telephone number that reaches you,
-    and a picture — checked by the founder before you can write. Everything you publish carries your name.</p>
+    and a picture. The system checks the profile is complete before anything is published; everything you publish carries your name.</p>
     <form method="post" action="/write/enrol" class="card" enctype="multipart/form-data">
       <label>Full legal name<input name="name" required autocomplete="name" value="${esc(pre.name || '')}"></label>
-      <label>Email<input name="email" type="email" required autocomplete="email" value="${esc(pre.email || '')}"></label>
-      <label>Telephone<input name="phone" type="tel" required autocomplete="tel"></label>
-      <label>Where you are from — city and state, or country<input name="origin" required autocomplete="address-level2"></label>
-      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="nomad" value="1" style="width:auto;margin:0"> <span>Nomad — no fixed base. Your current location is read from your connection each time you sign in.</span></label>
-      <label>Your picture (JPEG or PNG)<input name="photo" type="file" accept="image/jpeg,image/png" required></label>
+      <label>Email<input name="email" type="email" required autocomplete="email" value="${esc(pre.email || '')}"${mine ? ' readonly' : ''}></label>
+      <label>Telephone — a real line that rings where you are. Not Google Voice, not an internet number; the desk calls it before your first verdict goes up.<input name="phone" type="tel" required autocomplete="tel" value="${esc(pre.phone || '')}"></label>
+      <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="realphone" value="1" required style="width:auto;margin:4px 0 0"> <span>This is not a Google Voice or internet-only number.</span></label>
+      <label>Where you are from — city and state, or country<input name="origin" required autocomplete="address-level2" value="${esc(pre.origin || '')}"></label>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="nomad" value="1" style="width:auto;margin:0"${pre.nomad ? ' checked' : ''}> <span>Nomad — no fixed base. Your current location is read from your connection each time you sign in.</span></label>
+      <label>Your picture (JPEG or PNG)${pre.photo ? ' — one is on file; choose another to replace it' : ''}<input name="photo" type="file" accept="image/jpeg,image/png"${pre.photo ? '' : ' required'}></label>
       <label>What you are — declared on your profile and beside everything you write
         <select name="investor" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff">
           <option value="">Choose one</option>
-          <option value="retail">Retail investor</option>
-          <option value="professional">Investment professional</option>
-          <option value="gig_reader">GIG reader — I read filings, I do not hold</option>
+          <option value="retail"${sel('retail')}>Retail investor</option>
+          <option value="professional"${sel('professional')}>Investment professional</option>
+          <option value="gig_reader"${sel('gig_reader')}>GIG reader — I read filings, I do not hold</option>
         </select></label>
-      <label>Licence, if you hold one — CRD, bar or CPA number and the state<input name="licence" placeholder="leave blank if none"></label>
-      <label>Bio — two or three sentences a buyer reads before trusting you<textarea name="bio" rows="3" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
-      <label>Background — what you did before this, and what you have read<textarea name="background" rows="4" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
-      <label>Your price for a verdict, in dollars<input name="price" type="number" min="1" max="5000" value="50" required></label>
+      <label>Licence, if you hold one — CRD, bar or CPA number and the state<input name="licence" placeholder="leave blank if none" value="${esc(pre.licence || '')}"></label>
+      <label>Bio — two or three sentences a buyer reads before trusting you<textarea name="bio" rows="3" required>${esc(pre.bio || '')}</textarea></label>
+      <label>Background — what you did before this, and what you have read<textarea name="background" rows="4" required>${esc(pre.background || '')}</textarea></label>
+      <label>Your price for a verdict, in dollars<input name="price" type="number" min="1" max="5000" value="${esc(pre.price || 50)}" required></label>
       <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="agree" required style="width:auto;margin:4px 0 0">
         <span>I understand that everything I write is an opinion under my own name, not advice — unless the founder has
         verified my licence and I choose to mark a verdict as advice — and that it is about warrants only.</span></label>
-      <button class="primary">Send to the founder</button>
+      <button class="primary">${mine ? 'Save my profile' : 'Enrol'}</button>
     </form>
-    <p class="quiet">You will hear back under your own name. <a href="/write/login">Already enrolled? Sign in.</a></p>`;
+    ${mine ? '<p class="quiet"><a href="/write/verdict">Back to the desk</a></p>'
+           : '<p class="quiet">Quicker: <a href="/write/google">continue with Google</a> and the system verifies your email on the spot. <a href="/write/login">Already enrolled? Sign in.</a></p>'}`;
 }
 async function enrolPost(req, env) {
   const f = await req.formData();
   const g = k => String(f.get(k) || '').trim();
-  const email = g('email').toLowerCase();
+  /* a signed-in writer is saving their own profile: the email is theirs and
+     the account stays exactly as active as it was */
+  const me = await who(env, req);
+  const email = me ? me.email : g('email').toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return page('Enrol', enrolForm('<p class="err">A working email, please.</p>'));
   if (g('name').length < 3 || g('phone').length < 7 || !g('origin') || g('bio').length < 20 || g('background').length < 20)
     return page('Enrol', enrolForm('<p class="err">Name, telephone, where you are from, a bio and a background are all needed.</p>'));
   const here = whereFrom(req);
   const had = await env.DB.prepare('SELECT status FROM w_writers WHERE email=?').bind(email).first();
-  if (had && had.status === 'active') return page('Enrol', enrolForm('<p class="err">That email already writes here. <a href="/write/login">Sign in</a> or <a href="/write/reset">reset your password</a>.</p>'));
+  if (!me && had && had.status === 'active') return page('Enrol', enrolForm('<p class="err">That email already writes here. <a href="/write/login">Sign in</a> or <a href="/write/reset">reset your password</a>.</p>'));
 
   /* the picture: sniffed, not trusted; stored with its source */
   let photo = null;
@@ -866,17 +910,22 @@ async function enrolPost(req, env) {
      VALUES (?,?,?,?,?,?,?,?,'guest','pending',?,?,?,?,?,?,datetime('now'),?)
      ON CONFLICT(email) DO UPDATE SET name=excluded.name, city=excluded.city, origin=excluded.origin, nomad=excluded.nomad,
        bio=excluded.bio, background=excluded.background, investor=excluded.investor,
-       photo=COALESCE(excluded.photo, photo), level=excluded.level, price=excluded.price,
-       licence=excluded.licence, phone=excluded.phone, status='pending', seen_from=excluded.seen_from, seen_at=datetime('now')`)
+       photo=COALESCE(excluded.photo, photo), price=excluded.price,
+       licence=excluded.licence, phone=excluded.phone,
+       /* a signed-in writer keeps their status and level; a stranger's enrolment is pending */
+       status=CASE WHEN status='active' THEN 'active' ELSE 'pending' END,
+       level=CASE WHEN status='active' THEN level ELSE excluded.level END,
+       seen_from=excluded.seen_from, seen_at=datetime('now')`)
     .bind(email, g('name').slice(0, 120), here, g('origin').slice(0, 120), g('nomad') === '1' ? 1 : 0,
           g('bio').slice(0, 1200), g('background').slice(0, 4000), photo,
           licence ? 'gig_professional' : 'gig_amateur', price, licence, g('phone').slice(0, 40),
           licence ? 'GIG reader · licence to be checked' : 'GIG reader', here,
           ['retail', 'professional', 'gig_reader'].indexOf(g('investor')) > -1 ? g('investor') : 'retail').run();
-  return page('Enrol', `<h1>Sent to the founder</h1>
-    <p class="quiet">Thank you, ${esc(g('name'))}. Your enrolment is with Mark Nejmeh. When it is validated you will get a
-    link to choose a password${licence ? ', and your licence will be checked before the professional level is granted' : ''}.
-    Nothing is published until then.</p><p class="quiet"><a href="/">Back to the wire</a></p>`);
+  if (me) return new Response(null, { status: 303, headers: { location: '/write/verdict' } });
+  return page('Enrol', `<h1>Enrolled</h1>
+    <p class="quiet">Thank you, ${esc(g('name'))}. The desk will telephone you at ${esc(g('phone'))} before your first verdict
+    goes up — that call is how a person is verified here. You will get a link to choose a password${licence ? ', and your licence will be checked before the professional level is granted' : ''}.
+    Quicker next time: <a href="/write/google">continue with Google</a>.</p><p class="quiet"><a href="/">Back to the wire</a></p>`);
 }
 
 /* ============================================================
@@ -1013,11 +1062,21 @@ async function googleBack(env, req, u, SITE) {
   const email = String(info.email).toLowerCase();
   const w = await env.DB.prepare('SELECT * FROM w_writers WHERE email=?').bind(email).first();
   const clear = ['set-cookie', 'gstate=; Path=/write; Max-Age=0; Secure; HttpOnly; SameSite=Lax'];
-  if (!w) {
-    /* not enrolled: to the enrolment with what Google told us filled in */
-    return new Response(null, { status: 303, headers: [['location', '/write/enrol?email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(info.name || '')], clear] });
+  /* ⚠ THE SYSTEM VERIFIES, NOT THE FOUNDER. His ruling, 11 Sep. Google has
+     proved the email, so the account is made here and now — active, at the
+     GIG reader level, at the default price — and the person goes straight
+     to the desk. What the system still requires before anything can be
+     PUBLISHED is a complete profile: telephone, picture, bio, background,
+     and what they are. That is enforced at publish time, not at the door. */
+  if (!w || w.status !== 'active') {
+    await env.DB.prepare(
+      `INSERT INTO w_writers (email, name, kind, status, level, price, role, validated, seen_from, seen_at)
+       VALUES (?,?,'guest','active','gig_amateur',50,'GIG reader',?,?,datetime('now'))
+       ON CONFLICT(email) DO UPDATE SET status='active', name=COALESCE(NULLIF(name,''), excluded.name),
+         level=COALESCE(level,'gig_amateur'), price=COALESCE(price,50), validated=excluded.validated,
+         seen_from=excluded.seen_from, seen_at=datetime('now')`)
+      .bind(email, String(info.name || '').slice(0, 120), 'google ' + today(), whereFrom(req)).run();
   }
-  if (w.status !== 'active') return bad('Your enrolment is with the founder and has not been validated yet.');
   await env.DB.prepare("UPDATE w_writers SET seen_from=?, seen_at=datetime('now') WHERE email=?").bind(whereFrom(req), email).run().catch(() => {});
   if (w.totp_on) {
     const half = 'code-' + rnd(28);
@@ -1027,8 +1086,25 @@ async function googleBack(env, req, u, SITE) {
   }
   const t = rnd(28);
   await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)').bind(t, email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
-  return new Response(null, { status: 303, headers: [['location', '/write'],
+  /* a new or incomplete profile goes to the profile page first; a complete one to the desk */
+  const fresh = await env.DB.prepare('SELECT * FROM w_writers WHERE email=?').bind(email).first();
+  const dest = profileGaps(fresh).length ? '/write/profile' : '/write/verdict';
+  return new Response(null, { status: 303, headers: [['location', dest],
     ['set-cookie', `tswrite=${t}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`], clear] });
+}
+
+/* what the system still needs before this person may publish */
+function profileGaps(w) {
+  const gaps = [];
+  if (!w) return ['an account'];
+  if (!(w.name || '').trim() || w.name.indexOf(' ') < 0) gaps.push('your full name');
+  if (!(w.phone || '').trim()) gaps.push('a telephone number');
+  if (!w.photo) gaps.push('a picture');
+  if ((w.bio || '').length < 20) gaps.push('a bio');
+  if ((w.background || '').length < 20) gaps.push('a background');
+  if (!w.investor) gaps.push('what you are — retail investor, professional, or GIG reader');
+  if (!(w.origin || '').trim()) gaps.push('where you are from');
+  return gaps;
 }
 
 /* a GIG reader's picture, out of the gig bucket, with a fixed type */
@@ -1048,8 +1124,8 @@ async function rosterPage(env, req, SITE) {
   if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
   if (levelOf(me) !== 'founder') return page('Writers', '<h1>The founder does this.</h1>');
   const r = await env.DB.prepare(
-    `SELECT email, name, phone, city, origin, nomad, bio, background, photo, level, price, licence, status, validated, totp_on, created, seen_from, seen_at
-       FROM w_writers ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END, created DESC`).all();
+    `SELECT email, name, phone, city, origin, nomad, bio, background, photo, level, price, licence, status, validated, totp_on, created, seen_from, seen_at, investor, called, called_by, call_note
+       FROM w_writers ORDER BY CASE WHEN status='active' AND called IS NULL THEN 0 WHEN status='pending' THEN 1 WHEN status='active' THEN 2 ELSE 3 END, created DESC`).all();
   const opts = lv => Object.keys(LEVELS).map(k => `<option value="${k}"${k === lv ? ' selected' : ''}>${esc(LEVELS[k].label)}</option>`).join('');
   const rows = (r.results || []).map(w => {
     const lv = levelOf(w);
@@ -1061,10 +1137,13 @@ async function rosterPage(env, req, SITE) {
         ${w.background ? `<div class="quiet" style="margin-top:4px;max-width:44ch"><b>Background</b> ${esc(w.background)}</div>` : ''}</td>
       <td>${w.licence ? '<b>' + esc(w.licence) + '</b>' : '<span class="quiet">none</span>'}</td>
       <td><select class="lv">${opts(lv)}</select><br><span class="quiet">$${esc(w.price || 0)} a verdict</span></td>
-      <td>${w.status === 'pending' ? '<b style="color:var(--warm)">PENDING</b>' : w.status === 'active' ? 'active' + (w.validated ? '<br><span class="quiet">validated ' + esc(String(w.validated).slice(0, 10)) + '</span>' : '') : esc(w.status)}
-        ${w.totp_on ? '<br><span class="quiet">authenticator on</span>' : ''}</td>
+      <td>${w.status === 'pending' ? '<b style="color:var(--warm)">PENDING</b>' : w.status === 'active' ? 'active' + (w.validated ? '<br><span class="quiet">' + esc(String(w.validated).slice(0, 17)) + '</span>' : '') : esc(w.status)}
+        ${w.investor ? '<br><span class="quiet">' + esc({ retail: 'retail investor', professional: 'investment professional', gig_reader: 'GIG reader' }[w.investor] || w.investor) + '</span>' : ''}
+        ${w.totp_on ? '<br><span class="quiet">authenticator on</span>' : ''}
+        <br>${w.called ? '<span style="color:var(--cool)">✔ called ' + esc(String(w.called).slice(0, 10)) + ' by ' + esc(w.called_by || '') + '</span>' + (w.call_note ? '<br><span class="quiet">' + esc(w.call_note) + '</span>' : '')
+                       : (w.status === 'active' ? '<b style="color:var(--hot)">CALL NEEDED</b> <span class="quiet">' + esc(w.phone || 'no number') + '</span>' : '')}</td>
       <td>${w.status === 'active'
-        ? '<button class="b setlv">Set level</button>'
+        ? (w.called ? '<button class="b no uncall">Undo call</button> ' : '<input class="cnote" placeholder="a line about the call" style="width:100%;margin:0 0 4px;background:#101208;border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:3px;font:12.5px var(--sans)"><button class="b call">I spoke to them</button> ') + '<button class="b no setlv">Set level</button>'
         : '<button class="b ok">Validate</button> <button class="b no">Decline</button>'}
         <div class="out quiet"></div></td></tr>`;
   }).join('');
@@ -1100,6 +1179,8 @@ document.querySelectorAll('tr[data-email]').forEach(function(tr){
   var ok = tr.querySelector('.ok'); if (ok) ok.onclick = function(){ post('validate', { email: email, level: lv.value }).then(function(d){ out.textContent = d.ok ? 'Validated as ' + d.label + '. Send them: ' + d.link : (d.error || 'no'); }); };
   var no = tr.querySelector('.no'); if (no) no.onclick = function(){ if (confirm('Decline ' + email + '?')) post('decline', { email: email }).then(function(){ tr.remove(); }); };
   var st = tr.querySelector('.setlv'); if (st) st.onclick = function(){ post('level', { email: email, level: lv.value }).then(function(d){ out.textContent = d.ok ? 'Now ' + d.label + '.' : (d.error || 'no'); }); };
+  var cl = tr.querySelector('.call'); if (cl) cl.onclick = function(){ var n = tr.querySelector('.cnote'); post('called', { email: email, note: n ? n.value : '' }).then(function(d){ out.textContent = d.ok ? 'Recorded. They may publish now.' : (d.error || 'no'); if (d.ok) setTimeout(function(){ location.reload(); }, 900); }); };
+  var un = tr.querySelector('.uncall'); if (un) un.onclick = function(){ if (confirm('Undo the call record for ' + email + '?')) post('called', { email: email, called: false }).then(function(){ location.reload(); }); };
 });
 </script></body></html>`, { headers: H.html });
 }
@@ -1672,20 +1753,33 @@ function page(title, body) {
   return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <meta name="robots" content="noindex">
-<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>:root{color-scheme:light;--ledger:#E9EAE3;--card:#F6F6F1;--ink:#15181B;--ink-2:#4C555A;--certified:#1C5D45;--rule:#C3C7BC}
-body{margin:0;background:var(--ledger);color:var(--ink);font:16px/1.6 "Public Sans",sans-serif;
-  display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.box{max-width:420px;width:100%}
-h1{font:600 26px/1.2 Bitter,Georgia,serif;margin:0 0 16px}
-.card{background:var(--card);border:1px solid var(--rule);padding:20px}
-label{display:block;font-size:13.5px;color:var(--ink-2);margin-bottom:12px}
-input{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);
-  font:inherit;background:#fff}
-button{font:inherit;font-weight:600;border:0;background:var(--certified);color:var(--ledger);
-  padding:12px 18px;width:100%;cursor:pointer}
-.err{color:#8C2E22;font-size:14px}.quiet{color:var(--ink-2);font-size:13.5px;margin-top:16px}
-a{color:var(--certified)}</style></head><body><div class="box">${body}</div></body></html>`,
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ THE SAME CSS AS THE SITE. His note, 11 Sep: the sign-in pages were in a
+   different skin. They load wire.css now and add only the form. */
+.box{max-width:520px;margin:0 auto;padding:30px 22px 60px}
+h1{font-family:var(--serif);font-size:30px;font-weight:400;margin:0 0 14px;max-width:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+label{display:block;font-size:13.5px;color:var(--ink2);margin-bottom:12px;line-height:1.5}
+input,select,textarea{display:block;width:100%;margin-top:5px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:4px;font:15px var(--sans);background:#101208;color:var(--ink)}
+input[type=file]{padding:8px;font-size:13px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cool)}
+textarea{min-height:90px;resize:vertical;line-height:1.5}
+button.primary,.primary{display:block;width:100%;font:700 15px var(--sans);border:0;background:var(--gold);color:#14150f;
+  padding:12px 18px;border-radius:5px;cursor:pointer;margin-top:4px;text-align:center;text-decoration:none}
+button.primary:hover,.primary:hover{filter:brightness(1.08)}
+.err{color:var(--hot);font-size:14px;margin:0 0 12px}
+.quiet{color:var(--ink3);font-size:13.5px;margin-top:14px;line-height:1.55}
+a{color:var(--cool)}
+code{color:var(--ink);font-family:var(--mono)}
+.box .rule{color:var(--line)}
+</style></head><body>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>${esc(title)}</span>
+</div></div></header>
+<div class="box">${body}</div></body></html>`,
     { headers: H.html });
 }
 

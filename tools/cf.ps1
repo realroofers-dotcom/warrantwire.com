@@ -99,7 +99,8 @@ function Deploy-One([string]$n) {
       "d1"            { $keep += @{ type="d1"; name=$b.name; id=$b.id } }
       "r2_bucket"     { $keep += @{ type="r2_bucket"; name=$b.name; bucket_name=$(if ($b.bucket_name) { $b.bucket_name } else { $b.bucket }) } }
       "kv_namespace"  { $keep += @{ type="kv_namespace"; name=$b.name; namespace_id=$b.namespace_id } }
-      "secret_text"   { $keep += @{ type="secret_text"; name=$b.name } }   # value stays on Cloudflare
+      # secret_text is NOT sent at all - keep_bindings below tells Cloudflare to
+      # carry every secret forward; sending one without its value is a 400
       "plain_text"    { $keep += @{ type="plain_text"; name=$b.name; text=$b.text } }
       "service"       { $keep += @{ type="service"; name=$b.name; service=$b.service; environment=$b.environment } }
     }
@@ -113,7 +114,14 @@ function Deploy-One([string]$n) {
   [void]$sb.Append("--$bnd$nl" + 'Content-Disposition: form-data; name="worker.js"; filename="worker.js"' + $nl + "Content-Type: application/javascript+module$nl$nl$code$nl")
   [void]$sb.Append("--$bnd--$nl")
   $bytes = [Text.Encoding]::UTF8.GetBytes($sb.ToString())
-  $r = Invoke-RestMethod -Method Put "$api/scripts/$n" -Headers $H -ContentType "multipart/form-data; boundary=$bnd" -Body $bytes
+  try {
+    $r = Invoke-RestMethod -Method Put "$api/scripts/$n" -Headers $H -ContentType "multipart/form-data; boundary=$bnd" -Body $bytes
+  } catch {
+    # say WHY, not just 400 - Cloudflare's message names the line of a syntax error
+    $s = New-Object IO.StreamReader($_.Exception.Response.GetResponseStream())
+    $e = $s.ReadToEnd(); try { $e = (($e | ConvertFrom-Json).errors | ForEach-Object { "$($_.code): $($_.message)" }) -join "`n" } catch {}
+    throw "deploy of $n refused:`n$e"
+  }
   if (-not $r.success) { throw ($r.errors | ConvertTo-Json) }
   $git = "C:\Users\realr\AppData\Local\GitHubDesktop\app-3.6.5\resources\app\git\cmd\git.exe"
   $sha = try { (& $git -C $root rev-parse --short HEAD) } catch { "?" }
