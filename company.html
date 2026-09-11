@@ -29,6 +29,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .rateform input,.rateform textarea{background:#101208;border:1px solid var(--line);color:var(--ink);padding:9px 11px;border-radius:3px;font:14px var(--sans)}
 .rateform textarea{min-height:70px;resize:vertical}
 .rateform .ratemsg{font-size:13px;color:var(--cool)}
+.worth{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:-4px 0 14px;font-size:14px;color:var(--ink2)}
+.worth .worthmsg{flex:1 1 100%;font-size:13px;color:var(--cool)}
 </style>
 </head>
 <body>
@@ -107,6 +109,17 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
   var T = (new URLSearchParams(location.search).get("t") || "").trim().toUpperCase();
   var page = document.getElementById("page");
+
+  /* ⚠ THE BUYER IS AN EMAIL, NOT A LOGIN. That is how every paid thing on
+     this site already works: the address they paid with unlocks what they
+     bought. It is remembered in this browser once they give it (the thanks
+     page asks for it; so does the box below), and sent with every ask. */
+  var EMAIL = "";
+  try { EMAIL = (localStorage.getItem("ww.email") || "").trim().toLowerCase(); } catch (e) {}
+  var qe = new URLSearchParams(location.search).get("email");
+  if (qe && qe.indexOf("@") > 0) { EMAIL = qe.trim().toLowerCase(); try { localStorage.setItem("ww.email", EMAIL); } catch (e) {} }
+  function withEmail(url) { return EMAIL ? url + "&email=" + encodeURIComponent(EMAIL) : url; }
+  var PAYDESK = "https://pay.realroofers.workers.dev";
   if (!T) { page.innerHTML = '<div class="quiet">Type a ticker or a company name above.</div>'; return; }
   document.getElementById("q").value = T;
   document.title = T + " — the verdict — Warrant Wire";
@@ -316,32 +329,81 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   });
   function humans(ticker, open) {
     var el = document.getElementById("humans");
-    fetch(DESK + "?ticker=" + encodeURIComponent(ticker), { cache: "no-store" })
+    fetch(withEmail(DESK + "?ticker=" + encodeURIComponent(ticker)), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         var h = "";
-        if (d && d.founder && d.founder.verdict) {
-          h += open ? humanBox("mark", "The founder’s verdict", "", d.founder)
-                    : '<section class="verdict mark"><p class="lbl"><b>The founder’s verdict</b><span>Mark Nejmeh</span><span class="kind">opinion, not advice</span></p>'
-                      + '<p class="vlead locked">Written ' + when(d.founder.written) + '. Included with the $12 verdict on this company.</p></section>';
+        var f = d && d.founder;
+        if (f && !f.locked && f.verdict) {
+          h += humanBox("mark", "The founder’s verdict", "", f);
+        } else if (f && f.locked) {
+          /* written, and for sale: the words are the product */
+          h += '<section class="verdict mark"><p class="lbl"><b>The founder’s verdict</b><span>' + esc(f.name) + ', founder</span><span class="kind">opinion, not advice</span></p>'
+             + '<p class="vlead locked">Written ' + when(f.written) + (f.revised ? ', revised ' + when(f.revised) : '') + '. One to three sentences on what this company’s warrant paper adds up to.</p>'
+             + '<div class="vlock"><p><b>The founder’s verdict on ' + esc(ticker) + ' &mdash; $200.</b> Yours to keep, under his name and dated.</p>'
+             + '<button class="wbuy gold" data-sku="founder_verdict" data-t="' + esc(ticker) + '">Buy the founder’s verdict &mdash; $200</button></div></section>';
         } else {
           h += '<div class="ask mark"><div><span class="t">The founder’s verdict &mdash; not yet written for ' + esc(ticker) + '</span>'
-             + '<p>Mark Nejmeh reads the company’s warrant paper himself and writes what he makes of it, signed and dated. Warrants only. An opinion, not advice.</p></div>'
+             + '<p>Mark Nejmeh reads the company’s warrant paper himself and writes what he makes of it, signed and dated. Warrants only. An opinion, not advice. Request it and it lands on his desk.</p></div>'
              + '<span class="price">$200</span><button class="wbuy" data-sku="founder_verdict" data-t="' + esc(ticker) + '">Request it</button></div>';
         }
         ((d && d.readers) || []).forEach(function (r) {
-          if (r && r.verdict) h += humanBox("reader", "A reader’s verdict", "", r);
+          if (!r) return;
+          if (!r.locked && r.verdict) { h += humanBox("reader", "A reader’s verdict", "", r) + worthIt(r, ticker); return; }
+          /* a reader's verdict, for sale at the reader's price, bought with one press */
+          var who = esc(r.name) + (r.title ? ", " + esc(r.title) : "") + (r.investor && INVESTOR[r.investor] ? " &middot; " + INVESTOR[r.investor] : "");
+          h += '<section class="verdict reader" data-writer="' + esc(r.author || "") + '"><p class="lbl"><b>A reader’s verdict</b><span>' + who + '</span>'
+             + (r.advice ? '<span class="kind advice">advice &middot; licensed</span>' : '<span class="kind">opinion, not advice</span>')
+             + '<span class="rate">' + stars(r.stars) + (r.ratings ? ' <i>' + r.ratings + '</i>' : '') + '</span></p>'
+             + '<p class="vlead locked">Written ' + when(r.written) + (r.revised ? ', revised ' + when(r.revised) : '') + '.</p>'
+             + '<div class="vlock"><p><b>' + esc(r.name.split(" ")[0]) + '’s verdict on ' + esc(ticker) + ' &mdash; $' + esc(r.price || "?") + '.</b> Priced by the reader. If it is not worth it, say so within two days and the founder looks at it.</p>'
+             + '<a class="wbuy gold" href="' + PAYDESK + '/?go=reader_verdict&reader=' + encodeURIComponent(r.author || "") + '&ticker=' + encodeURIComponent(ticker) + '&on=wire">Buy it &mdash; $' + esc(r.price || "?") + '</a></div></section>';
         });
-        h += '<div class="ask"><div><span class="t">A named reader’s verdict</span>'
-           + '<p>A verified person, under their real name, at their own price. Nobody here is anonymous, and everyone has an opinion, not advice &mdash; unless they are a licensed professional registered with us.</p></div>'
-           + '<a class="wbuy ghost" href="/readers.html?ticker=' + encodeURIComponent(ticker) + '">See who is reading</a></div>';
+        h += '<div class="ask"><div><span class="t">Write under your own name</span>'
+           + '<p>Verified readers publish verdicts here at their own price. Nobody is anonymous; everyone has an opinion, not advice &mdash; unless licensed and registered. The desk telephones every writer before the first one goes up.</p></div>'
+           + '<a class="wbuy ghost" href="/write/enrol">Enrol as a reader</a></div>';
+        if (!EMAIL) h += '<p class="fine" style="margin-top:14px">Already bought something here? <button type="button" class="linkbtn" id="whoami">Give the email you paid with</button> and it unlocks.</p>';
         el.innerHTML = h;
       })
       .catch(function () {});
   }
+  /* the buyer's say: worth it, or not — one act that is also a rating */
+  function worthIt(r, ticker) {
+    return '<form class="worth" data-writer="' + esc(r.author || "") + '" data-t="' + esc(ticker) + '">'
+      + '<span>Was ' + esc(r.name.split(" ")[0]) + '’s verdict worth it?</span>'
+      + '<button type="button" data-ok="1" class="wbuy ghost">Worth it</button>'
+      + '<button type="button" data-ok="0" class="wbuy ghost">Not worth it</button>'
+      + '<span class="worthmsg"></span></form>';
+  }
+  document.addEventListener("click", function (e) {
+    var w = e.target.closest ? e.target.closest("#whoami") : null;
+    if (w) {
+      var em = prompt("The email you paid with:");
+      if (em && em.indexOf("@") > 0) { try { localStorage.setItem("ww.email", em.trim().toLowerCase()); } catch (x) {} location.href = location.pathname + "?t=" + encodeURIComponent(T) + "&email=" + encodeURIComponent(em.trim()); }
+      return;
+    }
+    var b = e.target.closest ? e.target.closest(".worth button") : null;
+    if (!b) return;
+    var form = b.closest(".worth"), msg = form.querySelector(".worthmsg"), ok = b.getAttribute("data-ok") === "1";
+    var why = ok ? "" : (prompt("What was wrong with it? (goes to the founder)") || "");
+    msg.textContent = "…";
+    /* the pay desk needs the purchase; it is found by the email and the ticker */
+    fetch(PAYDESK + "/?me=1&email=" + encodeURIComponent(EMAIL)).then(function (r) { return r.json(); }).then(function (d) {
+      var ent = ((d && d.entitlements) || []).filter(function (x) { return x.sku === "reader_verdict" && String(x.ref || "").toUpperCase() === form.getAttribute("data-t") && String(x.reader || "").toLowerCase() === form.getAttribute("data-writer"); })[0];
+      if (!ent) { msg.textContent = "No purchase of this verdict on " + EMAIL + "."; return; }
+      return fetch(PAYDESK + "/?verdict_ok=1&session=" + encodeURIComponent(ent.stripe_session || ent.session || "") + "&email=" + encodeURIComponent(EMAIL) + "&ok=" + (ok ? "1" : "0") + "&why=" + encodeURIComponent(why))
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          msg.textContent = j.note || j.error || "";
+          /* and it counts as a rating from a buyer */
+          return fetch("https://warrantwire.com/api/w/rate", { method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify({ writer: form.getAttribute("data-writer"), email: EMAIL, stars: ok ? 5 : 1, comment: why, ticker: form.getAttribute("data-t"), bought: true }) });
+        });
+    }).catch(function () { msg.textContent = "Could not reach the pay desk."; });
+  });
 
   /* ---- go ---------------------------------------------------------------------- */
-  fetch(WW.API + "?wire=1&q=" + encodeURIComponent(T))
+  fetch(withEmail(WW.API + "?wire=1&q=" + encodeURIComponent(T)))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       var c = d.company || {}, a = d.about || null;

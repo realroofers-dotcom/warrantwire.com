@@ -152,6 +152,14 @@ async function setup(env) {
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN called TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN called_by TEXT").run(); } catch (e) {}
   try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN call_note TEXT").run(); } catch (e) {}
+  /* where the money goes: a Stripe Connect account id (acct_...) once the
+     reader has onboarded; the pay worker transfers the net there */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN stripe_account TEXT").run(); } catch (e) {}
+  /* the founder's requests, written by the pay worker when a $200 verdict is bought */
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS w_requests (
+       id INTEGER PRIMARY KEY AUTOINCREMENT, ticker TEXT, buyer TEXT, session TEXT,
+       cents INTEGER, asked TEXT DEFAULT (datetime('now')), done TEXT)`).run();
   /* ⚠ RATINGS FOR EVERYONE. Five stars and a comment, one per rater per
      writer, dated, under the rater's email. The average and the count go
      beside the name; the comments are public. The founder can remove one. */
@@ -351,7 +359,7 @@ async function api(action, req, env, u, SITE) {
       if (!wr) return new Response(JSON.stringify({ ok: false, error: 'writer?' }), { status: 400, headers: CORS });
       const s = await ratingOf(env, wr);
       const c = await env.DB.prepare(
-        `SELECT by_name, stars, comment, ticker, at FROM w_ratings WHERE writer=? AND removed IS NULL ORDER BY at DESC LIMIT 50`).bind(wr).all();
+        `SELECT by_name, stars, comment, ticker, at, verified FROM w_ratings WHERE writer=? AND removed IS NULL ORDER BY verified DESC, at DESC LIMIT 50`).bind(wr).all();
       return new Response(JSON.stringify({ ok: true, writer: wr, ...s, comments: c.results || [] }), { headers: CORS });
     }
     if (req.method !== 'POST') return new Response(JSON.stringify({ ok: false, error: 'POST' }), { status: 405, headers: CORS });
@@ -364,11 +372,19 @@ async function api(action, req, env, u, SITE) {
     if (by === wr) return new Response(JSON.stringify({ ok: false, error: 'not your own' }), { status: 400, headers: CORS });
     const w = await env.DB.prepare("SELECT email FROM w_writers WHERE email=? AND status='active'").bind(wr).first();
     if (!w) return new Response(JSON.stringify({ ok: false, error: 'no such writer' }), { status: 404, headers: CORS });
+    /* ⚠ A RATING FROM SOMEBODY WHO PAID FOR THIS WRITER'S VERDICT is marked
+       verified — checked with the pay desk, never taken from the request. */
+    try { await env.DB.prepare("ALTER TABLE w_ratings ADD COLUMN verified INTEGER DEFAULT 0").run(); } catch (e) {}
+    let verified = 0;
+    if (b.bought) {
+      const ent = await bought(env, by);
+      if (ent.some(x => x && x.sku === 'reader_verdict' && String(x.reader || '').toLowerCase() === wr)) verified = 1;
+    }
     await env.DB.prepare(
-      `INSERT INTO w_ratings (writer, by_email, by_name, stars, comment, ticker) VALUES (?,?,?,?,?,?)
+      `INSERT INTO w_ratings (writer, by_email, by_name, stars, comment, ticker, verified) VALUES (?,?,?,?,?,?,?)
        ON CONFLICT(writer, by_email) DO UPDATE SET stars=excluded.stars, comment=excluded.comment,
-         by_name=excluded.by_name, ticker=excluded.ticker, at=datetime('now'), removed=NULL`)
-      .bind(wr, by, String(b.name || '').slice(0, 80) || null, stars, String(b.comment || '').slice(0, 1500) || null, tick(b.ticker) || null).run();
+         by_name=excluded.by_name, ticker=excluded.ticker, verified=MAX(verified, excluded.verified), at=datetime('now'), removed=NULL`)
+      .bind(wr, by, String(b.name || '').slice(0, 80) || null, stars, String(b.comment || '').slice(0, 1500) || null, tick(b.ticker) || null, verified).run();
     const s = await ratingOf(env, wr);
     return new Response(JSON.stringify({ ok: true, writer: wr, ...s, note: 'Thank you. One rating per person per writer; rating again replaces yours.' }), { headers: CORS });
   }
@@ -415,7 +431,7 @@ async function api(action, req, env, u, SITE) {
     const p = Math.round(Number(b.price));
     if (!(p >= 1 && p <= 5000)) return json({ ok: false, error: 'a price in whole dollars, 1 to 5000' }, 400);
     await env.DB.prepare('UPDATE w_writers SET price=? WHERE email=?').bind(p, me.email).run();
-    return json({ ok: true, price: p, note: 'Your price for a verdict is $' + p + '. The house takes a flat $50 of each one sold.' });
+    return json({ ok: true, price: p, note: 'Your price for a verdict is $' + p + '. ' + feeLine(p) });
   }
   /* the founder's roster: every writer, level and price */
   if (action === 'writers') {
@@ -591,6 +607,12 @@ async function api(action, req, env, u, SITE) {
    ============================================================ */
 const tick = s => String(s || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12);
 
+/* companies the founder has opened in full — the sample. Everything on the
+   TOVX page is free to read, human verdicts included. */
+const OPEN_SAMPLES = ['TOVX'];
+/* the pay desk, asked who has bought what. One line to check if it moves. */
+const PAY_DEFAULT = 'https://pay.realroofers.workers.dev';
+
 const LEVELS = {
   founder:          { label: 'founder',                   publishes: true,  advice: false, sets_price: true },
   writer:           { label: 'Warrant Wire writer',       publishes: true,  advice: false, sets_price: true },
@@ -613,10 +635,35 @@ function verdictShape(r) {
     revised: r.revised ? r.revised.replace(' ', 'T') + 'Z' : null };
 }
 
+/* ⚠ THE HOUSE FEE, SAID IN ONE PLACE AND SHOWN EVERYWHERE A PRICE IS SET.
+   His ruling: they must know a fee is deducted for our costs — the card
+   processing, the desk, the call, the payout. Flat, not a percentage. */
+const HOUSE_FEE = 50;
+const feeLine = price => `Of every verdict sold at your price of $${price}, $${HOUSE_FEE} is deducted for the house's costs — card processing, the desk, the call, the payout — and you keep $${Math.max(0, price - HOUSE_FEE)}.`;
+
+/* what this buyer has paid for, asked of the pay desk by email */
+async function bought(env, email) {
+  const e = String(email || '').trim().toLowerCase();
+  if (!e || e.indexOf('@') < 1) return [];
+  try {
+    const r = await fetch((env.PAY || PAY_DEFAULT) + '/?me=1&email=' + encodeURIComponent(e));
+    const j = await r.json();
+    return (j && j.entitlements) || [];
+  } catch (e2) { return []; }
+}
+
 async function verdictsPublic(env, u) {
   const t = tick(u.searchParams.get('ticker'));
   const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
   if (!t) return new Response(JSON.stringify({ ok: false, error: 'a ticker, please' }), { status: 400, headers: CORS });
+  /* ⚠ THE WORDS ARE WHAT IS SOLD. Everything about a verdict is free to see —
+     who wrote it, their level, their rating, their price, when — except the
+     verdict itself, which shows only to a buyer of that verdict (by the email
+     they paid with), or to anyone when the founder marks a company open. */
+  const ent = await bought(env, u.searchParams.get('email'));
+  const has = (sku, author) => ent.some(x => x && x.status === 'active' && x.sku === sku
+    && String(x.ref || '').toUpperCase() === t && (sku !== 'reader_verdict' || String(x.reader || '').toLowerCase() === author));
+  const open = OPEN_SAMPLES.indexOf(t) > -1;
   /* each verdict carries its writer's declared investor type and rating */
   const r = await env.DB.prepare(
     `SELECT v.*, w.investor,
@@ -627,10 +674,17 @@ async function verdictsPublic(env, u) {
     .bind(t).all();
   const rows = r.results || [];
   const founder = rows.find(x => x.kind === 'house');
+  const gate = (row, sku) => {
+    const v = verdictShape(row);
+    const unlocked = open || has(sku, String(row.author || '').toLowerCase());
+    if (!unlocked) { v.locked = true; v.verdict = ''; v.notes = ''; v.sku = sku; }
+    return v;
+  };
   return new Response(JSON.stringify({ ok: true, ticker: t,
     company: rows.length ? rows[0].company : null,
-    founder: founder ? verdictShape(founder) : null,
-    readers: rows.filter(x => x.kind !== 'house').map(verdictShape),
+    founder: founder ? gate(founder, 'founder_verdict') : null,
+    readers: rows.filter(x => x.kind !== 'house').map(x => gate(x, 'reader_verdict')),
+    founder_price: 200, house_fee: HOUSE_FEE,
     note: 'Opinions under a name, dated. Not advice unless marked by a registered licensed professional. Warrants only.'
   }), { headers: CORS });
 }
@@ -757,7 +811,7 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
       ${LEVELS[levelOf(me)].advice
         ? '<label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font:14px var(--sans);color:var(--ink2)"><input type="checkbox" id="adv"> Mark this verdict as <b>advice</b> — under my licence, ' + esc(me.licence || 'on file') + '</label>'
         : '<p class="fine">Your level is <b>' + esc(LEVELS[levelOf(me)].label) + '</b>: every verdict is an opinion, not advice.</p>'}
-      <label for="pr">Your price for a verdict, in dollars</label>
+      <label for="pr">Your price for a verdict, in dollars — $${HOUSE_FEE} of each sale is deducted for the house's costs; you keep the rest, paid two days after each sale unless the buyer disputes it in that time</label>
       <input id="pr" type="number" min="1" max="5000" value="${esc(me.price || 50)}" style="width:120px;background:#101208;border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:3px;font:14px var(--mono)">
       <button type="button" id="prb" style="background:transparent;border:1px solid var(--line);color:var(--ink2);padding:8px 12px;border-radius:3px;font:13px var(--sans);cursor:pointer;margin-left:6px">Save price</button>
       <button class="pub" id="pub" type="button">Publish under my name</button>
@@ -864,7 +918,7 @@ function enrolForm(msg = '', pre = {}, mine = false) {
       <label>Licence, if you hold one — CRD, bar or CPA number and the state<input name="licence" placeholder="leave blank if none" value="${esc(pre.licence || '')}"></label>
       <label>Bio — two or three sentences a buyer reads before trusting you<textarea name="bio" rows="3" required>${esc(pre.bio || '')}</textarea></label>
       <label>Background — what you did before this, and what you have read<textarea name="background" rows="4" required>${esc(pre.background || '')}</textarea></label>
-      <label>Your price for a verdict, in dollars<input name="price" type="number" min="1" max="5000" value="${esc(pre.price || 50)}" required></label>
+      <label>Your price for a verdict, in dollars — a fee is deducted from each one sold: $${HOUSE_FEE} flat, for the house's costs (card processing, the desk, the call, the payout). Price at $100 and you keep $${100 - HOUSE_FEE}. Your share is paid two days after each sale unless the buyer disputes it within those two days.<input name="price" type="number" min="1" max="5000" value="${esc(pre.price || 50)}" required></label>
       <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="agree" required style="width:auto;margin:4px 0 0">
         <span>I understand that everything I write is an opinion under my own name, not advice — unless the founder has
         verified my licence and I choose to mark a verdict as advice — and that it is about warrants only.</span></label>

@@ -77,9 +77,12 @@
     <h2>What you keep</h2>
     <div class="twocol">
       <div>
-        <p class="pintro">You set your own price. We take a <b>flat fee per verdict sold, not a
-        percentage</b> &mdash; the better you are paid, the less it costs you. Paid straight into your
-        bank through our own ACHplug, per job, with no processor in the middle.</p>
+        <p class="pintro">You set your own price. <b>A flat $50 is deducted from every verdict sold</b>
+        &mdash; for the house&rsquo;s costs: card processing, the desk, the call, the payout &mdash; and
+        you keep the rest. A fee, not a percentage: the better you are paid, the less it costs you.</p>
+        <p class="pintro"><b>Paid two days after each sale.</b> The buyer has those two days to say the
+        verdict was not worth it; if they do, the founder looks at it before anyone is paid. Payouts go
+        by Stripe to your bank account; ACHplug confirms the account is real.</p>
         <p class="pintro">A <b>read</b> is what the document says. A <b>verdict</b> is what you make of
         it. They are bought separately and priced separately.</p>
       </div>
@@ -100,29 +103,17 @@
   </section>
 
   <section class="sect" id="register">
-    <h2>Register</h2>
-    <p class="pintro">Registration is by hand, by the founder, one at a time. Fill this in and it
-    goes to the research desk; you will hear back under your own name. Licensed professionals:
-    give the licence type and number and it will be checked before the <em>licensed</em> mark is
-    granted.</p>
+    <h2>Enrol</h2>
+    <p class="pintro">Three steps, and the system does the first two. <b>One:</b> continue with Google
+    &mdash; your email is verified on the spot and your account exists. <b>Two:</b> your profile: full
+    name, a real telephone (not Google Voice), where you are from, a picture, a bio, a background,
+    what you are, your price. <b>Three:</b> the desk telephones you. Nobody publishes before that call.</p>
     <div class="alerts">
-      <form class="form" id="reg" action="mailto:research@warrantwire.com" method="post" enctype="text/plain">
-        <label>Who you are</label>
-        <input name="name" placeholder="Full legal name" required autocomplete="name">
-        <input name="email" type="email" placeholder="Email" required autocomplete="email">
-        <input name="phone" placeholder="Telephone" autocomplete="tel">
-        <input name="city" placeholder="City, state" autocomplete="address-level2">
-        <label>Licence, if any</label>
-        <input name="licence" placeholder="CRD / bar / CPA number, or leave blank">
-        <label>What you have read</label>
-        <textarea name="about" placeholder="Which companies' warrant paper you have read, and what you found. Two or three sentences. This is the paragraph a buyer reads before deciding whether to trust you."></textarea>
-        <label>Your price for a verdict</label>
-        <input name="price" placeholder="$" inputmode="numeric" style="max-width:140px">
-        <button type="submit">Send to the research desk</button>
-      </form>
-      <p class="fine">Sends by email to research@warrantwire.com, from your own mail program, under your
-      own name. Nothing is stored on this page. When the readers&rsquo; desk opens, registered readers
-      sign in there and write verdicts directly; until then the desk is a person.</p>
+      <a class="wbuy gold" href="/write/enrol" style="display:inline-block">Enrol &mdash; continue with Google &rarr;</a>
+      <a class="wbuy ghost" href="/write/login" style="display:inline-block;margin-left:8px">Already enrolled? Sign in</a>
+      <p class="fine">Licensed professionals: give the licence type and number on the profile. It is
+      checked before the <em>licensed</em> level is granted, and only that level may mark a verdict as
+      advice &mdash; and chooses it verdict by verdict.</p>
     </div>
   </section>
 

@@ -291,6 +291,9 @@ footer a{color:var(--dim)}
       return;
     }
     try { window.name = em; } catch (e) {}
+    /* ⚠ REMEMBERED FOR THE COMPANY PAGE. The email that paid is what unlocks
+       a verdict there, so it is kept in this browser from here on. */
+    try { localStorage.setItem("ww.email", em); } catch (e) {}
     show("Checking&hellip;");
     fetch(PAY + "/?me=1&email=" + encodeURIComponent(em))
       .then(function (r) { return r.json(); })

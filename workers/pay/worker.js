@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-2m · 2026-09-11";
+const BUILD = "pay-2n · 2026-09-11 · the verdicts, the gig ledger, Stripe Connect payouts";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -45,6 +45,11 @@ const BUILD = "pay-2m · 2026-09-11";
      ?action=verify&id=&how=&by=    confirm an expense with the vendor
      ?action=unverified             what nobody has checked yet
      ?action=vendors                totals by vendor
+     ?action=payouts                the gig ledger: owed and paid
+     ?action=release                pay every reader whose money is due (the cron does this too)
+     ?action=refund&id=             the founder's decision on a dispute
+     ?action=paidout&id=&how=&ref=  mark a row paid by hand
+   PUBLIC  ?verdict_ok=1&session=&email=&ok=1|0&why=   the buyer's say, within two days
 
    ------------------------------------------------------------
    THE RULES THIS IS BUILT TO
@@ -131,6 +136,21 @@ const SKU = {
                   label:"The Daily Chart — every day for a year",
                   grants:"chart_year", days: 365 },
 
+  /* ---------- THE VERDICTS — 11 Sep 2026 ----------
+     The automatic verdict is included in wire_search. These two are the
+     human ones. The founder's is a fixed $200. A reader's is priced by the
+     reader — `cents: 0` here means "look it up": buy() reads the reader's
+     price from the writing database and refuses if the reader is not active
+     and called. The house takes a flat $50 of every reader verdict sold,
+     and the rest is owed to the reader in gig_payouts. */
+  founder_verdict: { site:"wire", cents: 20000, mode:"payment",
+                  label:"Warrant Wire — the founder's verdict on one company",
+                  grants:"verdict", days: 3650 },
+
+  reader_verdict: { site:"wire", cents: 0, mode:"payment", dynamic: true,
+                  label:"Warrant Wire — a reader's verdict on one company",
+                  grants:"verdict", days: 3650, house_cents: 5000 },
+
   /* ---------- THE WARRANT READ — co-branded, sold on the wire ----------
      The year buys the LIST. Reading is priced separately, every time. */
   wire_read:    { site:"wire", cents:  2000, mode:"payment",
@@ -170,6 +190,10 @@ const SKU = {
 };
 
 export default {
+  /* ⚠ THE CRON. Every six hours: pay every reader whose money is due. Set on
+     the worker as a schedule, minute 0 of every sixth hour; nothing else runs on it. */
+  async scheduled(event, env, ctx) { ctx.waitUntil(release(env)); },
+
   async fetch(request, env) {
     const url = new URL(request.url), q = url.searchParams;
     const cors = {
@@ -228,6 +252,8 @@ export default {
         return new Response(null, { status: 303, headers: { location: made.url } });
       }
       if (q.get("me"))  return json(await me(env, q), cors);
+      /* the buyer's say on a reader's verdict: worth it, or not */
+      if (q.get("verdict_ok")) return json(await buyerSays(env, q), cors);
     } catch (e) {
       return json({ ok:false, error:String(e) }, cors, 400);
     }
@@ -268,6 +294,28 @@ export default {
       if (a === "achgrant")  return json(await achGrant(env, q), cors);
       if (a === "achpaid")   return json(await achPaid(env, q), cors);
       if (a === "achreturn") return json(await achReturn(env, q), cors);
+
+      /* ---- the gig ledger ---- */
+      if (a === "payouts") {
+        const r = await env.OVERHANG.prepare(
+          "SELECT * FROM gig_payouts ORDER BY (paid_at IS NULL) DESC, id DESC LIMIT 500").all().catch(()=>({results:[]}));
+        const rows = r.results || [];
+        const owed = rows.filter(x => !x.paid_at).reduce((n, x) => n + (x.net || 0), 0);
+        return json({ ok:true, build: BUILD, owed_cents: owed, owed: owed / 100,
+          unpaid: rows.filter(x => !x.paid_at), paid: rows.filter(x => x.paid_at),
+          note: "Each unpaid row is money owed to a reader. Pay it, then ?action=paidout&id=&how=&ref=." }, cors);
+      }
+      if (a === "release") return json(await release(env), cors);
+      if (a === "refund")  return json(await refund(env, q), cors);
+      if (a === "paidout") {
+        const id = parseInt(q.get("id") || "0", 10);
+        if (!id) return json({ ok:false, error:"which row?" }, cors, 400);
+        await env.OVERHANG.prepare(
+          "UPDATE gig_payouts SET paid_at=datetime('now'), paid_how=?, paid_ref=? WHERE id=? AND paid_at IS NULL")
+          .bind(q.get("how") || "by hand", q.get("ref") || null, id).run();
+        const row = await env.OVERHANG.prepare("SELECT * FROM gig_payouts WHERE id=?").bind(id).first();
+        return json({ ok:true, row }, cors);
+      }
 
       if (a === "orders") return json(await orders(env), cors);
       if (a === "grant")  return json(await handGrant(env, q), cors);
@@ -315,8 +363,27 @@ async function buy(env, q, request) {
   const missing = names.filter(n => !SKU[n]);
   if (missing.length) throw new Error("no such thing for sale: " + missing.join(", "));
 
-  const items = names.map(n => SKU[n]);
+  const items = names.map(n => ({ ...SKU[n] }));
   const sku = items[0];
+
+  /* ⚠ A READER'S VERDICT IS PRICED BY THE READER, so the price is looked up
+     at the moment of sale — from the writing database, where the reader set
+     it — and the line says whose verdict it is. It is sold one at a time. */
+  const reader = String(q.get("reader") || "").trim().toLowerCase();
+  const rv = items.findIndex(x => x.dynamic);
+  if (rv > -1) {
+    if (items.length > 1) throw new Error("a reader's verdict is bought on its own");
+    if (!reader || !env.WRITING) throw new Error("which reader?");
+    const w = await env.WRITING.prepare(
+      "SELECT email, name, price, status, called FROM w_writers WHERE email=?").bind(reader).first();
+    if (!w || w.status !== "active") throw new Error("no such reader");
+    if (!w.called) throw new Error("that reader has not been verified by the desk yet");
+    const cents = Math.round(Number(w.price || 0) * 100);
+    if (!(cents >= 100)) throw new Error("that reader has not set a price");
+    items[rv].cents = cents;
+    items[rv].label = "Warrant Wire — a verdict by " + (w.name || w.email);
+    items[rv].reader = w.email;
+  }
 
   /* ⚠ A SUBSCRIPTION CANNOT SHARE A SESSION WITH A ONE-OFF PAYMENT. Stripe
      refuses it, and it would refuse it AFTER the buyer had pressed pay. Better
@@ -362,6 +429,10 @@ async function buy(env, q, request) {
   form.set("metadata[ref]", ref);
   form.set("metadata[site]", sku.site);   /* who earns it */
   form.set("metadata[on]", on);           /* where it sold */
+  if (rv > -1) {                          /* whose verdict, and at what price, so the webhook can pay them */
+    form.set("metadata[reader]", items[rv].reader);
+    form.set("metadata[reader_cents]", String(items[rv].cents));
+  }
 
   /* ⚠ ONE LINE PER THING, so the buyer sees on Stripe's own page exactly what
      he saw on the checkout — not a single total he has to take on trust. */
@@ -444,7 +515,12 @@ async function webhook(env, request) {
       .filter(n => SKU[n]);
 
     for (const name of bought) {
-      const one = SKU[name];
+      const one = { ...SKU[name] };
+      /* a reader's verdict carries its real price in the metadata */
+      if (one.dynamic) {
+        one.cents = parseInt(m.reader_cents || "0", 10) || 0;
+        one.reader = m.reader || null;
+      }
       /* ⚠ EACH ONE GETS ITS OWN REFERENCE so a retry cannot grant it twice.
          The session id alone would collide across the lines of one session. */
       let had = null;
@@ -454,10 +530,28 @@ async function webhook(env, request) {
           .bind(o.id + "#" + name, name).first();
       } catch (e) { had = null; }
       if (had) continue;
-      await grant(env, m.email, name, one, m.ref, o.id + "#" + name, one.cents);
+      await grant(env, m.email, name, one, m.ref, o.id + "#" + name, one.cents, one.reader || null);
       await log(env, { kind:"paid", sku:name, email:m.email, ref:m.ref,
                        cents:one.cents, session:o.id + "#" + name,
                        live: o.livemode ? 1 : 0 });
+      /* ⚠ THE VERDICTS HAVE TWO EXTRA CONSEQUENCES. A founder's verdict is a
+         REQUEST that lands on his desk. A reader's verdict is MONEY OWED to
+         the reader — gross less the house's flat $50 — written to the ledger
+         the moment it is paid, and paid out from there. */
+      if (name === "founder_verdict" && env.WRITING) {
+        await env.WRITING.prepare(
+          `CREATE TABLE IF NOT EXISTS w_requests (
+             id INTEGER PRIMARY KEY AUTOINCREMENT, ticker TEXT, buyer TEXT, session TEXT,
+             cents INTEGER, asked TEXT DEFAULT (datetime('now')), done TEXT)`).run().catch(()=>{});
+        await env.WRITING.prepare(
+          "INSERT INTO w_requests (ticker, buyer, session, cents) VALUES (?,?,?,?)")
+          .bind(String(m.ref || "").toUpperCase(), m.email, o.id + "#" + name, one.cents).run().catch(()=>{});
+      }
+      if (name === "reader_verdict" && one.reader) {
+        await owe(env, { reader: one.reader, ticker: String(m.ref || "").toUpperCase(),
+          buyer: m.email, gross: one.cents, house: one.house_cents || 5000,
+          session: o.id + "#" + name, on: m.on || "wire", live: o.livemode ? 1 : 0 });
+      }
       await toAccountant(env, {
         business: one.site === "k8" ? "8k10q" : "wire",
         source: "stripe", gross: one.cents / 100,
@@ -534,8 +628,9 @@ async function verify(body, header, secret) {
    WHAT SOMEBODY HAS
    ============================================================ */
 
-async function grant(env, email, skuName, sku, ref, session, cents) {
+async function grant(env, email, skuName, sku, ref, session, cents, reader) {
   if (!email) return;
+  try { await env.OVERHANG.prepare("ALTER TABLE entitlements ADD COLUMN reader TEXT").run(); } catch (e) {}
   await env.OVERHANG.prepare(
     `CREATE TABLE IF NOT EXISTS entitlements (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -547,10 +642,120 @@ async function grant(env, email, skuName, sku, ref, session, cents) {
 
   await env.OVERHANG.prepare(
     `INSERT INTO entitlements (email, grants, sku, ref, qty, ends_on,
-                               stripe_session, cents)
-     VALUES (?,?,?,?,?, date('now','+' || ? || ' days'), ?, ?)`
+                               stripe_session, cents, reader)
+     VALUES (?,?,?,?,?, date('now','+' || ? || ' days'), ?, ?, ?)`
   ).bind(email.toLowerCase(), sku.grants, skuName, ref || null,
-         sku.qty || 1, sku.days, session || null, cents || sku.cents).run();
+         sku.qty || 1, sku.days, session || null, cents || sku.cents, reader || null).run();
+}
+
+/* ============================================================
+   THE GIG LEDGER — what is owed to readers, and what has been paid
+
+   ⚠ WRITTEN THE MOMENT THE SALE IS PAID, never later from memory. gross is
+   what the buyer paid, house is the flat take, net is the reader's. paid_at
+   is empty until the money has actually gone.
+
+   ⚠ STRIPE CONNECT PAYS IT OUT. When a reader has a connected account
+   (stripe_account on their row in the writing database, from Connect
+   onboarding), the net is transferred to them here and now and the row is
+   marked paid with the transfer id. Until then the row waits, and the
+   founder pays it from ?action=payouts and marks it with ?action=paidout.
+   ============================================================ */
+async function owe(env, r) {
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS gig_payouts (
+       id INTEGER PRIMARY KEY AUTOINCREMENT, reader TEXT NOT NULL, ticker TEXT, buyer TEXT,
+       gross INTEGER, house INTEGER, net INTEGER, session TEXT UNIQUE, site TEXT, live INTEGER DEFAULT 0,
+       created_at TEXT DEFAULT (datetime('now')), paid_at TEXT, paid_how TEXT, paid_ref TEXT)`).run();
+  for (const col of ["approval TEXT", "why TEXT", "hold_until TEXT", "decided_at TEXT"]) {
+    try { await env.OVERHANG.prepare("ALTER TABLE gig_payouts ADD COLUMN " + col).run(); } catch (e) {}
+  }
+  const net = Math.max(0, (r.gross || 0) - (r.house || 0));
+  /* ⚠ HELD TWO DAYS. His ruling: two days maximum, and the writers must
+     know it. Somebody could write garbage; the buyer has forty-eight hours to
+     say "not worth it". "Worth it" ends the hold early; silence releases
+     it on the second day. */
+  await env.OVERHANG.prepare(
+    `INSERT OR IGNORE INTO gig_payouts (reader, ticker, buyer, gross, house, net, session, site, live, hold_until)
+     VALUES (?,?,?,?,?,?,?,?,?, datetime('now','+2 days'))`)
+    .bind(r.reader, r.ticker || null, r.buyer || null, r.gross || 0, r.house || 0, net, r.session, r.on || "wire", r.live || 0).run();
+}
+
+/* ⚠ THE BUYER'S SAY. ok=1 approves and releases; ok=0 disputes and holds it
+   for the founder. Only the email that paid can say it, and only once. */
+async function buyerSays(env, q) {
+  const session = String(q.get("session") || "").trim();
+  const email = String(q.get("email") || "").trim().toLowerCase();
+  const ok = q.get("ok") === "1";
+  const why = String(q.get("why") || "").slice(0, 600);
+  if (!session || !email) return { ok:false, error:"the session and the email you paid with" };
+  const row = await env.OVERHANG.prepare("SELECT * FROM gig_payouts WHERE session=? AND buyer=?").bind(session, email).first().catch(()=>null);
+  if (!row) return { ok:false, error:"no such purchase on that address" };
+  if (row.paid_at) return { ok:true, already:true, note:"That reader has already been paid; your note is kept.", approval: row.approval };
+  if (row.approval) return { ok:true, already:true, approval: row.approval, note:"You have already said so." };
+  await env.OVERHANG.prepare("UPDATE gig_payouts SET approval=?, why=?, decided_at=datetime('now') WHERE id=?")
+    .bind(ok ? "approved" : "disputed", why || null, row.id).run();
+  await log(env, { kind: ok ? "verdict-approved" : "verdict-disputed", email, ref: row.ticker, session, note: why || null });
+  return { ok:true, approval: ok ? "approved" : "disputed",
+    note: ok ? "Thank you. The reader is paid." : "Noted. The payment is held and the founder will look at it. You will hear back at " + email + "." };
+}
+
+/* ⚠ RELEASE: pay everything that is due — approved, or seven days old with
+   no dispute — to readers with a Stripe Connect account. Run by the cron
+   every six hours, or by hand with ?action=release. Disputed rows never
+   move here; the founder decides those one at a time. */
+async function release(env) {
+  if (!env.WRITING || !env.STRIPE_KEY) return { ok:false, error:"no WRITING binding or no Stripe key" };
+  const due = await env.OVERHANG.prepare(
+    `SELECT * FROM gig_payouts WHERE paid_at IS NULL AND net > 0
+        AND (approval = 'approved' OR (approval IS NULL AND hold_until <= datetime('now')))   /* two days, or approved */
+      ORDER BY id LIMIT 50`).all().catch(()=>({results:[]}));
+  const out = [];
+  for (const r of (due.results || [])) {
+    let acct = null;
+    try { const w = await env.WRITING.prepare("SELECT stripe_account FROM w_writers WHERE email=?").bind(r.reader).first(); acct = w && w.stripe_account; } catch (e) {}
+    if (!acct || !/^acct_/.test(acct)) { out.push({ id: r.id, reader: r.reader, net: r.net, waiting: "no Stripe Connect account yet" }); continue; }
+    try {
+      const form = new URLSearchParams({ amount: String(r.net), currency: "usd", destination: acct,
+        description: "Verdict on " + (r.ticker || "?") + " — Warrant Wire" });
+      form.set("metadata[session]", r.session);
+      const t = await fetch("https://api.stripe.com/v1/transfers", { method: "POST",
+        headers: { "Authorization": "Bearer " + env.STRIPE_KEY, "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString() });
+      const j = await t.json();
+      if (t.ok && j.id) {
+        await env.OVERHANG.prepare("UPDATE gig_payouts SET paid_at=datetime('now'), paid_how='stripe', paid_ref=? WHERE id=?").bind(j.id, r.id).run();
+        out.push({ id: r.id, reader: r.reader, net: r.net, paid: j.id });
+      } else {
+        await log(env, { kind:"payout-failed", email: r.reader, ref: r.ticker, cents: r.net, session: r.session, note: (j.error && j.error.message) || "transfer refused" });
+        out.push({ id: r.id, reader: r.reader, net: r.net, failed: (j.error && j.error.message) || "refused" });
+      }
+    } catch (e) { out.push({ id: r.id, reader: r.reader, net: r.net, failed: String(e).slice(0, 100) }); }
+  }
+  return { ok:true, build: BUILD, considered: out.length, rows: out };
+}
+
+/* ⚠ A REFUND, THE FOUNDER'S DECISION ON A DISPUTE. The money goes back to
+   the buyer through Stripe, the reader's row is closed as refunded, and the
+   buyer keeps nothing — the entitlement ends too. */
+async function refund(env, q) {
+  const id = parseInt(q.get("id") || "0", 10);
+  const row = id ? await env.OVERHANG.prepare("SELECT * FROM gig_payouts WHERE id=?").bind(id).first() : null;
+  if (!row) return { ok:false, error:"which row?" };
+  if (row.paid_at) return { ok:false, error:"already settled: " + row.paid_how };
+  const sess = String(row.session || "").split("#")[0];
+  const s = await fetch("https://api.stripe.com/v1/checkout/sessions/" + encodeURIComponent(sess),
+    { headers: { "Authorization": "Bearer " + env.STRIPE_KEY } }).then(r => r.json()).catch(()=>null);
+  if (!s || !s.payment_intent) return { ok:false, error:"could not find the payment on Stripe" };
+  const f = new URLSearchParams({ payment_intent: String(s.payment_intent) });
+  const r = await fetch("https://api.stripe.com/v1/refunds", { method:"POST",
+    headers: { "Authorization": "Bearer " + env.STRIPE_KEY, "Content-Type": "application/x-www-form-urlencoded" }, body: f.toString() });
+  const j = await r.json();
+  if (!r.ok || !j.id) return { ok:false, error: (j.error && j.error.message) || "Stripe refused the refund" };
+  await env.OVERHANG.prepare("UPDATE gig_payouts SET paid_at=datetime('now'), paid_how='refunded', paid_ref=?, net=0 WHERE id=?").bind(j.id, id).run();
+  await env.OVERHANG.prepare("UPDATE entitlements SET status='refunded' WHERE stripe_session=?").bind(row.session).run().catch(()=>{});
+  await log(env, { kind:"refunded", email: row.buyer, ref: row.ticker, cents: row.gross, session: row.session, note: "verdict by " + row.reader });
+  return { ok:true, refund: j.id, row };
 }
 
 async function me(env, q) {
@@ -558,8 +763,9 @@ async function me(env, q) {
   const e = email.trim().toLowerCase();
   if (!e || e.indexOf("@") < 1) throw new Error("an email address, please");
 
+  try { await env.OVERHANG.prepare("ALTER TABLE entitlements ADD COLUMN reader TEXT").run(); } catch (e) {}
   const r = await env.OVERHANG.prepare(
-    `SELECT grants, sku, ref, qty, used, started_on, ends_on, status
+    `SELECT grants, sku, ref, reader, qty, used, started_on, ends_on, status, stripe_session
        FROM entitlements
       WHERE email = ? AND status='active' AND ends_on >= date('now')
       ORDER BY ends_on DESC`).bind(e).all().catch(()=>({results:[]}));
