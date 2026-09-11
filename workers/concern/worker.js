@@ -427,7 +427,7 @@ async function veiled(env, days, gate) {
     price: 80, sku: "concern_year",
     note: "The list — every company, the form, the date, who said it, and what the shareholders " +
           "have put in — is $80 a year, 365 days from the day you buy. A single company's going " +
-          "concern record is free on its own page." };
+          "concern record comes with its $12 report, highlighted." };
 }
 
 async function today(env, days) {

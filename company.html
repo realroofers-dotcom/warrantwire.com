@@ -193,7 +193,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<p class="vlead locked">' + v.fired.length + ' rule' + (v.fired.length === 1 ? "" : "s") + ' fired on '
       + a.filings + ' filing' + (a.filings === 1 ? "" : "s") + '. The verdict is one sentence long.</p>'
       + '<div class="vlock"><p><b>The verdict, the rules that fired, and every filing &mdash; $12.</b> '
-      + 'One company, every year on record. One payment, nothing recurring.</p>'
+      + 'One company, every year on record. Any going concern notice on file is in it, highlighted as an urgent warning. One payment, nothing recurring.</p>'
       + '<button class="wbuy gold" data-sku="wire_search" data-t="' + esc(T) + '">Buy the verdict &mdash; $12</button></div>'
       + '<p class="vgap">Rules version ' + v.version + '. <a href="/rules.html" style="color:var(--cool)">Read how it is rendered</a> before you buy.</p>'
       + '</section>';
@@ -218,6 +218,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           + (d.times > 1 ? ' On file ' + d.times + ' times, ' + esc(d.first) + ' to ' + esc(d.latest) + '.' : '') + '</p>'
           + '<p>A required disclosure, not a finding of wrongdoing &mdash; and the one line in a filing a holder cannot afford to miss. '
           + 'Every company that has said it is on <a href="/concern.html">the going concern list</a>, $80 a year.</p>'
+          + '<p class="fine" style="margin-top:6px">Included in your report at no extra charge.</p>'
           + '</div>';
       })
       .catch(function () {});
@@ -466,7 +467,11 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       if (open && !v.none) deep(tk);
       humans(tk, open);
       people(tk);
-      concern(tk);
+      /* ⚠ THE GOING CONCERN WARNING IS PART OF THE PAID REPORT, not the free
+         search. His correction, 11 Sep: "not a free search." A paid buyer (or
+         the sample) sees it highlighted at the top; a free search sees only
+         that the report carries it, without saying whether this company does. */
+      if (open) concern(tk);
       WW.clips.reveal();
     })
     .catch(function () {
