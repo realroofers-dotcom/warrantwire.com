@@ -128,6 +128,7 @@ html,body{overflow-x:clip}
 <div class="wrap"><nav class="crumbs">
   <a href="/">The wire</a>
   <a href="/rules.html" aria-current="page">How the verdict is rendered</a>
+  <a href="/patterns.html">The patterns</a>
   <a href="/prices.html">Prices</a>
   <a href="/about.html">About</a>
   <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
@@ -195,17 +196,20 @@ html,body{overflow-x:clip}
 
     <div class="rules">
 
-      <div class="rule"><span class="id">W1</span><div>
+      <div class="rule" id="W1"><span class="id">W1</span><div>
         <h3>How often</h3>
         <dl>
-          <dt>Looks at</dt><dd>The number of filings on the wire in the last 24 months.</dd>
-          <dt>Fires when</dt><dd><b>1 or 2</b> prints <q>occasionally</q>; <b>3 to 5</b> prints
-            <q>repeatedly</q>; <b>6 or more</b> prints <q>serially</q>.</dd>
-          <dt>Prints</dt><dd><q>Has filed warrant paper 7 times in the last 24 months &mdash; serially.</q></dd>
+          <dt>Looks at</dt><dd>Filings on the wire per year, over the period on record &mdash; the
+            count divided by the years between the first and the latest (never less than one year).</dd>
+          <dt>Fires when</dt><dd>Always, where the dates are on file. <b>Under 1.5 a year</b> prints
+            <q>occasionally</q>; <b>1.5 to 4</b> prints <q>repeatedly</q>; <b>over 4</b> prints
+            <q>serially</q>.</dd>
+          <dt>Prints</dt><dd><q>60 filings carrying warrant terms since 2021-10-22 &mdash; 12.4 a year,
+            serially.</q></dd>
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W2</span><div>
+      <div class="rule" id="W2"><span class="id">W2</span><div>
         <h3>The heavier terms</h3>
         <dl>
           <dt>Looks at</dt><dd>What share of the company&rsquo;s wire filings carry at least one of
@@ -218,7 +222,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W3</span><div>
+      <div class="rule" id="W3"><span class="id">W3</span><div>
         <h3>The price was cut</h3>
         <dl>
           <dt>Looks at</dt><dd>Filings carrying <em>reduced exercise price</em> or <em>price reset</em>.</dd>
@@ -227,7 +231,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W4</span><div>
+      <div class="rule" id="W4"><span class="id">W4</span><div>
         <h3>Paid to convert early</h3>
         <dl>
           <dt>Looks at</dt><dd>Filings carrying <em>warrant inducement</em> or <em>inducement agreement</em>
@@ -238,7 +242,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W5</span><div>
+      <div class="rule" id="W5"><span class="id">W5</span><div>
         <h3>The stack</h3>
         <dl>
           <dt>Looks at</dt><dd>Whether one filing carries three or more of the five terms that,
@@ -250,7 +254,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W6</span><div>
+      <div class="rule" id="W6"><span class="id">W6</span><div>
         <h3>Arranged to sell, not hold</h3>
         <dl>
           <dt>Looks at</dt><dd>A filing carrying both <em>pre-funded warrants</em> and an
@@ -261,7 +265,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W7</span><div>
+      <div class="rule" id="W7"><span class="id">W7</span><div>
         <h3>How recent</h3>
         <dl>
           <dt>Looks at</dt><dd>The date of the latest filing on the wire.</dd>
@@ -270,7 +274,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W8</span><div>
+      <div class="rule" id="W8"><span class="id">W8</span><div>
         <h3>Where it is incorporated</h3>
         <dl>
           <dt>Looks at</dt><dd>The state of incorporation on the company&rsquo;s own cover page.</dd>
@@ -281,7 +285,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">W0</span><div>
+      <div class="rule" id="W0"><span class="id">W0</span><div>
         <h3>Nothing on the wire</h3>
         <dl>
           <dt>Looks at</dt><dd>Whether any filing from this company has ever matched.</dd>
@@ -305,7 +309,7 @@ html,body{overflow-x:clip}
 
     <div class="rules">
 
-      <div class="rule"><span class="id">R1</span><div>
+      <div class="rule" id="R1"><span class="id">R1</span><div>
         <h3>Dilution</h3>
         <dl>
           <dt>Looks at</dt><dd>The first and the latest share count on file, off the cover pages.</dd>
@@ -315,7 +319,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">R2</span><div>
+      <div class="rule" id="R2"><span class="id">R2</span><div>
         <h3>Reverse splits</h3>
         <dl>
           <dt>Looks at</dt><dd>Every reverse split on file, with its ratio.</dd>
@@ -326,7 +330,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">R3</span><div>
+      <div class="rule" id="R3"><span class="id">R3</span><div>
         <h3>The overhang</h3>
         <dl>
           <dt>Looks at</dt><dd>Warrants still outstanding and their exercise price, against
@@ -337,7 +341,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">R4</span><div>
+      <div class="rule" id="R4"><span class="id">R4</span><div>
         <h3>The last reprice</h3>
         <dl>
           <dt>Looks at</dt><dd>The most recent inducement: the old exercise price, the new one,
@@ -350,7 +354,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">R5</span><div>
+      <div class="rule" id="R5"><span class="id">R5</span><div>
         <h3>Research against overhead</h3>
         <dl>
           <dt>Looks at</dt><dd>R&amp;D and G&amp;A in the latest period on file.</dd>
@@ -359,7 +363,7 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
-      <div class="rule"><span class="id">R6</span><div>
+      <div class="rule" id="R6"><span class="id">R6</span><div>
         <h3>Who arranged it</h3>
         <dl>
           <dt>Looks at</dt><dd>Every named party on the company&rsquo;s deals &mdash; placement
@@ -424,7 +428,10 @@ html,body{overflow-x:clip}
     <ul class="log">
       <li><b>v1 &middot; 2026-09-11</b><span>First published set. Part one, W0 to W8, runs on the
         wire&rsquo;s record for every company. Part two, R1 to R6, runs where the hand-built record
-        exists. The gaps above are the gaps.</span></li>
+        exists. The gaps above are the gaps. Same day, before publication: W1 changed from
+        <q>filings in the last 24 months</q> to <q>filings per year over the period on record</q>,
+        because the wire does not yet hand the page a date for each filing &mdash; only the first and
+        the latest. When it does, W1 goes back to a 24-month window and this log will say so.</span></li>
     </ul>
     <p class="note">A rule is changed on this page first, then in the code, never the other way
     round. If a verdict on the site disagrees with this page, this page is right and the

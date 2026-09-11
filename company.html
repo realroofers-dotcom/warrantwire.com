@@ -1,0 +1,321 @@
+<!-- BUILT 2026-09-11 · warrantwire company-1a · the company page: the verdict, who arranged it, and the people who signed -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The verdict — Warrant Wire</title>
+<meta name="description" content="One company's warrant record, and what it adds up to: the automatic verdict, the rules that fired, the founder's verdict, and named readers' opinions.">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. Everything else is wire.css. */
+.chead{padding:0 0 18px;border-bottom:1px solid var(--line)}
+.rows{margin:14px 0 0}
+.rows .row{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.rows .row:hover{background:transparent}
+.samplemark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--cool);border:1px solid var(--cool);border-radius:3px;padding:3px 8px;margin:0 0 12px}
+time{font:400 11.5px var(--mono);color:var(--ink3)}
+</style>
+</head>
+<body>
+
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="navscrim" id="navscrim"></div>
+<nav class="navpanel" id="navpanel" aria-label="Site">
+  <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
+  <a href="/patterns.html">The patterns<small>What we see, with the formula for each</small></a>
+  <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
+  <a href="/readers.html">GIG readers<small>Named people, opinions for sale</small></a>
+  <a href="/look.html">Look at this<small>A company's whole record, as it filed it</small></a>
+  <a href="/cost.html">What the raising costs<small>A running total, from the filings</small></a>
+  <a href="/counter.html">The screw<small>What the whole market put in, and what is left</small></a>
+  <a href="/grades.html">Company grades<small>Every filing marked against the SEC's plain English rule</small></a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
+  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
+  <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
+</nav>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">The verdict</span></span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/company.html" aria-current="page">The verdict</a>
+  <a href="/rules.html">How it is rendered</a>
+  <a href="/prices.html">Prices</a>
+</nav></div>
+
+<main><div class="wrap">
+
+  <div class="finder" style="margin:0 0 22px">
+    <input id="q" type="text" placeholder="TICKER OR COMPANY" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
+    <button id="go" type="button">Get the verdict</button>
+  </div>
+
+  <div id="page"><div class="quiet">Reading every year we have&hellip;</div></div>
+  <p id="wbuymsg"></p>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/rules.html">How the verdict is rendered</a><a href="/patterns.html">The patterns</a>
+    <a href="/prices.html">What it costs</a><a href="/readers.html">GIG readers</a><a href="/about.html">Who runs the wire</a>
+    <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>&ldquo;It&rsquo;s never as it seems.&rdquo; &mdash; Mark Nejmeh</em><br><br>
+  The automatic verdict is computed from filings by the rules on <a href="/rules.html">this page</a> and
+  is about the warrants only &mdash; it does not evaluate the company&rsquo;s products. The founder&rsquo;s
+  verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
+  registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
+  nothing here alleges that anyone broke any law.
+  <p class="stamp">Built 2026-09-11 &middot; warrantwire company-1a</p>
+</footer></div>
+
+<script src="/wire.js"></script>
+<script src="/verdict.js"></script>
+<script>
+(function () {
+  "use strict";
+  var esc = WW.esc;
+  var VERDICT = "https://verdict.realroofers.workers.dev";   /* part two — the hand-built record */
+  var PEOPLE  = "https://people.realroofers.workers.dev";    /* officers and directors, from Form 4 */
+
+  /* ⚠ THE SAMPLE IS THE FULL VERDICT, UNLOCKED. His call: the home page gives
+     a sample. TOVX is the company he has read every filing of, so it is the
+     one anybody can check. */
+  var SAMPLE = { TOVX: 1 };
+
+  var T = (new URLSearchParams(location.search).get("t") || "").trim().toUpperCase();
+  var page = document.getElementById("page");
+  if (!T) { page.innerHTML = '<div class="quiet">Type a ticker or a company name above.</div>'; return; }
+  document.getElementById("q").value = T;
+  document.title = T + " — the verdict — Warrant Wire";
+
+  function when(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d)) return '<time>' + esc(iso) + '</time>';
+    return '<time datetime="' + esc(iso) + '">' + d.toISOString().slice(0, 10) + " " + d.toISOString().slice(11, 16) + ' UTC</time>';
+  }
+
+  /* ---- who this is ---------------------------------------------------------- */
+  function who(c, a, sample) {
+    var nm = c.name || (a && a.company) || T;
+    var SPLIT = { NV: "Nevada", DE: "Delaware", TX: "Texas" };
+    var st = String(c.state_inc || "").toUpperCase(), flagged = SPLIT[st];
+    var bits = [];
+    if (c.exchange) bits.push(esc(c.exchange));
+    if (c.business) bits.push(esc(c.business)); else if (c.sector) bits.push(esc(c.sector));
+    if (c.state_inc) bits.push("incorporated in " + (flagged ? '<span class="flag">' + esc(flagged) + '</span>' : esc(c.state_inc)));
+    if (c.cik) bits.push("CIK " + esc(c.cik));
+    return '<div class="chead">'
+      + (sample ? '<span class="samplemark">The sample &mdash; the full verdict, free</span>' : '')
+      + '<h1>' + esc(nm) + '</h1>'
+      + '<div class="who"><span class="tick">' + esc(c.ticker || T) + '</span>'
+      + (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join("<i>&middot;</i>") + '</span>' : '')
+      + ((c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
+      + (c.edgar ? '<p class="biz">Everything this company has filed: <a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">its EDGAR page &rarr;</a></p>' : '')
+      + '</div></div>';
+  }
+
+  /* ---- the automatic verdict ------------------------------------------------ */
+  function rulesList(v) {
+    if (!v.fired.length) return "";
+    return '<div class="vrules"><h4>' + v.fired.length + ' rule' + (v.fired.length === 1 ? "" : "s") + ' fired</h4><ol>'
+      + v.fired.map(function (r) {
+          return '<li><b>' + esc(r.id) + '</b><span><a href="/rules.html#' + esc(r.id) + '">' + esc(r.name) + '</a> &mdash; ' + esc(r.text) + '</span></li>';
+        }).join("")
+      + '</ol>'
+      + (v.missing.length ? '<p class="vgap">Could not run: ' + esc(v.missing.join("; ")) + '.</p>' : '')
+      + '<p class="ver">Rendered under <a href="/rules.html">rules version ' + v.version + '</a>, in force from ' + esc(v.date) + '. Computed ' + when(new Date().toISOString()) + '</p>'
+      + '</div>';
+  }
+  function autoBox(v, open, a) {
+    var lbl = '<p class="lbl"><b>The automatic verdict</b><span>rendered by the rules</span><span class="kind">warrants only</span></p>';
+    if (v.none) {
+      return '<section class="verdict auto">' + lbl
+        + '<p class="clean"><b>Nothing on the wire.</b> ' + esc(v.fired[0].text) + '</p>'
+        + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone.</p>'
+        + '</section>';
+    }
+    if (open) {
+      return '<section class="verdict auto">' + lbl
+        + '<p class="vlead">' + esc(v.sentence || "Not enough on file to reach a verdict.") + '</p>'
+        + rulesList(v)
+        + '<div id="deep"></div>'
+        + '</section>';
+    }
+    /* ⚠ LOCKED. The verdict is what the $12 buys. The count of rules is free —
+       it says there is something here — the sentence is not. */
+    return '<section class="verdict auto">' + lbl
+      + '<p class="vlead locked">' + v.fired.length + ' rule' + (v.fired.length === 1 ? "" : "s") + ' fired on '
+      + a.filings + ' filing' + (a.filings === 1 ? "" : "s") + '. The verdict is one sentence long.</p>'
+      + '<div class="vlock"><p><b>The verdict, the rules that fired, and every filing &mdash; $12.</b> '
+      + 'One company, every year on record. One payment, nothing recurring.</p>'
+      + '<button class="wbuy gold" data-sku="wire_search" data-t="' + esc(T) + '">Buy the verdict &mdash; $12</button></div>'
+      + '<p class="vgap">Rules version ' + v.version + '. <a href="/rules.html" style="color:var(--cool)">Read how it is rendered</a> before you buy.</p>'
+      + '</section>';
+  }
+
+  /* ---- part two, where the hand-built record exists ------------------------ */
+  function deep(ticker) {
+    var el = document.getElementById("deep");
+    if (!el) return;
+    fetch(VERDICT + "/?ticker=" + encodeURIComponent(ticker))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (v) {
+        if (!v || !v.lines || !v.lines.length) return;
+        var rows = v.lines.map(function (l) {
+          return '<tr><th>' + esc(l.label) + '</th><td><b>' + esc(l.value) + '</b>' + (l.note ? '<span class="vn">' + esc(l.note) + '</span>' : '') + '</td></tr>';
+        }).join("");
+        el.innerHTML = '<h4 class="vwho">From the record we built by hand</h4>'
+          + (v.verdict ? '<p class="vlead">' + esc(v.verdict) + '</p>' : '')
+          + '<table class="vtab">' + rows + '</table>'
+          + (v.missing && v.missing.length ? '<p class="vgap">Not on file: ' + esc(v.missing.join(", ")) + '.</p>' : '')
+          + parties(v.parties || [], "Who arranged it");
+      })
+      .catch(function () {});
+  }
+
+  /* ---- the people: a face and a name beside a role ------------------------- */
+  function card(p) {
+    var wds = String(p.name || "?").split(/\s+/).filter(Boolean);
+    var init = esc((wds.length > 1 ? wds[0][0] + wds[wds.length - 1][0] : wds[0].slice(0, 2)).toUpperCase());
+    var face = p.photo
+      ? '<img class="vface" src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" loading="lazy">'
+      : '<span class="vface vinit" aria-hidden="true">' + init + '</span>';
+    var rec = p.also_on > 0
+      ? '<span class="vrec">also on ' + p.also_on + ' other issuer' + (p.also_on === 1 ? "" : "s") + (p.filings ? ' &middot; ' + Number(p.filings).toLocaleString("en-US") + ' filings' : '') + '</span>'
+      : (p.also_on === 0 ? '<span class="vrec vonly">this issuer only</span>' : '');
+    return '<figure class="vcard">' + face + '<figcaption>'
+      + '<b>' + (p.url ? '<a href="' + esc(p.url) + '" rel="nofollow noopener" target="_blank">' + esc(p.name) + '</a>' : esc(p.name)) + '</b>'
+      + (p.role ? '<span class="vrole">' + esc(p.role) + '</span>' : '')
+      + (p.firm ? '<span class="vfirm">' + esc(p.firm) + '</span>' : '')
+      + rec
+      + (p.note ? '<span class="vnote">' + esc(p.note) + '</span>' : '')
+      + (p.photo_credit ? '<span class="vcred">Photo: ' + esc(p.photo_credit) + '</span>' : '')
+      + '</figcaption></figure>';
+  }
+  function parties(list, title) {
+    if (!list.length) return "";
+    /* the title is ours, written in this file — it is not escaped */
+    return '<h4 class="vwho">' + title + '</h4><div class="vgrid">' + list.map(card).join("") + '</div>';
+  }
+  function people(ticker) {
+    var el = document.getElementById("people");
+    if (!el) return;
+    fetch(PEOPLE + "/?people=1&ticker=" + encodeURIComponent(ticker))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) return;
+        var name = function (s) {
+          /* ⚠ A FORM 4 NAME IS ALWAYS SURNAME FIRST — "SHALLCROSS STEVEN A",
+             "Tufaro Francis" — whatever the case. The first word goes to the
+             end, every time; a rule that only flipped capitals printed
+             "Kraws Jeffrey J" under a face. */
+          var w = String(s || "").trim().split(/\s+/);
+          if (w.length > 1) w.push(w.shift());
+          return w.map(function (x) {
+            if (x.length === 1) return x.toUpperCase();
+            return x[0].toUpperCase() + x.slice(1).toLowerCase();
+          }).join(" ");
+        };
+        var mk = function (p, role) {
+          return { name: name(p.name), role: p.title || role, photo: p.photo || null,
+                   note: (p.still_filing === false ? "No Form 4 since " + p.last_filed : (p.filings ? p.filings + " insider filings, " + p.first_filed + " to " + p.last_filed : "")) };
+        };
+        var list = (d.officers || []).map(function (p) { return mk(p, "Officer"); })
+          .concat((d.directors || []).map(function (p) { return mk(p, "Director"); }));
+        if (!list.length) return;
+        el.innerHTML = parties(list, "Who signed &mdash; officers and directors, from their own Form 4 filings")
+          + '<p class="vgap">A photograph goes up only when the company&rsquo;s or the firm&rsquo;s own page ties it to the name. Until then, initials.</p>';
+      })
+      .catch(function () {});
+  }
+
+  /* ---- the human verdicts: a dated file per company, under a name ---------- */
+  function humanBox(cls, label, kindText, v) {
+    var kind = v.advice ? '<span class="kind advice">advice &middot; licensed</span>' : '<span class="kind">opinion, not advice</span>';
+    return '<section class="verdict ' + cls + '">'
+      + '<p class="lbl"><b>' + esc(label) + '</b><span>' + esc(v.name) + (v.title ? ", " + esc(v.title) : "") + '</span>' + kind + '</p>'
+      + '<p class="vlead">' + esc(v.verdict) + '</p>'
+      + (v.notes ? '<p>' + esc(v.notes) + '</p>' : '')
+      + '<p class="by">Written by <b>' + esc(v.name) + '</b> ' + when(v.written) + (v.revised ? ' &middot; revised ' + when(v.revised) : '') + '</p>'
+      + '</section>';
+  }
+  function humans(ticker, open) {
+    var el = document.getElementById("humans");
+    fetch("/verdicts/" + encodeURIComponent(ticker) + ".json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var h = "";
+        if (d && d.founder && d.founder.verdict) {
+          h += open ? humanBox("mark", "The founder’s verdict", "", d.founder)
+                    : '<section class="verdict mark"><p class="lbl"><b>The founder’s verdict</b><span>Mark Nejmeh</span><span class="kind">opinion, not advice</span></p>'
+                      + '<p class="vlead locked">Written ' + when(d.founder.written) + '. Included with the $12 verdict on this company.</p></section>';
+        } else {
+          h += '<div class="ask mark"><div><span class="t">The founder’s verdict &mdash; not yet written for ' + esc(ticker) + '</span>'
+             + '<p>Mark Nejmeh reads the company’s warrant paper himself and writes what he makes of it, signed and dated. Warrants only. An opinion, not advice.</p></div>'
+             + '<span class="price">$200</span><button class="wbuy" data-sku="founder_verdict" data-t="' + esc(ticker) + '">Request it</button></div>';
+        }
+        ((d && d.readers) || []).forEach(function (r) {
+          if (r && r.verdict) h += humanBox("reader", "A reader’s verdict", "", r);
+        });
+        h += '<div class="ask"><div><span class="t">A named reader’s verdict</span>'
+           + '<p>A verified person, under their real name, at their own price. Nobody here is anonymous, and everyone has an opinion, not advice &mdash; unless they are a licensed professional registered with us.</p></div>'
+           + '<a class="wbuy ghost" href="/readers.html?ticker=' + encodeURIComponent(ticker) + '">See who is reading</a></div>';
+        el.innerHTML = h;
+      })
+      .catch(function () {});
+  }
+
+  /* ---- go ---------------------------------------------------------------------- */
+  fetch(WW.API + "?wire=1&q=" + encodeURIComponent(T))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var c = d.company || {}, a = d.about || null;
+      var tk = (c.ticker || (a && a.ticker) || T).toUpperCase();
+      var open = !!d.paid || !!SAMPLE[tk];
+      var v = WWVerdict.render(d);
+
+      var row = a ? '<div class="rows"><div class="row' + (a.heavy ? ' heavy' : '') + '">'
+        + '<div class="tk">' + esc(tk) + '</div>'
+        + '<div><p class="co">' + esc(c.name || a.company || T) + '</p>'
+        + (c.business || c.sector ? '<p class="ind">' + esc(c.business || c.sector) + '</p>' : '')
+        + '<div class="marks">' + WW.marks((d.rows || []).reduce(function (acc, r) { return acc.concat(WW.split(r.labels)); }, []), 8) + '</div>'
+        + '<p class="found">' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') + ' on the wire'
+        + (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '') + (a.first ? ', ' + esc(a.first) + ' to ' + esc(a.latest) : '') + '.</p>'
+        + '</div><div class="go">'
+        + (open ? '<a class="verdict" href="#auto">The verdict is below &darr;</a>' : '<button class="wbuy readbtn" data-sku="wire_search" data-t="' + esc(tk) + '">The verdict &middot; $12</button>')
+        + '</div></div></div>' : "";
+
+      page.innerHTML = who(c, a, SAMPLE[tk])
+        + row
+        + '<div class="verdicts" id="auto">' + autoBox(v, open, a || {}) + '</div>'
+        + '<div class="verdicts" id="humans"></div>'
+        + '<div class="vpeople" id="people"></div>';
+
+      document.getElementById("live").textContent = v.none ? "Nothing on the wire" : (open ? "The verdict" : "On the wire");
+      if (open && !v.none) deep(tk);
+      humans(tk, open);
+      people(tk);
+      WW.clips.reveal();
+    })
+    .catch(function () {
+      page.innerHTML = '<div class="quiet">Could not reach the wire just now.</div>';
+    });
+})();
+</script>
+<script src="/clock.js"></script>
+<script src="https://cart.realroofers.workers.dev/" defer></script>
+</body>
+</html>

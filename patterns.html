@@ -1,0 +1,230 @@
+<!-- BUILT 2026-09-11 · warrantwire patterns-1a · the pattern book: what we see, with the formula for each, dated -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The patterns — Warrant Wire</title>
+<meta name="description" content="The patterns we see in warrant financings, each with the formula that measures it, an example from the filings, and the rule it becomes. Dated, named, and searchable.">
+<link rel="canonical" href="https://warrantwire.com/patterns.html">
+<meta name="author" content="Mark Nejmeh">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.standing{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px 26px;max-width:76ch;margin:0 0 8px}
+.standing p{margin:0 0 13px;max-width:none}
+.standing p:last-child{margin-bottom:0}
+.standing b{color:var(--ink)}
+.sect{padding:34px 0;border-top:1px solid var(--line2)}
+.pat{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:20px 22px;margin:0 0 14px;max-width:900px}
+.pat header{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin:0 0 10px}
+.pat header b{font:700 13px var(--mono);letter-spacing:.06em;color:var(--warm)}
+.pat header h3{font:600 19px/1.25 var(--sans);color:var(--ink);margin:0;flex:1 1 300px}
+.pat header time{font:400 11.5px var(--mono);color:var(--ink3)}
+.pat dl{margin:0;display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px 16px;font-size:14.5px}
+.pat dt{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding-top:3px}
+.pat dd{margin:0;color:var(--ink2)}
+.pat dd b{color:var(--ink);font-weight:600}
+.pat .f{display:block;font:500 15px/1.6 var(--mono);color:var(--ink);background:#101208;border:1px solid var(--line);
+  border-radius:4px;padding:12px 14px;margin:4px 0 6px;overflow-x:auto;white-space:pre}
+.pat .f i{font-style:normal;color:var(--cool)}
+.pat .src{font:400 12px var(--mono);color:var(--ink3)}
+.pat .src a{color:var(--cool)}
+.pat .rule{display:inline-block;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cool);border:1px solid var(--cool);border-radius:2px;padding:2px 7px}
+.pat .rule.soon{color:var(--ink3);border-color:var(--line)}
+.slot{border:1px dashed var(--line);border-radius:6px;padding:14px 16px;color:var(--ink3);font-size:14px;margin:6px 0 0}
+@media(max-width:620px){ .pat dl{grid-template-columns:1fr;gap:2px 0} .pat dt{padding-top:8px} }
+</style>
+</head>
+<body>
+
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="navscrim" id="navscrim"></div>
+<nav class="navpanel" id="navpanel" aria-label="Site">
+  <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
+  <a href="/patterns.html" aria-current="page">The patterns<small>What we see, with the formula for each</small></a>
+  <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
+  <a href="/readers.html">GIG readers<small>Named people, opinions for sale</small></a>
+  <a href="/company.html?t=TOVX">A worked example<small>TOVX — the full verdict, free</small></a>
+  <a href="https://triggeredshort.com/model.html">The overhang calculator<small>Four figures off a 10-Q</small></a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
+  <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
+</nav>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>The pattern book</span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/patterns.html" aria-current="page">The patterns</a>
+  <a href="/rules.html">How the verdict is rendered</a>
+  <a href="/company.html?t=TOVX">The sample</a>
+</nav></div>
+
+<main><div class="wrap">
+
+  <h1>The patterns</h1>
+  <p class="lede">What we see in the filings, written down as a formula so it can be measured
+  rather than argued about. Each pattern is named, dated, sourced, and tied to the rule that
+  runs it &mdash; or marked as a rule not yet written. This is knowledge being built in the open,
+  and the people who arrange these deals are named beside it. That is what makes a market.</p>
+
+  <div class="standing">
+    <p><b>Every entry carries a name and a date.</b> Who saw it, when it was written, and where it
+    was first published. The page is searchable by both, and nothing on it is ever silently
+    rewritten &mdash; a change gets a new date under the old one.</p>
+    <p><b>A pattern is a measurement, not an accusation.</b> Every one of these describes lawful
+    conduct that is common in the market. A pattern firing means a filing is worth reading. It
+    never means anyone did anything wrong.</p>
+    <p><b>Warrants only.</b> Nothing here evaluates a company&rsquo;s products, its science or its
+    people&rsquo;s intentions.</p>
+  </div>
+
+  <section class="sect">
+    <h2>The patterns, as of 11 September 2026</h2>
+
+    <article class="pat" id="P1">
+      <header><b>P1</b><h3>The triggered short</h3><time datetime="2026-07-18">First published 18 July 2026</time></header>
+      <dl>
+        <dt>What you see</dt>
+        <dd>A warrant financing closes. The warrant shares, if all exercised, are a large share of the
+          company. The price the market can bear for the enlarged company is lower than the price the
+          day before, and anybody who can borrow the stock knows it before the exercise happens.</dd>
+        <dt>The formula</dt>
+        <dd><span class="f">P<i>dilution</i> = ( shares × price + warrants × exercise ) ÷ ( shares + warrants )
+P<i>final</i>    = P<i>dilution</i> × exp[ −λ · ( Q ÷ L ) ]
+
+share of company = warrants ÷ ( shares + warrants )
+overhang         = warrants ÷ shares
+gap              = ( exercise ÷ price ) − 1</span>
+          Four figures off a 10-Q: shares outstanding, the current price, the warrant shares and the
+          exercise price. <b>Q</b> is the net selling pressure the exercise would put on the market,
+          <b>L</b> a liquidity benchmark (average daily volume, say), and <b>λ</b> the price-impact
+          assumption the reader sets. P<i>dilution</i> is arithmetic; P<i>final</i> is a model, and it
+          says so. A warrant is normally exercised only above the exercise price; where a holder
+          exercises below it, the reason is usually written in the agreement.</dd>
+        <dt>Example</dt>
+        <dd>Theriva Biologics (TOVX). The worked numbers are on the
+          <a href="https://triggeredshort.com/model.html" style="color:var(--cool)">overhang calculator</a>
+          and the sample verdict is <a href="/company.html?t=TOVX" style="color:var(--cool)">here</a>.</dd>
+        <dt>Source</dt>
+        <dd class="src">Mark Nejmeh. First published in a press release concerning Theriva Biologics,
+          18 July 2026. Restated on triggeredshort.com/model.html.
+          <div class="slot">[[ The press release text, or a link to it, goes here so the original
+          is one click away. ]]</div></dd>
+        <dt>The rule</dt>
+        <dd><span class="rule">R3 &middot; the overhang</span> <span class="rule">R4 &middot; the reprice</span>
+          &mdash; runs where the hand-built record exists. The four figures for every company on the
+          wire are the gap named on <a href="/rules.html" style="color:var(--cool)">the rules page</a>.</dd>
+      </dl>
+    </article>
+
+    <article class="pat" id="P2">
+      <header><b>P2</b><h3>The quiet deal</h3><time datetime="2026-09-11T14:00:00Z">Written 11 September 2026</time></header>
+      <dl>
+        <dt>What you see</dt>
+        <dd>A warrant deal is filed with the SEC and <b>neither side says a word</b>. No press release
+          from the company; none from the buyer. The filing is the only record that it happened. A
+          deal both parties are pleased with usually gets announced by at least one of them.</dd>
+        <dt>The formula</dt>
+        <dd><span class="f">silence = 1  if  PR<i>issuer</i>(t, t+N) = 0  and  PR<i>counterparty</i>(t, t+N) = 0
+         = 0  otherwise
+
+where t is the filing date, N the window in trading days (start at 5),
+and PR(·) the count of press releases naming the deal in that window.</span>
+          A binary. It becomes a pattern when it repeats: <b>quiet share = Σ silence ÷ deals</b> over a
+          company&rsquo;s deals, or over a counterparty&rsquo;s. A counterparty whose deals are quiet
+          across many issuers is the finding &mdash; and that is a name, not a number.</dd>
+        <dt>Example</dt>
+        <dd>The GOOG / MRVL warrant deal, as noted by the founder. <div class="slot">[[ The filing
+          date, the accession number, and the two parties&rsquo; newsroom pages for the window &mdash;
+          so the zero can be checked. ]]</div></dd>
+        <dt>Source</dt>
+        <dd class="src">Mark Nejmeh, 11 September 2026, dictated.</dd>
+        <dt>The rule</dt>
+        <dd><span class="rule soon">Not yet a rule</span> &mdash; needs a press-release feed for the
+          issuer and the counterparty. Listed under <em>what it misses</em> on the rules page until it
+          is built.</dd>
+      </dl>
+    </article>
+
+    <article class="pat" id="P3">
+      <header><b>P3</b><h3>Paid to convert early, again and again</h3><time datetime="2026-09-11T14:00:00Z">Written 11 September 2026</time></header>
+      <dl>
+        <dt>What you see</dt>
+        <dd>The company cuts the exercise price so holders will exercise now, and hands them new
+          warrants for doing it &mdash; often more than they exercised. Then it does it again.</dd>
+        <dt>The formula</dt>
+        <dd><span class="f">inducements(t) = count of filings carrying "warrant inducement"
+                 or "inducement agreement" up to date t
+habit = 1  if  inducements ≥ 3
+
+premium = ( new exercise price − close on the day exercised ) ÷ close</span>
+          The premium is measured on the day they <b>exercised</b>, not the day they repriced.
+          Repricing is an offer; exercising is the act. On TOVX those were consecutive sessions,
+          $0.43 then $0.42, and measuring the wrong day reports 26% where the documented figure
+          is 29%.</dd>
+        <dt>Example</dt>
+        <dd>TOVX &mdash; four repricings on file; the last exercised 29% above the market.</dd>
+        <dt>Source</dt>
+        <dd class="src">Mark Nejmeh; the measurement rule caught in testing, 11 September 2026.</dd>
+        <dt>The rule</dt>
+        <dd><span class="rule">W4 &middot; paid to convert early</span> <span class="rule">R4 &middot; the last reprice</span></dd>
+      </dl>
+    </article>
+
+    <article class="pat" id="P4">
+      <header><b>P4</b><h3>The same names</h3><time datetime="2026-09-11T14:00:00Z">Written 11 September 2026</time></header>
+      <dl>
+        <dt>What you see</dt>
+        <dd>The same placement agent, the same issuer counsel, the same buyers, on deals at companies
+          that have nothing to do with each other. The deals look alike because the same people wrote
+          them.</dd>
+        <dt>The formula</dt>
+        <dd><span class="f">reach(party) = number of distinct issuers the party appears on
+weight(party) = Σ filings across those issuers
+
+finding = party where reach ≥ 2, ranked by reach then weight</span>
+          Computed, never asserted. &ldquo;Leslie Marlow, issuer counsel&rdquo; is a name.
+          &ldquo;Leslie Marlow, issuer counsel &mdash; also on 6 other issuers, 250 filings&rdquo; is
+          the finding.</dd>
+        <dt>Example</dt>
+        <dd>The parties on the TOVX sample, with their reach, once the record is loaded.</dd>
+        <dt>Source</dt>
+        <dd class="src">Mark Nejmeh; built into the verdict worker 11 September 2026.</dd>
+        <dt>The rule</dt>
+        <dd><span class="rule">R6 &middot; who arranged it</span></dd>
+      </dl>
+    </article>
+
+    <p class="lede" style="margin-top:20px">More patterns are added as they are seen. Each one gets a
+    number, a name, a date, a formula, and the rule it becomes.</p>
+  </section>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/rules.html">How the verdict is rendered</a><a href="/patterns.html" aria-current="page">The patterns</a>
+    <a href="/prices.html">What it costs</a><a href="/readers.html">GIG readers</a><a href="/about.html">Who runs the wire</a>
+    <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>&ldquo;It&rsquo;s never as it seems.&rdquo; &mdash; Mark Nejmeh</em><br><br>
+  Every pattern on this page describes lawful conduct that is common in the market. Nothing here is
+  investment advice, nothing here is a recommendation to buy or sell any security, and nothing here
+  alleges that anyone broke any law.
+  <p class="stamp">Built 2026-09-11 &middot; warrantwire patterns-1a</p>
+</footer></div>
+
+<script src="/wire.js"></script>
+<script src="/clock.js"></script>
+</body>
+</html>
