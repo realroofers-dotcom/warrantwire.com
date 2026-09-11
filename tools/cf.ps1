@@ -77,10 +77,21 @@ function Deploy-One([string]$n) {
   # nothing live yet, so the bindings come from workers/<name>/bindings.json
   $live = @()
   try { $live = (Invoke-RestMethod "$api/scripts/$n/bindings" -Headers $H).result } catch {}
+  # bindings.json can ADD a binding (a new D1 or R2) that is not live yet; a
+  # binding that is live is always taken from Cloudflare so a secret's value or
+  # a variable's text is never needed here
   $bfile = Join-Path $root "workers\$n\bindings.json"
-  if ((-not $live -or $live.Count -eq 0) -and (Test-Path $bfile)) {
-    $live = Get-Content $bfile -Raw -Encoding utf8 | ConvertFrom-Json
-    if ($live -isnot [array]) { $live = @($live) }
+  if (Test-Path $bfile) {
+    $want = Get-Content $bfile -Raw -Encoding utf8 | ConvertFrom-Json
+    if ($want -isnot [array]) { $want = @($want) }
+    $liveNames = @($live | ForEach-Object { $_.name })
+    foreach ($w in $want) {
+      if ($liveNames -contains $w.name) { continue }
+      if ($w.type -eq "d1" -and $w.id) { $live += [pscustomobject]@{ type="d1"; name=$w.name; id=$w.id } }
+      elseif ($w.type -eq "r2_bucket" -and $w.bucket) { $live += [pscustomobject]@{ type="r2_bucket"; name=$w.name; bucket_name=$w.bucket } }
+      elseif ($w.type -eq "kv_namespace" -and $w.namespace) { $live += [pscustomobject]@{ type="kv_namespace"; name=$w.name; namespace_id=$w.namespace } }
+      # plain_text and secret_text are never added from the file - they carry values
+    }
   }
   $keep = @()
   foreach ($b in $live) {

@@ -8,7 +8,7 @@
    property can be sold on its own without untangling anything from
    the others. Nothing here is shared.
 
-   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts)
+   Built 2026-09-05 · build 1a · 1b on 2026-09-11: the verdict desk (/write/verdict, /api/w/verdict, /api/w/verdicts) · 1c: password reset (/write/reset, /write/resets, /api/w/resetlink) and the auth check (/api/w/whoami) · 1d: the authenticator (/write/2fa, /write/code, /api/w/2fa-off) · 1e: levels, prices, enrolment (/write/enrol), the roster (/write/writers)
 
    BINDINGS   DB         D1  → warrantwire_writing (this site's own)
    SECRETS    LOG_KEY        master key, admin only
@@ -112,11 +112,48 @@ async function setup(env) {
        id INTEGER PRIMARY KEY AUTOINCREMENT,
        ticker TEXT NOT NULL, company TEXT,
        author TEXT NOT NULL, name TEXT, title TEXT, kind TEXT,
-       advice INTEGER DEFAULT 0, price INTEGER,
+       level TEXT, advice INTEGER DEFAULT 0, price INTEGER,
        verdict TEXT, notes TEXT,
        status TEXT DEFAULT 'published',
        written TEXT DEFAULT (datetime('now')), revised TEXT,
        UNIQUE(ticker, author))`).run();
+  /* ============================================================
+     ⚠ LEVELS — build 1e, 11 Sep 2026. His ruling: permissions and levels.
+       founder            Mark. Publishes at once. Sets everyone's level.
+       writer             a Warrant Wire house writer. Publishes at once.
+       gig_amateur        a GIG reader. Opinion only. Sets their own price.
+       gig_professional   a GIG reader with a verified licence. May mark a
+                          verdict as advice. Sets their own price.
+     Everyone sets their own price, in whole dollars, and is paid through
+     the GIG system on both 8K10Q and Warrant Wire. The house take on a
+     verdict is flat ($50) and lives in the pay worker, not here.
+     ============================================================ */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN level TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN price INTEGER").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN licence TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN phone TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN validated TEXT").run(); } catch (e) {}
+  /* his additions: a background separate from the bio; where they are from,
+     with "nomad" as an honest answer; and where they actually are, read off
+     the connection every time they sign in — never typed */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN background TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN origin TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN nomad INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN seen_from TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN seen_at TEXT").run(); } catch (e) {}
+  /* anyone without a level yet: the house is the founder, guests are amateurs */
+  await env.DB.prepare("UPDATE w_writers SET level = CASE WHEN kind='house' THEN 'founder' ELSE 'gig_amateur' END WHERE level IS NULL").run();
+  await env.DB.prepare("UPDATE w_writers SET price = CASE WHEN level='founder' THEN 200 ELSE 50 END WHERE price IS NULL").run();
+  /* the authenticator: a secret per writer, on or off */
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN totp_secret TEXT").run(); } catch (e) {}
+  try { await env.DB.prepare("ALTER TABLE w_writers ADD COLUMN totp_on INTEGER DEFAULT 0").run(); } catch (e) {}
+  /* password resets: who asked, when, and the one-time link. Kept so the
+     founder can see requests and hand out the link himself while the worker
+     has no email binding. */
+  await env.DB.prepare(
+    `CREATE TABLE IF NOT EXISTS w_resets (
+       id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, token TEXT, ip TEXT,
+       asked TEXT DEFAULT (datetime('now')), expires TEXT, used TEXT, sent INTEGER DEFAULT 0)`).run();
   await env.DB.prepare(
     `CREATE TABLE IF NOT EXISTS w_verdict_history (
        id INTEGER PRIMARY KEY AUTOINCREMENT, verdict_id INTEGER, ticker TEXT, author TEXT,
@@ -142,8 +179,10 @@ const checkPw = async (pw, stored) => {
 const cookie = req => (/(?:^|;\s*)tswrite=([a-z0-9]+)/.exec(req.headers.get('cookie') || '') || [])[1] || '';
 async function who(env, req) {
   const t = cookie(req); if (!t) return null;
+  /* ⚠ ONLY A FULL SESSION SIGNS YOU IN. A set-link token or a code-pending
+     half-session lives in the same table and must never pass as one. */
   const s = await env.DB.prepare(
-    "SELECT email FROM w_sessions WHERE token=? AND expires > datetime('now')").bind(t).first();
+    "SELECT email FROM w_sessions WHERE token=? AND expires > datetime('now') AND token NOT LIKE 'set-%' AND token NOT LIKE 'code-%'").bind(t).first();
   if (!s) return null;
   return env.DB.prepare(
     "SELECT * FROM w_writers WHERE email=? AND status='active'").bind(s.email).first();
@@ -186,6 +225,13 @@ export default {
       if (p === '/write/logout') return new Response(null, { status: 303,
         headers: [['location', '/write/login'], ['set-cookie', 'tswrite=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax']] });
       if (p === '/write/set')    return req.method === 'POST' ? setPost(req, env) : setForm(u, env);
+      if (p === '/write/reset')  return req.method === 'POST' ? resetPost(req, env, SITE) : page('Reset your password', resetForm());
+      if (p === '/write/enrol')  return req.method === 'POST' ? enrolPost(req, env) : page('Enrol as a GIG reader', enrolForm());
+      if (p === '/write/writers') return rosterPage(env, req, SITE);
+      if (p.startsWith('/writing/gig/')) return gigImg(env, p.slice('/writing/gig/'.length));
+      if (p === '/write/2fa')    return req.method === 'POST' ? totpEnrolPost(req, env) : totpEnrolPage(env, req);
+      if (p === '/write/code')   return req.method === 'POST' ? totpLoginPost(req, env) : page('Your code', codeForm());
+      if (p === '/write/resets') return resetsPage(env, req, SITE);
       if (p === '/write/verdict') return verdictDesk(env, req, u);
       if (p === '/write')        return desk(env, req);
 
@@ -263,7 +309,89 @@ async function api(action, req, env, u, SITE) {
      open CORS header on this one route and no other. */
   if (action === 'verdicts') return verdictsPublic(env, u);
 
+  /* ⚠ THE AUTH CHECK. Answers whether this browser is signed in, and as whom.
+     Same-origin only — it reflects the cookie, so no CORS header, ever. A
+     page uses it to decide whether to show "write your verdict" or "sign in". */
+  if (action === 'whoami') return json(me
+    ? { ok: true, signed_in: true, email: me.email, name: me.name, kind: me.kind,
+        founder: me.kind === 'house', role: me.role || null,
+        level: levelOf(me), level_label: LEVELS[levelOf(me)].label, price: me.price || null,
+        may_advise: LEVELS[levelOf(me)].advice, authenticator: !!me.totp_on, status: me.status }
+    : { ok: true, signed_in: false });
+
+  /* ⚠ THE ONE DOOR THAT IS NOT THE APP. Turns the authenticator off for a
+     writer who lost the phone. The founder does it for a writer while signed
+     in; the master key does it for anyone, including the founder himself. */
+  if (action === '2fa-off') {
+    const byKey = u.searchParams.get('key') && u.searchParams.get('key') === env.LOG_KEY;
+    if (!byKey && !(me && me.kind === 'house')) return json({ ok: false, error: 'unauthorized' }, 401);
+    const email = String(u.searchParams.get('email') || (req.method === 'POST' ? (await req.json().catch(() => ({}))).email : '') || '').trim().toLowerCase();
+    if (!email) return json({ ok: false, error: 'whose?' }, 400);
+    await env.DB.prepare('UPDATE w_writers SET totp_on=0, totp_secret=NULL WHERE email=?').bind(email).run();
+    await env.DB.prepare('DELETE FROM w_sessions WHERE email=?').bind(email).run();
+    return json({ ok: true, email, note: 'Authenticator off and every session ended. They sign in with the password and set it up again at /write/2fa.' });
+  }
+
   if (!me) return json({ ok: false, error: 'sign in first' }, 401);
+
+  /* ⚠ LEVELS ARE SET BY THE FOUNDER AND NOBODY ELSE. gig_professional means
+     the founder has seen the licence; the number goes on the record. */
+  if (action === 'level' && req.method === 'POST') {
+    if (levelOf(me) !== 'founder') return json({ ok: false, error: 'the founder does this' }, 403);
+    const b = await req.json().catch(() => ({}));
+    const email = String(b.email || '').trim().toLowerCase();
+    if (!LEVELS[b.level]) return json({ ok: false, error: 'level must be one of ' + Object.keys(LEVELS).join(', ') }, 400);
+    const r = await env.DB.prepare('UPDATE w_writers SET level=?, licence=COALESCE(?, licence), kind=? WHERE email=?')
+      .bind(b.level, b.licence ? String(b.licence).slice(0, 120) : null, b.level === 'founder' || b.level === 'writer' ? 'house' : 'guest', email).run();
+    return json({ ok: !!(r.meta && r.meta.changes), email, level: b.level, label: LEVELS[b.level].label });
+  }
+  /* everyone sets their own price, in whole dollars */
+  if (action === 'price' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const p = Math.round(Number(b.price));
+    if (!(p >= 1 && p <= 5000)) return json({ ok: false, error: 'a price in whole dollars, 1 to 5000' }, 400);
+    await env.DB.prepare('UPDATE w_writers SET price=? WHERE email=?').bind(p, me.email).run();
+    return json({ ok: true, price: p, note: 'Your price for a verdict is $' + p + '. The house takes a flat $50 of each one sold.' });
+  }
+  /* the founder's roster: every writer, level and price */
+  if (action === 'writers') {
+    if (levelOf(me) !== 'founder') return json({ ok: false, error: 'the founder does this' }, 403);
+    const r = await env.DB.prepare('SELECT email, name, phone, city, level, price, licence, status, validated, totp_on, created FROM w_writers ORDER BY created').all();
+    return json({ ok: true, levels: LEVELS, writers: (r.results || []).map(w => ({ ...w, level: levelOf(w), authenticator: !!w.totp_on, totp_on: undefined })) });
+  }
+  /* ⚠ VALIDATION IS THE FOUNDER'S ACT, on the record with the date. It turns
+     a pending enrolment into a writer at the level he chooses, and hands back
+     the one-time link for them to choose a password. */
+  if (action === 'validate' && req.method === 'POST') {
+    if (levelOf(me) !== 'founder') return json({ ok: false, error: 'the founder does this' }, 403);
+    const b = await req.json().catch(() => ({}));
+    const email = String(b.email || '').trim().toLowerCase();
+    const level = LEVELS[b.level] ? b.level : 'gig_amateur';
+    const w = await env.DB.prepare('SELECT email FROM w_writers WHERE email=?').bind(email).first();
+    if (!w) return json({ ok: false, error: 'no such enrolment' }, 404);
+    await env.DB.prepare(`UPDATE w_writers SET status='active', level=?, kind=?, validated=datetime('now'),
+       role=? WHERE email=?`).bind(level, level === 'founder' || level === 'writer' ? 'house' : 'guest', LEVELS[level].label, email).run();
+    const link = await makeReset(env, email, SITE, req, 24 * 7);
+    return json({ ok: true, email, level, label: LEVELS[level].label, link, note: 'Validated. Send them this link; it works once, for seven days.' });
+  }
+  if (action === 'decline' && req.method === 'POST') {
+    if (levelOf(me) !== 'founder') return json({ ok: false, error: 'the founder does this' }, 403);
+    const b = await req.json().catch(() => ({}));
+    await env.DB.prepare("UPDATE w_writers SET status='declined' WHERE email=? AND status<>'active'").bind(String(b.email || '').toLowerCase()).run();
+    return json({ ok: true });
+  }
+
+  /* the founder hands out a reset link to any writer — by phone, by text,
+     by whatever reaches them — without touching their password */
+  if (action === 'resetlink' && req.method === 'POST') {
+    if (me.kind !== 'house') return json({ ok: false, error: 'the editor does this' }, 403);
+    const b = await req.json().catch(() => ({}));
+    const email = String(b.email || '').trim().toLowerCase();
+    const w = await env.DB.prepare("SELECT email FROM w_writers WHERE email=? AND status='active'").bind(email).first();
+    if (!w) return json({ ok: false, error: 'no active writer with that email' }, 404);
+    const link = await makeReset(env, email, SITE, req, 24);
+    return json({ ok: true, email, link, expires_in: '24 hours', note: 'One use. Give it to them yourself.' });
+  }
 
   if (action === 'verdict') return req.method === 'POST' ? verdictSave(req, env, me) : verdictMine(env, me, u);
 
@@ -383,8 +511,16 @@ async function api(action, req, env, u, SITE) {
    ============================================================ */
 const tick = s => String(s || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12);
 
+const LEVELS = {
+  founder:          { label: 'founder',                   publishes: true,  advice: false, sets_price: true },
+  writer:           { label: 'Warrant Wire writer',       publishes: true,  advice: false, sets_price: true },
+  gig_amateur:      { label: 'GIG reader',                publishes: true,  advice: false, sets_price: true },
+  gig_professional: { label: 'GIG reader · licensed',     publishes: true,  advice: true,  sets_price: true }
+};
+const levelOf = w => LEVELS[w && w.level] ? w.level : (w && w.kind === 'house' ? 'founder' : 'gig_amateur');
+
 function verdictShape(r) {
-  return { name: r.name, title: r.title || null, kind: r.kind,
+  return { name: r.name, title: r.title || null, kind: r.kind, level: r.level || null,
     advice: !!r.advice, price: r.price || null,
     verdict: r.verdict || '', notes: r.notes || '',
     written: r.written ? r.written.replace(' ', 'T') + 'Z' : null,
@@ -424,11 +560,13 @@ async function verdictSave(req, env, me) {
   if (!t) return json({ ok: false, error: 'a ticker, please' }, 400);
   if (text.length < 20) return json({ ok: false, error: 'the verdict itself — at least a sentence' }, 400);
 
-  /* ⚠ ADVICE IS A WORD ONLY A LICENSED, REGISTERED PROFESSIONAL MAY USE, and
-     the editor marks them by putting "licensed" in their role. A writer cannot
-     grant it to himself. */
-  const advice = /licensed/i.test(me.role || '') ? 1 : 0;
-  const title = me.kind === 'house' ? 'founder' : (me.role || 'reader');
+  /* ⚠ ADVICE IS A WORD ONLY A GIG PROFESSIONAL MAY USE — a level the founder
+     sets after checking the licence. A writer cannot grant it to himself, and
+     even a professional has to choose it per verdict. */
+  const lv = levelOf(me);
+  const advice = LEVELS[lv].advice && b.advice === true ? 1 : 0;
+  const title = LEVELS[lv].label;
+  const price = LEVELS[lv].sets_price ? (me.price || null) : null;
 
   const had = await env.DB.prepare('SELECT * FROM w_verdicts WHERE ticker=? AND author=?').bind(t, me.email).first();
   if (had) {
@@ -437,14 +575,14 @@ async function verdictSave(req, env, me) {
       `INSERT INTO w_verdict_history (verdict_id, ticker, author, verdict, notes, written, revised)
        VALUES (?,?,?,?,?,?,?)`).bind(had.id, t, me.email, had.verdict, had.notes, had.written, had.revised).run();
     await env.DB.prepare(
-      `UPDATE w_verdicts SET company=COALESCE(NULLIF(?, ''), company), name=?, title=?, advice=?,
+      `UPDATE w_verdicts SET company=COALESCE(NULLIF(?, ''), company), name=?, title=?, level=?, price=?, advice=?,
          verdict=?, notes=?, status='published', revised=datetime('now') WHERE id=?`)
-      .bind(company, me.name || me.email, title, advice, text, notes, had.id).run();
+      .bind(company, me.name || me.email, title, lv, price, advice, text, notes, had.id).run();
   } else {
     await env.DB.prepare(
-      `INSERT INTO w_verdicts (ticker, company, author, name, title, kind, advice, verdict, notes)
-       VALUES (?,?,?,?,?,?,?,?,?)`)
-      .bind(t, company || null, me.email, me.name || me.email, title, me.kind, advice, text, notes).run();
+      `INSERT INTO w_verdicts (ticker, company, author, name, title, kind, level, price, advice, verdict, notes)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+      .bind(t, company || null, me.email, me.name || me.email, title, me.kind, lv, price, advice, text, notes).run();
   }
   const row = await env.DB.prepare('SELECT * FROM w_verdicts WHERE ticker=? AND author=?').bind(t, me.email).first();
   return json({ ok: true, ticker: t, mine: verdictShape(row),
@@ -495,7 +633,7 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
 <main><div class="wrap">
   <div class="bar"><b>Write a verdict</b>
     <a href="/write">Pieces</a>
-    <span class="who">${esc(me.name || me.email)} · ${me.kind === 'house' ? 'founder' : esc(me.role || 'reader')} · <a href="/write/logout">sign out</a></span>
+    <span class="who">${esc(me.name || me.email)} · ${esc(LEVELS[levelOf(me)].label)} · $${esc(me.price || 0)} a verdict · <a href="/write/logout">sign out</a></span>
   </div>
 
   <div class="finder">
@@ -518,6 +656,12 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
       <p class="count" id="vc">0</p>
       <label for="n">Notes &mdash; optional, as long as you like</label>
       <textarea id="n" class="notes" maxlength="12000" placeholder="The reasoning, the filings you read, anything the sentence leaves out."></textarea>
+      ${LEVELS[levelOf(me)].advice
+        ? '<label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font:14px var(--sans);color:var(--ink2)"><input type="checkbox" id="adv"> Mark this verdict as <b>advice</b> — under my licence, ' + esc(me.licence || 'on file') + '</label>'
+        : '<p class="fine">Your level is <b>' + esc(LEVELS[levelOf(me)].label) + '</b>: every verdict is an opinion, not advice.</p>'}
+      <label for="pr">Your price for a verdict, in dollars</label>
+      <input id="pr" type="number" min="1" max="5000" value="${esc(me.price || 50)}" style="width:120px;background:#101208;border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:3px;font:14px var(--mono)">
+      <button type="button" id="prb" style="background:transparent;border:1px solid var(--line);color:var(--ink2);padding:8px 12px;border-radius:3px;font:13px var(--sans);cursor:pointer;margin-left:6px">Save price</button>
       <button class="pub" id="pub" type="button">Publish under my name</button>
       <p class="msg" id="msg"></p>
       <p class="fine" id="was"></p>
@@ -564,17 +708,107 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
   document.getElementById('pub').addEventListener('click', function(){
     var msg = document.getElementById('msg'); msg.className = 'msg'; msg.textContent = 'Publishing…';
     fetch('/api/w/verdict', { method:'POST', headers:{'content-type':'application/json'},
-      body: JSON.stringify({ ticker: q.value, company: company, verdict: document.getElementById('v').value, notes: document.getElementById('n').value }) })
+      body: JSON.stringify({ ticker: q.value, company: company, verdict: document.getElementById('v').value, notes: document.getElementById('n').value,
+                             advice: !!(document.getElementById('adv') && document.getElementById('adv').checked) }) })
     .then(function(r){return r.json()}).then(function(d){
       if (!d.ok) { msg.className = 'msg bad'; msg.textContent = d.error || 'Not saved.'; return; }
       msg.innerHTML = esc(d.note) + ' <a href="' + esc(d.url) + '" target="_blank" style="color:var(--cool)">See it on the company page →</a>';
       open(q.value);
     }).catch(function(){ msg.className = 'msg bad'; msg.textContent = 'Could not reach the desk.'; });
   });
+  document.getElementById('prb').addEventListener('click', function(){
+    var msg = document.getElementById('msg'); msg.className = 'msg';
+    fetch('/api/w/price', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ price: document.getElementById('pr').value }) })
+    .then(function(r){return r.json()}).then(function(d){ msg.className = d.ok ? 'msg' : 'msg bad'; msg.textContent = d.ok ? d.note : (d.error || 'Not saved.'); })
+    .catch(function(){ msg.className = 'msg bad'; msg.textContent = 'Could not reach the desk.'; });
+  });
+  var m0 = document.getElementById('adv'); if (m0) fetch('/api/w/verdict?ticker=' + encodeURIComponent(q.value || '')).then(function(r){return r.json()}).then(function(d){ if (d.mine) m0.checked = !!d.mine.advice; }).catch(function(){});
   if (q.value) open(q.value);
 })();
 </script>
 </body></html>`, { headers: H.html });
+}
+
+/* ============================================================
+   ENROLLING — build 1e. A GIG reader signs up in public: name, email,
+   telephone, city, a picture, and a licence number if they have one. The
+   account is created PENDING — it cannot sign in or write until the founder
+   validates it on the roster (status active, level set, licence checked).
+   The picture goes to the gig-workers-photo bucket with its source recorded
+   as "supplied by the writer at enrolment".
+   ============================================================ */
+/* where the connection is coming from, as Cloudflare sees it — never typed */
+function whereFrom(req) {
+  const c = (req && req.cf) || {};
+  return [c.city, c.region, c.country].filter(Boolean).join(', ') || null;
+}
+
+function enrolForm(msg = '') {
+  return `<h1>Read under your own name</h1>${msg}
+    <p class="quiet" style="margin:0 0 14px">Nobody here is anonymous. A real name, a telephone number that reaches you,
+    and a picture — checked by the founder before you can write. Everything you publish carries your name.</p>
+    <form method="post" action="/write/enrol" class="card" enctype="multipart/form-data">
+      <label>Full legal name<input name="name" required autocomplete="name"></label>
+      <label>Email<input name="email" type="email" required autocomplete="email"></label>
+      <label>Telephone<input name="phone" type="tel" required autocomplete="tel"></label>
+      <label>Where you are from — city and state, or country<input name="origin" required autocomplete="address-level2"></label>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="nomad" value="1" style="width:auto;margin:0"> <span>Nomad — no fixed base. Your current location is read from your connection each time you sign in.</span></label>
+      <label>Your picture (JPEG or PNG)<input name="photo" type="file" accept="image/jpeg,image/png" required></label>
+      <label>Licence, if you hold one — CRD, bar or CPA number and the state<input name="licence" placeholder="leave blank if none"></label>
+      <label>Bio — two or three sentences a buyer reads before trusting you<textarea name="bio" rows="3" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
+      <label>Background — what you did before this, and what you have read<textarea name="background" rows="4" required style="display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--rule);font:inherit;background:#fff"></textarea></label>
+      <label>Your price for a verdict, in dollars<input name="price" type="number" min="1" max="5000" value="50" required></label>
+      <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="agree" required style="width:auto;margin:4px 0 0">
+        <span>I understand that everything I write is an opinion under my own name, not advice — unless the founder has
+        verified my licence and I choose to mark a verdict as advice — and that it is about warrants only.</span></label>
+      <button class="primary">Send to the founder</button>
+    </form>
+    <p class="quiet">You will hear back under your own name. <a href="/write/login">Already enrolled? Sign in.</a></p>`;
+}
+async function enrolPost(req, env) {
+  const f = await req.formData();
+  const g = k => String(f.get(k) || '').trim();
+  const email = g('email').toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return page('Enrol', enrolForm('<p class="err">A working email, please.</p>'));
+  if (g('name').length < 3 || g('phone').length < 7 || !g('origin') || g('bio').length < 20 || g('background').length < 20)
+    return page('Enrol', enrolForm('<p class="err">Name, telephone, where you are from, a bio and a background are all needed.</p>'));
+  const here = whereFrom(req);
+  const had = await env.DB.prepare('SELECT status FROM w_writers WHERE email=?').bind(email).first();
+  if (had && had.status === 'active') return page('Enrol', enrolForm('<p class="err">That email already writes here. <a href="/write/login">Sign in</a> or <a href="/write/reset">reset your password</a>.</p>'));
+
+  /* the picture: sniffed, not trusted; stored with its source */
+  let photo = null;
+  const file = f.get('photo');
+  if (file && typeof file === 'object' && file.size) {
+    if (file.size > 8 * 1024 * 1024) return page('Enrol', enrolForm('<p class="err">The picture is over eight megabytes.</p>'));
+    const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+    const jpg = head[0] === 0xFF && head[1] === 0xD8, png = head[0] === 0x89 && head[1] === 0x50;
+    if (!jpg && !png) return page('Enrol', enrolForm('<p class="err">The picture must be a JPEG or a PNG.</p>'));
+    const bucket = env.GIG || env.IMG;
+    if (bucket) {
+      const key = 'gig/' + slugify(email.replace('@', '-at-')) + '-' + rnd(6) + (jpg ? '.jpg' : '.png');
+      await bucket.put(key, file.stream(), { httpMetadata: { contentType: jpg ? 'image/jpeg' : 'image/png' },
+        customMetadata: { source: 'supplied by the writer at enrolment, ' + today(), email } });
+      photo = (env.GIG ? 'gig:' : '/writing/img/') + key;
+    }
+  }
+  const price = Math.min(5000, Math.max(1, Math.round(Number(g('price')) || 50)));
+  const licence = g('licence').slice(0, 120) || null;
+  await env.DB.prepare(
+    `INSERT INTO w_writers (email, name, city, origin, nomad, bio, background, photo, kind, status, level, price, licence, phone, role, seen_from, seen_at)
+     VALUES (?,?,?,?,?,?,?,?,'guest','pending',?,?,?,?,?,?,datetime('now'))
+     ON CONFLICT(email) DO UPDATE SET name=excluded.name, city=excluded.city, origin=excluded.origin, nomad=excluded.nomad,
+       bio=excluded.bio, background=excluded.background,
+       photo=COALESCE(excluded.photo, photo), level=excluded.level, price=excluded.price,
+       licence=excluded.licence, phone=excluded.phone, status='pending', seen_from=excluded.seen_from, seen_at=datetime('now')`)
+    .bind(email, g('name').slice(0, 120), here, g('origin').slice(0, 120), g('nomad') === '1' ? 1 : 0,
+          g('bio').slice(0, 1200), g('background').slice(0, 4000), photo,
+          licence ? 'gig_professional' : 'gig_amateur', price, licence, g('phone').slice(0, 40),
+          licence ? 'GIG reader · licence to be checked' : 'GIG reader', here).run();
+  return page('Enrol', `<h1>Sent to the founder</h1>
+    <p class="quiet">Thank you, ${esc(g('name'))}. Your enrolment is with Mark Nejmeh. When it is validated you will get a
+    link to choose a password${licence ? ', and your licence will be checked before the professional level is granted' : ''}.
+    Nothing is published until then.</p><p class="quiet"><a href="/">Back to the wire</a></p>`);
 }
 
 /* ============================================================
@@ -587,8 +821,9 @@ function loginForm(msg = '') {
     <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
     <button class="primary">Sign in</button>
   </form>
+  <p class="quiet"><a href="/write/reset">Forgot your password?</a></p>
   <p class="quiet">Writing here is by invitation. If you have been invited and the link has expired,
-  write to <a href="mailto:realroofers@gmail.com">realroofers@gmail.com</a> and another will be sent.</p>`;
+  write to <a href="mailto:research@warrantwire.com">research@warrantwire.com</a> and another will be sent.</p>`;
 }
 async function loginPost(req, env) {
   const f = await req.formData();
@@ -597,6 +832,19 @@ async function loginPost(req, env) {
   if (!w || !w.password) return page('Sign in', loginForm('<p class="err">No login with that email, or the password has not been set yet.</p>'));
   if (!(await checkPw(String(f.get('password') || ''), w.password)))
     return page('Sign in', loginForm('<p class="err">Wrong password.</p>'));
+  /* current location, off the connection, every sign-in */
+  await env.DB.prepare("UPDATE w_writers SET seen_from=?, seen_at=datetime('now') WHERE email=?")
+    .bind(whereFrom(req), email).run().catch(() => {});
+  /* ⚠ THE AUTHENTICATOR, IF IT IS ON. The password gets a five-minute
+     half-session that can do one thing: present a code. Nothing else on the
+     desk accepts it. */
+  if (w.totp_on) {
+    const half = 'code-' + rnd(28);
+    await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)')
+      .bind(half, email, new Date(Date.now() + 5 * 60e3).toISOString()).run();
+    return new Response(null, { status: 303, headers: [['location', '/write/code'],
+      ['set-cookie', `tswrite=${half}; Path=/; Max-Age=300; Secure; HttpOnly; SameSite=Lax`]] });
+  }
   const tok = rnd(28);
   await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)')
     .bind(tok, email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
@@ -628,11 +876,338 @@ async function setPost(req, env) {
   await env.DB.prepare('UPDATE w_writers SET password=?, name=COALESCE(NULLIF(?,\'\'),name) WHERE email=?')
     .bind(await hashPw(p1), String(f.get('name') || '').slice(0, 120), s.email).run();
   await env.DB.prepare('DELETE FROM w_sessions WHERE token=?').bind(t).run();
+  /* ⚠ A NEW PASSWORD SIGNS OUT EVERY OTHER BROWSER. If the reason for the
+     reset was that somebody else had the old one, this is the moment they
+     lose it. The one-time link is marked used, never deleted — it is the
+     record of who reset what, and when. */
+  await env.DB.prepare("DELETE FROM w_sessions WHERE email=? AND token NOT LIKE 'set-%'").bind(s.email).run();
+  await env.DB.prepare("UPDATE w_resets SET used=datetime('now') WHERE token=?").bind(t).run().catch(() => {});
   const tok = rnd(28);
   await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)')
     .bind(tok, s.email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
   return new Response(null, { status: 303, headers: [['location', '/write'],
     ['set-cookie', `tswrite=${tok}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`]] });
+}
+
+/* a GIG reader's picture, out of the gig bucket, with a fixed type */
+async function gigImg(env, key) {
+  if (!env.GIG || !/^gig\/[a-z0-9.-]+\.(jpg|png)$/.test(key)) return new Response('no', { status: 404 });
+  const o = await env.GIG.get(key);
+  if (!o) return new Response('no', { status: 404 });
+  return new Response(o.body, { headers: { 'content-type': key.endsWith('.png') ? 'image/png' : 'image/jpeg',
+    'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff' } });
+}
+
+/* ============================================================
+   THE ROSTER — the founder validates enrolments and sets levels
+   ============================================================ */
+async function rosterPage(env, req, SITE) {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  if (levelOf(me) !== 'founder') return page('Writers', '<h1>The founder does this.</h1>');
+  const r = await env.DB.prepare(
+    `SELECT email, name, phone, city, origin, nomad, bio, background, photo, level, price, licence, status, validated, totp_on, created, seen_from, seen_at
+       FROM w_writers ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END, created DESC`).all();
+  const opts = lv => Object.keys(LEVELS).map(k => `<option value="${k}"${k === lv ? ' selected' : ''}>${esc(LEVELS[k].label)}</option>`).join('');
+  const rows = (r.results || []).map(w => {
+    const lv = levelOf(w);
+    const pic = w.photo ? (w.photo.startsWith('gig:') ? '/writing/gig/' + w.photo.slice(4) : w.photo) : null;
+    return `<tr data-email="${esc(w.email)}">
+      <td>${pic ? `<img src="${esc(pic)}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:50%">` : '<span style="display:inline-block;width:48px;height:48px;border-radius:50%;background:#2a2c22"></span>'}</td>
+      <td><b>${esc(w.name || '')}</b><br><span class="quiet">${esc(w.email)}<br>${esc(w.phone || '')}<br>from ${esc(w.origin || w.city || '?')}${w.nomad ? ' · nomad' : ''}<br>seen ${esc(w.seen_from || 'unknown')}${w.seen_at ? ' · ' + esc(String(w.seen_at).slice(0, 16)) : ''}</span>
+        ${w.bio ? `<div class="quiet" style="margin-top:4px;max-width:44ch"><b>Bio</b> ${esc(w.bio)}</div>` : ''}
+        ${w.background ? `<div class="quiet" style="margin-top:4px;max-width:44ch"><b>Background</b> ${esc(w.background)}</div>` : ''}</td>
+      <td>${w.licence ? '<b>' + esc(w.licence) + '</b>' : '<span class="quiet">none</span>'}</td>
+      <td><select class="lv">${opts(lv)}</select><br><span class="quiet">$${esc(w.price || 0)} a verdict</span></td>
+      <td>${w.status === 'pending' ? '<b style="color:var(--warm)">PENDING</b>' : w.status === 'active' ? 'active' + (w.validated ? '<br><span class="quiet">validated ' + esc(String(w.validated).slice(0, 10)) + '</span>' : '') : esc(w.status)}
+        ${w.totp_on ? '<br><span class="quiet">authenticator on</span>' : ''}</td>
+      <td>${w.status === 'active'
+        ? '<button class="b setlv">Set level</button>'
+        : '<button class="b ok">Validate</button> <button class="b no">Decline</button>'}
+        <div class="out quiet"></div></td></tr>`;
+  }).join('');
+  return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Writers</title>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/wire.css">
+<style>main{padding:22px 0 60px}table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.quiet{color:var(--ink3);font-size:12.5px}.bar{padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.bar a{color:var(--cool);text-decoration:none;margin-right:16px}
+select{background:#101208;border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:3px;font:13px var(--sans)}
+.b{background:var(--cool);border:0;color:#0f1a14;padding:7px 12px;border-radius:3px;font:600 13px var(--sans);cursor:pointer;margin:0 4px 4px 0}
+.b.no{background:transparent;border:1px solid var(--line);color:var(--ink2)}
+.out{font:12px var(--mono);word-break:break-all;margin-top:6px;color:var(--cool)}
+@media(max-width:800px){table,thead,tbody,tr,th,td{display:block}th{display:none}td{padding:4px 0;border:0}tr{padding:12px 0;border-bottom:1px solid var(--line)}}</style></head><body>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>Writers</span></div></div></header>
+<main><div class="wrap">
+  <div class="bar"><a href="/write">Dashboard</a><a href="/write/verdict">Write a verdict</a><a href="/write/resets">Password resets</a><b style="color:var(--ink)">Writers</b></div>
+  <p class="quiet">Enrolments arrive pending. Check the name, the telephone, the picture — and the licence, if one is claimed —
+  then choose the level and validate. That gives you a one-time link to send them for their password. Levels:
+  ${Object.keys(LEVELS).map(k => '<b>' + esc(LEVELS[k].label) + '</b>' + (LEVELS[k].advice ? ' (may mark a verdict as advice)' : '')).join(' · ')}.
+  Enrol page for readers: <a href="${esc(SITE)}/write/enrol" style="color:var(--cool)">${esc(SITE)}/write/enrol</a></p>
+  <table><thead><tr><th></th><th>Who</th><th>Licence</th><th>Level · price</th><th>Status</th><th></th></tr></thead>
+  <tbody>${rows || '<tr><td colspan="6" class="quiet">Nobody yet.</td></tr>'}</tbody></table>
+</div></main>
+<script>
+document.querySelectorAll('tr[data-email]').forEach(function(tr){
+  var email = tr.getAttribute('data-email'), out = tr.querySelector('.out'), lv = tr.querySelector('.lv');
+  function post(a, body){ out.textContent = '…'; return fetch('/api/w/' + a, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) }).then(function(r){ return r.json(); }); }
+  var ok = tr.querySelector('.ok'); if (ok) ok.onclick = function(){ post('validate', { email: email, level: lv.value }).then(function(d){ out.textContent = d.ok ? 'Validated as ' + d.label + '. Send them: ' + d.link : (d.error || 'no'); }); };
+  var no = tr.querySelector('.no'); if (no) no.onclick = function(){ if (confirm('Decline ' + email + '?')) post('decline', { email: email }).then(function(){ tr.remove(); }); };
+  var st = tr.querySelector('.setlv'); if (st) st.onclick = function(){ post('level', { email: email, level: lv.value }).then(function(d){ out.textContent = d.ok ? 'Now ' + d.label + '.' : (d.error || 'no'); }); };
+});
+</script></body></html>`, { headers: H.html });
+}
+
+/* ============================================================
+   THE AUTHENTICATOR — build 1d, 11 Sep 2026
+
+   His call: an authenticator app, the way Stripe does it. Standard TOTP
+   (RFC 6238): a secret per writer, a six-digit code every thirty seconds,
+   HMAC-SHA1 in WebCrypto — no library, nothing leaves this worker.
+
+   /write/2fa     signed in: scan the QR (or type the key) into Google
+                  Authenticator, Authy, 1Password, whatever — enter the code
+                  it shows, and it is on. Enter a code again to turn it off.
+   /write/code    after the password, when it is on: the six digits.
+
+   ⚠ THE PASSWORD ALONE GETS A FIVE-MINUTE HALF-SESSION that can present a
+   code and nothing else. who() refuses it everywhere.
+   ⚠ A CODE IS ACCEPTED FROM THE STEP BEFORE OR AFTER, for clock drift, and
+   the same code cannot be replayed within its window.
+   ⚠ LOSING THE PHONE: the founder turns it off for a writer at
+   /api/w/2fa-off (house). For the founder himself, the master key does it:
+   /api/w/2fa-off?key=LOG_KEY&email=... — the one door that is not the app.
+   ============================================================ */
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32enc(bytes) {
+  let bits = 0, val = 0, out = '';
+  for (const b of bytes) { val = (val << 8) | b; bits += 8;
+    while (bits >= 5) { out += B32[(val >>> (bits - 5)) & 31]; bits -= 5; } }
+  if (bits > 0) out += B32[(val << (5 - bits)) & 31];
+  return out;
+}
+function b32dec(s) {
+  const clean = String(s || '').toUpperCase().replace(/[^A-Z2-7]/g, '');
+  const out = []; let bits = 0, val = 0;
+  for (const c of clean) { val = (val << 5) | B32.indexOf(c); bits += 5;
+    if (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; } }
+  return new Uint8Array(out);
+}
+async function hotp(secretB32, counter) {
+  const key = await crypto.subtle.importKey('raw', b32dec(secretB32), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+  const msg = new Uint8Array(8);
+  for (let i = 7; i >= 0; i--) { msg[i] = counter & 255; counter = Math.floor(counter / 256); }
+  const h = new Uint8Array(await crypto.subtle.sign('HMAC', key, msg));
+  const o = h[19] & 15;
+  const n = ((h[o] & 127) << 24) | (h[o + 1] << 16) | (h[o + 2] << 8) | h[o + 3];
+  return String(n % 1000000).padStart(6, '0');
+}
+/* returns the step that matched, or -1 */
+async function totpMatch(secret, code) {
+  const c = String(code || '').replace(/\D/g, '');
+  if (c.length !== 6) return -1;
+  const step = Math.floor(Date.now() / 30000);
+  for (const d of [0, -1, 1]) if ((await hotp(secret, step + d)) === c) return step + d;
+  return -1;
+}
+const lastStep = new Map();   /* email -> last step accepted; stops a replay in the same window */
+
+function codeForm(msg = '') {
+  return `<h1>Your code</h1>${msg}
+    <form method="post" action="/write/code" class="card">
+      <label>The six digits from your authenticator app
+        <input name="code" inputmode="numeric" pattern="[0-9 ]*" maxlength="7" autocomplete="one-time-code" required autofocus></label>
+      <button class="primary">Sign in</button>
+    </form>
+    <p class="quiet">Lost the phone? Write to <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>.</p>`;
+}
+const halfCookie = req => (/(?:^|;\s*)tswrite=(code-[a-z0-9]+)/.exec(req.headers.get('cookie') || '') || [])[1] || '';
+
+async function totpLoginPost(req, env) {
+  const half = halfCookie(req);
+  const s = half ? await env.DB.prepare(
+    "SELECT email FROM w_sessions WHERE token=? AND expires > datetime('now')").bind(half).first() : null;
+  if (!s) return page('Your code', codeForm('<p class="err">That took too long. Sign in again.</p><p class="quiet"><a href="/write/login">Sign in</a></p>'));
+  const w = await env.DB.prepare('SELECT email, totp_secret, totp_on FROM w_writers WHERE email=?').bind(s.email).first();
+  const f = await req.formData();
+  const step = w && w.totp_on ? await totpMatch(w.totp_secret, f.get('code')) : -1;
+  if (step < 0 || lastStep.get(s.email) === step)
+    return page('Your code', codeForm('<p class="err">That code is not right, or it was already used.</p>'));
+  lastStep.set(s.email, step);
+  await env.DB.prepare('DELETE FROM w_sessions WHERE token=?').bind(half).run();
+  const tok = rnd(28);
+  await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)')
+    .bind(tok, s.email, new Date(Date.now() + 30 * 864e5).toISOString()).run();
+  return new Response(null, { status: 303, headers: [['location', '/write'],
+    ['set-cookie', `tswrite=${tok}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`]] });
+}
+
+async function totpEnrolPage(env, req, msg = '') {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  const w = await env.DB.prepare('SELECT totp_secret, totp_on FROM w_writers WHERE email=?').bind(me.email).first();
+  if (w && w.totp_on) {
+    return page('Authenticator', `<h1>Authenticator is on</h1>${msg}
+      <p class="quiet">Every sign-in asks for the six digits after the password.</p>
+      <form method="post" action="/write/2fa" class="card">
+        <input type="hidden" name="off" value="1">
+        <label>To turn it off, enter the current code<input name="code" inputmode="numeric" maxlength="7" required></label>
+        <button class="primary">Turn it off</button>
+      </form><p class="quiet"><a href="/write">Back to the desk</a></p>`);
+  }
+  /* a fresh secret each time this page is opened before it is confirmed */
+  let secret = w && w.totp_secret;
+  if (!secret) {
+    secret = b32enc(crypto.getRandomValues(new Uint8Array(20)));
+    await env.DB.prepare('UPDATE w_writers SET totp_secret=?, totp_on=0 WHERE email=?').bind(secret, me.email).run();
+  }
+  const uri = 'otpauth://totp/' + encodeURIComponent('Warrant Wire:' + me.email)
+    + '?secret=' + secret + '&issuer=' + encodeURIComponent('Warrant Wire') + '&digits=6&period=30&algorithm=SHA1';
+  return page('Authenticator', `<h1>Set up your authenticator</h1>${msg}
+    <div class="card">
+      <p style="margin:0 0 10px;font-size:14px">Open your authenticator app — the one you use for Stripe works — and scan this:</p>
+      <div id="qr" style="background:#fff;padding:10px;display:inline-block"></div>
+      <p class="quiet" style="margin-top:10px">Or type the key by hand:<br><code style="font-size:13px;word-break:break-all">${esc(secret.replace(/(.{4})/g, '$1 ').trim())}</code></p>
+      <form method="post" action="/write/2fa">
+        <label>Then enter the six digits it shows<input name="code" inputmode="numeric" maxlength="7" autocomplete="one-time-code" required></label>
+        <button class="primary">Turn it on</button>
+      </form>
+    </div>
+    <p class="quiet"><a href="/write">Back to the desk</a></p>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>new QRCode(document.getElementById('qr'), { text: ${JSON.stringify(uri)}, width: 180, height: 180 });</script>`);
+}
+
+async function totpEnrolPost(req, env) {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  const f = await req.formData();
+  const w = await env.DB.prepare('SELECT totp_secret, totp_on FROM w_writers WHERE email=?').bind(me.email).first();
+  const step = w && w.totp_secret ? await totpMatch(w.totp_secret, f.get('code')) : -1;
+  if (step < 0) return totpEnrolPage(env, req, '<p class="err">That code did not match. Check the phone\'s clock is set automatically, and try the next code.</p>');
+  if (f.get('off') === '1') {
+    await env.DB.prepare('UPDATE w_writers SET totp_on=0, totp_secret=NULL WHERE email=?').bind(me.email).run();
+    return page('Authenticator', '<h1>Authenticator is off</h1><p class="quiet">The password alone signs you in again. <a href="/write/2fa">Turn it back on</a> · <a href="/write">Back to the desk</a></p>');
+  }
+  await env.DB.prepare('UPDATE w_writers SET totp_on=1 WHERE email=?').bind(me.email).run();
+  /* every other browser signs out: from here on they need the code too */
+  const t = cookie(req);
+  await env.DB.prepare("DELETE FROM w_sessions WHERE email=? AND token<>? AND token NOT LIKE 'set-%'").bind(me.email, t).run();
+  return page('Authenticator', '<h1>Authenticator is on</h1><p class="quiet">From now on: password, then the six digits. Other browsers have been signed out. <a href="/write">Back to the desk</a></p>');
+}
+
+/* ============================================================
+   RESETTING A PASSWORD — build 1c, 11 Sep 2026
+
+   /write/reset      anyone: type your email. The answer is the same whether
+                     or not the address has a login — so the page cannot be
+                     used to find out who writes here.
+   /write/resets     the founder: every request, with its one-time link, so
+                     he can hand it over himself while there is no email
+                     binding on this worker. The moment EMAIL is bound, the
+                     link goes out by email as well and nothing else changes.
+
+   A link lasts ONE HOUR when asked for by the writer, 24 when issued by the
+   founder, works ONCE, and is the same /write/set flow an invitation uses.
+   One request per address every ten minutes; the rest are ignored quietly.
+   ============================================================ */
+async function makeReset(env, email, SITE, req, hours) {
+  const tok = 'set-' + rnd(28);
+  const exp = new Date(Date.now() + hours * 3600e3).toISOString();
+  await env.DB.prepare('INSERT INTO w_sessions (token,email,expires) VALUES (?,?,?)').bind(tok, email, exp).run();
+  const ip = (req && req.headers.get('cf-connecting-ip')) || '';
+  let sent = 0;
+  const link = SITE + '/write/set?t=' + tok;
+  if (env.EMAIL && env.EMAIL.send) {
+    try {
+      await env.EMAIL.send({
+        from: { email: 'research@warrantwire.com', name: 'Warrant Wire' },
+        to: email, subject: 'Reset your Warrant Wire password',
+        text: `Somebody — we hope you — asked to reset the password for this address.\n\nChoose a new one here. The link works once and for ${hours} hour${hours === 1 ? '' : 's'}:\n${link}\n\nIf it was not you, ignore this and nothing changes.` });
+      sent = 1;
+    } catch (e) {}
+  }
+  await env.DB.prepare('INSERT INTO w_resets (email, token, ip, expires, sent) VALUES (?,?,?,?,?)')
+    .bind(email, tok, ip, exp, sent).run();
+  return link;
+}
+
+function resetForm(msg = '') {
+  return `<h1>Reset your password</h1>${msg}
+    <form method="post" action="/write/reset" class="card">
+      <label>The email you write under<input name="email" type="email" required autocomplete="email"></label>
+      <button class="primary">Send me a link</button>
+    </form>
+    <p class="quiet">The link works once, for an hour. If nothing arrives, the research desk can hand
+    you one: <a href="mailto:research@warrantwire.com">research@warrantwire.com</a>.
+    <br><a href="/write/login">Back to sign in</a></p>`;
+}
+
+async function resetPost(req, env, SITE) {
+  const f = await req.formData();
+  const email = String(f.get('email') || '').trim().toLowerCase();
+  const same = page('Reset your password', `<h1>Check your email</h1>
+    <p class="quiet">If <b>${esc(email)}</b> has a login here, a one-time link is on its way. It works for an hour.
+    If nothing arrives, write to <a href="mailto:research@warrantwire.com">research@warrantwire.com</a> and the
+    desk will hand you one.</p><p class="quiet"><a href="/write/login">Back to sign in</a></p>`);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return same;
+  const w = await env.DB.prepare("SELECT email FROM w_writers WHERE email=? AND status='active'").bind(email).first();
+  if (!w) return same;                                   /* same answer: no enumeration */
+  const recent = await env.DB.prepare(
+    "SELECT id FROM w_resets WHERE email=? AND asked > datetime('now','-10 minutes')").bind(email).first();
+  if (recent) return same;                               /* one every ten minutes, quietly */
+  await makeReset(env, email, SITE, req, 1);
+  return same;
+}
+
+/* the founder's list: who asked, when, and the link to give them */
+async function resetsPage(env, req, SITE) {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  if (me.kind !== 'house') return page('Resets', '<h1>The editor does this.</h1>');
+  const r = await env.DB.prepare(
+    `SELECT r.email, r.asked, r.expires, r.used, r.sent, r.token, w.name
+       FROM w_resets r LEFT JOIN w_writers w ON w.email = r.email
+      ORDER BY r.id DESC LIMIT 100`).all();
+  const rows = (r.results || []).map(x => {
+    const live = !x.used && x.expires > new Date().toISOString();
+    return `<tr><td>${esc(x.name || '')}<br><span class="quiet">${esc(x.email)}</span></td>
+      <td>${esc(x.asked)}</td>
+      <td>${x.used ? 'used ' + esc(x.used) : live ? (x.sent ? 'emailed · ' : '') + 'open until ' + esc(x.expires.slice(0, 16).replace('T', ' ')) : 'expired'}</td>
+      <td>${live ? `<input readonly value="${esc(SITE + '/write/set?t=' + x.token)}" onclick="this.select()" style="width:100%;font:12px monospace">` : ''}</td></tr>`;
+  }).join('');
+  return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Password resets</title>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/wire.css">
+<style>main{padding:22px 0 60px}table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.quiet{color:var(--ink3);font-size:12.5px}.bar{padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.bar a{color:var(--cool);text-decoration:none;margin-right:16px}.mk{margin:18px 0;display:flex;gap:8px;flex-wrap:wrap}
+.mk input{flex:1 1 240px;background:#101208;border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:3px;font:14px var(--sans)}
+.mk button{background:var(--cool);border:0;color:#0f1a14;padding:10px 16px;border-radius:3px;font:600 14px var(--sans);cursor:pointer}
+#out{font:12.5px var(--mono);color:var(--cool);word-break:break-all}
+@media(max-width:700px){table,thead,tbody,tr,th,td{display:block}th{display:none}td{padding:4px 0}tr{padding:10px 0;border-bottom:1px solid var(--line)}td{border:0}}</style></head><body>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>Password resets</span></div></div></header>
+<main><div class="wrap">
+  <div class="bar"><a href="/write">Dashboard</a><a href="/write/verdict">Write a verdict</a><b style="color:var(--ink)">Password resets</b></div>
+  <p class="quiet">Anyone who asks at /write/reset appears here. Until this worker has an email binding, you hand them the link
+  yourself — by text, by phone, however reaches them. A link works once; a new password signs out every other browser.</p>
+  <div class="mk"><input id="em" type="email" placeholder="Issue a link for this writer's email"><button id="mkb" type="button">Make a 24-hour link</button></div>
+  <p id="out"></p>
+  <table><thead><tr><th>Who</th><th>Asked</th><th>State</th><th>The link</th></tr></thead>
+  <tbody>${rows || '<tr><td colspan="4" class="quiet">Nobody has asked yet.</td></tr>'}</tbody></table>
+</div></main>
+<script>
+document.getElementById('mkb').onclick=function(){var em=document.getElementById('em').value.trim();var o=document.getElementById('out');o.textContent='…';
+fetch('/api/w/resetlink',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:em})}).then(function(r){return r.json()}).then(function(d){o.textContent=d.ok?d.link:(d.error||'no');if(d.ok)setTimeout(function(){location.reload()},1500)}).catch(function(){o.textContent='could not reach the desk'})};
+</script></body></html>`, { headers: H.html });
 }
 
 /* ============================================================
@@ -1064,6 +1639,8 @@ textarea{min-height:90px;resize:vertical;line-height:1.55}
 
 <div class="bar"><b>Dashboard</b>
   <a href="/write/verdict"><b>Write a verdict</b></a>
+  ${me.kind === 'house' ? '<a href="/write/writers">Writers</a> <a href="/write/resets">Password resets</a>' : ''}
+  <a href="/write/2fa">${me.totp_on ? 'Authenticator: on' : 'Set up authenticator'}</a>
   <span class="who">${esc(me.name || me.email)} · ${me.kind === 'house' ? 'editor' : 'contributing writer'}</span>
   <a href="/writing" target="_blank">See the site</a>
 
