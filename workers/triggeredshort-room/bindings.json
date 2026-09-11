@@ -1,0 +1,11 @@
+﻿[
+    {
+        "name":  "ADMIN_TOKEN",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "DB",
+        "type":  "d1",
+        "id":  "20071552-9cb5-4788-b9c6-1f4802208870"
+    }
+]

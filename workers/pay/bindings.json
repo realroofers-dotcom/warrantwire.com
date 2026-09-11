@@ -1,0 +1,19 @@
+﻿[
+    {
+        "name":  "LOG_KEY",
+        "type":  "secret_text"
+    },
+    {
+        "name":  "OVERHANG",
+        "type":  "d1",
+        "id":  "d4147f71-0391-43bf-8b22-3bd5ce240e5d"
+    },
+    {
+        "name":  "STRIPE_KEY",
+        "type":  "secret_text"
+    },
+    {
+        "name":  "STRIPE_WH",
+        "type":  "secret_text"
+    }
+]

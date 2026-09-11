@@ -1,0 +1,25 @@
+﻿[
+    {
+        "name":  "DB",
+        "type":  "d1",
+        "id":  "e4023bb5-a247-49fa-8ac0-03cdd8fa9fed"
+    },
+    {
+        "name":  "IMG",
+        "type":  "r2_bucket",
+        "bucket":  "warrantwire-images"
+    },
+    {
+        "name":  "LOG_KEY",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "Site",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "WARRANTWIRE-WRITING",
+        "type":  "d1",
+        "id":  "e4023bb5-a247-49fa-8ac0-03cdd8fa9fed"
+    }
+]

@@ -48,7 +48,7 @@
    as five silent zeroes.
    ============================================================================ */
 
-const BUILD = "verdict-2a · 2026-09-11";
+const BUILD = "verdict-2b · 2026-09-11 · queries against the live schema";
 
 /* ⚠ WHERE THE FACES LIVE. One line to check if the people worker ever moves. */
 const PEOPLE = "https://people.realroofers.workers.dev";
@@ -77,65 +77,77 @@ async function facesHeld() {
 }
 
 /* ⚠ EVERY QUERY IS PARAMETERISED. No caller-supplied string ever reaches SQL. */
+/* ⚠ WRITTEN AGAINST THE LIVE DATABASE, 11 Sep 2026. 1g was written against a
+   local copy and asked for columns that do not exist — `state`, `shares`,
+   `effective`, `exercise_price`, `first_seen` — so every query failed quietly
+   and the worker answered 404 for a company with eleven share counts on file.
+   These are the columns the `overhang` database actually has. */
 const SQL = {
-  issuer: `SELECT id, ticker, name, cik, state FROM issuers
+  issuer: `SELECT id, ticker, name, cik, incorporated AS state FROM issuers
            WHERE UPPER(ticker) = ?1 LIMIT 1`,
 
-  /* the first and last share count on file, and the multiple between them */
-  dilution: `SELECT
-      (SELECT as_of  FROM share_counts WHERE issuer_id=?1 ORDER BY as_of ASC  LIMIT 1) AS from_date,
-      (SELECT shares FROM share_counts WHERE issuer_id=?1 ORDER BY as_of ASC  LIMIT 1) AS from_shares,
-      (SELECT as_of  FROM share_counts WHERE issuer_id=?1 ORDER BY as_of DESC LIMIT 1) AS to_date,
-      (SELECT shares FROM share_counts WHERE issuer_id=?1 ORDER BY as_of DESC LIMIT 1) AS to_shares`,
+  /* ⚠ A HOLDER FROM AFTER THE LAST SPLIT. The first count on file for TOVX is
+     the day BEFORE a 1-for-25 split, and measuring from there says "diluted
+     1.8-fold" when the holder who came in the day after has been diluted 46-
+     fold. The split is its own line; dilution starts where the split left off. */
+  dilution: `WITH cut AS (
+        SELECT COALESCE((SELECT MAX(effective_date) FROM splits WHERE issuer_id=?1), '0000-00-00') AS d)
+      SELECT
+      (SELECT as_of       FROM share_counts, cut WHERE issuer_id=?1 AND as_of >= cut.d ORDER BY as_of ASC  LIMIT 1) AS from_date,
+      (SELECT outstanding FROM share_counts, cut WHERE issuer_id=?1 AND as_of >= cut.d ORDER BY as_of ASC  LIMIT 1) AS from_shares,
+      (SELECT as_of       FROM share_counts WHERE issuer_id=?1 ORDER BY as_of DESC LIMIT 1) AS to_date,
+      (SELECT outstanding FROM share_counts WHERE issuer_id=?1 ORDER BY as_of DESC LIMIT 1) AS to_shares`,
 
   /* ⚠ COMPOUNDED IN SQL, NOT TYPED. Three splits of 35, 10 and 25 are not
      "1-for-70" — they multiply to 1-for-8,750, and the multiplied figure is the
      one a holder actually lived through. */
-  splits: `SELECT COUNT(*) AS n, MIN(effective) AS first_eff, MAX(effective) AS last_eff,
-      EXP(SUM(LN(ratio_from / ratio_to))) AS compounded
+  splits: `SELECT COUNT(*) AS n, MIN(effective_date) AS first_eff, MAX(effective_date) AS last_eff,
+      EXP(SUM(LN(ratio_from * 1.0 / ratio_to))) AS compounded
       FROM splits WHERE issuer_id=?1`,
 
-  overhang: `SELECT as_of, tranche, outstanding, exercise_price
-      FROM warrants WHERE issuer_id=?1 AND status='outstanding'
-      ORDER BY as_of DESC LIMIT 1`,
+  /* every tranche still outstanding, added up; the strike range across them */
+  overhang: `SELECT SUM(outstanding) AS outstanding, COUNT(*) AS tranches,
+      MIN(strike) AS lo, MAX(strike) AS hi, MAX(issued_date) AS as_of
+      FROM warrants WHERE issuer_id=?1 AND outstanding > 0`,
 
   /* ⚠ THE PREMIUM IS MEASURED ON THE DAY THEY EXERCISED, NOT THE DAY THEY
      REPRICED. Repricing is an offer; exercising is the act. On TOVX those are
      consecutive sessions — $0.43 then $0.42 — and measuring the wrong one
-     reports 26% where the documented figure is 29%. Caught in testing. */
-  reprice: `SELECT f.closed, f.warrant_price,
-      (SELECT MAX(warrant_price) FROM financings
-         WHERE issuer_id=?1 AND closed < f.closed AND warrant_price IS NOT NULL) AS was,
-      (SELECT close FROM prices WHERE issuer_id=?1 AND d > f.closed ORDER BY d ASC LIMIT 1) AS close_next,
-      (SELECT d     FROM prices WHERE issuer_id=?1 AND d > f.closed ORDER BY d ASC LIMIT 1) AS d_next
-      FROM financings f
-      WHERE f.issuer_id=?1 AND f.kind='inducement'
-      ORDER BY f.closed DESC LIMIT 1`,
+     reports 26% where the documented figure is 29%. The inducement row carries
+     the close on its own day; the prices table is the fallback. */
+  reprice: `SELECT w.repriced_date AS closed, MIN(w.strike) AS warrant_price,
+      MAX(w.original_strike) AS was,
+      (SELECT close_that_day FROM financings WHERE issuer_id=?1 AND kind='inducement'
+         AND closed_date >= w.repriced_date ORDER BY closed_date ASC LIMIT 1) AS close_next,
+      (SELECT closed_date FROM financings WHERE issuer_id=?1 AND kind='inducement'
+         AND closed_date >= w.repriced_date ORDER BY closed_date ASC LIMIT 1) AS d_next,
+      (SELECT close FROM prices WHERE issuer_id=?1 AND d > w.repriced_date ORDER BY d ASC LIMIT 1) AS px_next,
+      (SELECT d     FROM prices WHERE issuer_id=?1 AND d > w.repriced_date ORDER BY d ASC LIMIT 1) AS px_d
+      FROM warrants w
+      WHERE w.issuer_id=?1 AND w.repriced_date IS NOT NULL AND w.original_strike IS NOT NULL
+      GROUP BY w.repriced_date ORDER BY w.repriced_date DESC LIMIT 1`,
 
+  /* no financials table exists yet; this fails cleanly and prints "not on file" */
   spend: `SELECT period, months, rnd, gna, cash
       FROM financials WHERE issuer_id=?1 ORDER BY period DESC LIMIT 1`,
 
-  repriceCount: `SELECT COUNT(*) AS n FROM financings
-      WHERE issuer_id=?1 AND kind='inducement'`,
+  repriceCount: `SELECT COUNT(DISTINCT repriced_date) AS n FROM warrants
+      WHERE issuer_id=?1 AND repriced_date IS NOT NULL`,
 
-  /* ⚠ THE ROLE COMES FROM THIS DEAL, THE COUNT COMES FROM ALL OF THEM. A first
-     attempt used MAX(role) across every row and returned the alphabetical
-     winner — which on placeholder rows is a dash. What a reader wants is: what
-     did this person do HERE, and where else does the name turn up.
-
-     ⚠ AND THE COUNT IS THE POINT. "Leslie Marlow, issuer counsel" is a name.
-     "Leslie Marlow, issuer counsel — also on 6 other issuers, 250 filings" is
-     the finding, and it is computed, not asserted. */
-  parties: `SELECT p.id, p.name, p.kind, p.firm, p.url,
-        mine.role, mine.first_seen, mine.last_seen,
+  /* ⚠ THE ROLE COMES FROM THIS DEAL, THE COUNT COMES FROM ALL OF THEM. What a
+     reader wants is: what did this person do HERE, and where else does the
+     name turn up. "Leslie Marlow, issuer counsel" is a name. "Leslie Marlow,
+     issuer counsel — also on 6 other issuers, 250 filings" is the finding,
+     and it is computed, not asserted. */
+  parties: `SELECT p.id, p.name, p.kind, p.cik,
+        mine.role, mine.start_date AS first_seen, mine.end_date AS last_seen,
         (SELECT COUNT(DISTINCT issuer_id) FROM roles WHERE party_id=p.id) AS issuers,
-        (SELECT SUM(filings)              FROM roles WHERE party_id=p.id) AS all_filings
+        (SELECT SUM(filing_count)         FROM roles WHERE party_id=p.id) AS all_filings
       FROM parties p
       JOIN roles mine ON mine.party_id = p.id AND mine.issuer_id = ?1
       WHERE mine.role IS NOT NULL AND mine.role <> '—'
       ORDER BY issuers DESC, all_filings DESC`
 };
-
 const num = n => n == null ? null : Number(n).toLocaleString("en-US");
 /* ⚠ CENTS ON A SHARE PRICE, NONE ON A DOLLAR FIGURE. "$872,000.00 of research"
    reads like a machine wrote it; $0.54 without cents is wrong. The rule is the
@@ -197,10 +209,12 @@ function build(rows) {
   /* ---- overhang ---- */
   const w = rows.overhang;
   if (ok(w) && w.outstanding) {
+    const at = w.lo != null && w.hi != null && w.lo !== w.hi
+      ? `${money(w.lo)} to ${money(w.hi)}` : money(w.lo != null ? w.lo : w.hi);
     lines.push({
       label: "Warrant overhang",
-      value: `${num(w.outstanding)} exercisable at ${money(w.exercise_price)}`,
-      note: `${w.tranche || "outstanding"}, as of ${w.as_of}`
+      value: `${num(w.outstanding)} exercisable at ${at}`,
+      note: `${w.tranches} tranche${w.tranches === 1 ? "" : "s"} outstanding, latest issued ${w.as_of}`
     });
     const dil = rows.dilution;
     if (ok(dil) && dil.to_shares) {
@@ -217,13 +231,17 @@ function build(rows) {
   const r = rows.reprice, rc = rows.repriceCount;
   if (ok(r) && r.warrant_price != null && r.was != null) {
     const bits = [`${money(r.was)} → ${money(r.warrant_price)}`];
+    /* the close on the day they exercised: the inducement row's own figure
+       first, the prices table if that is empty */
+    const close = r.close_next != null ? r.close_next : r.px_next;
+    const closeDay = r.close_next != null ? r.d_next : r.px_d;
     let prem = null;
-    if (r.close_next != null && r.close_next > 0) {
-      prem = (r.warrant_price - r.close_next) / r.close_next * 100;
+    if (close != null && close > 0) {
+      prem = (r.warrant_price - close) / close * 100;
       bits.push(`exercised at ${Math.round(prem)}% above market`);
     }
     lines.push({ label: "Last reprice", value: bits.join(", "),
-      note: `repriced ${r.closed}${r.d_next ? `, stock closed ${money(r.close_next)} on ${r.d_next}` : ""}` });
+      note: `repriced ${r.closed}${closeDay ? `, stock closed ${money(close)} on ${closeDay}` : ""}` });
 
     const n = ok(rc) && rc.n ? rc.n : 1;
     sentences.unshift({ subject: true,
@@ -359,15 +377,21 @@ export default {
        holds a photograph for; a party whose id is on that list gets the
        people worker's address for it, and its recorded source. Nothing else. */
     const faces = await facesHeld();
+    /* the parties table's kinds: attorney, director, officer are people;
+       placement_agent, fund, firm are not. The people worker keys a
+       photograph by person CIK where there is one, else a slug of the name. */
+    const PERSON = /^(attorney|director|officer|person|counsel|individual)$/i;
     const people = (await many(env.OVERHANG, SQL.parties, iss.id)).map(p => {
-      const id = personId(p.name);
-      const held = p.kind === "person" ? faces[id] : null;
+      const isPerson = PERSON.test(p.kind || "");
+      const cik = String(p.cik || "").replace(/\D/g, "").replace(/^0+/, "");
+      const id = cik || personId(p.name);
+      const held = isPerson ? (faces[id] || faces[personId(p.name)]) : null;
       return {
         name: p.name,
-        kind: p.kind || "firm",
-        firm: p.firm || null,
+        kind: isPerson ? "person" : (p.kind || "firm"),
+        firm: null,
         role: p.role,
-        url: p.url || null,
+        url: null,
         photo: held ? `${PEOPLE}/?photo=${encodeURIComponent(id)}` : null,
         photo_source: held ? held.source : null,
         photo_credit: held ? held.source : null,

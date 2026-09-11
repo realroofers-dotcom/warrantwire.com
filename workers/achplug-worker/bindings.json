@@ -1,0 +1,35 @@
+﻿[
+    {
+        "name":  "ADMIN_TOKEN",
+        "type":  "secret_text"
+    },
+    {
+        "name":  "DB",
+        "type":  "d1",
+        "id":  "773b25cc-4671-4efd-a5e8-4df1850f96d5"
+    },
+    {
+        "name":  "EMAIL",
+        "type":  "send_email"
+    },
+    {
+        "name":  "ENC_KEY",
+        "type":  "secret_text"
+    },
+    {
+        "name":  "FROM_EMAIL",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "PAGES_ORIGIN",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "ROUTING_API_KEY",
+        "type":  "secret_text"
+    },
+    {
+        "name":  "SITE",
+        "type":  "plain_text"
+    }
+]

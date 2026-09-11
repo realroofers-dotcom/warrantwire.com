@@ -1,0 +1,20 @@
+﻿[
+    {
+        "name":  "IMG",
+        "type":  "r2_bucket",
+        "bucket":  "triggeredshort-images"
+    },
+    {
+        "name":  "LOG_KEY",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "OVERHANG",
+        "type":  "d1",
+        "id":  "d4147f71-0391-43bf-8b22-3bd5ce240e5d"
+    },
+    {
+        "name":  "SITE",
+        "type":  "plain_text"
+    }
+]

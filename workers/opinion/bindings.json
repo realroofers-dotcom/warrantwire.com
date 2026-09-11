@@ -1,0 +1,19 @@
+﻿[
+    {
+        "name":  "AI",
+        "type":  "ai"
+    },
+    {
+        "name":  "LOG_KEY",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "OVERHANG",
+        "type":  "d1",
+        "id":  "d4147f71-0391-43bf-8b22-3bd5ce240e5d"
+    },
+    {
+        "name":  "PAY",
+        "type":  "plain_text"
+    }
+]

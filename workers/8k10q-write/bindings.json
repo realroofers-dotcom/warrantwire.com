@@ -1,0 +1,25 @@
+﻿[
+    {
+        "name":  "8K10Q-WRITING",
+        "type":  "d1",
+        "id":  "bfb8caed-85b5-4104-a52f-8f3879709e9d"
+    },
+    {
+        "name":  "DB",
+        "type":  "d1",
+        "id":  "bfb8caed-85b5-4104-a52f-8f3879709e9d"
+    },
+    {
+        "name":  "IMG",
+        "type":  "r2_bucket",
+        "bucket":  "8ktenq-images"
+    },
+    {
+        "name":  "LOG_KEY",
+        "type":  "plain_text"
+    },
+    {
+        "name":  "SITE",
+        "type":  "plain_text"
+    }
+]
