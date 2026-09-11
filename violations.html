@@ -24,26 +24,9 @@
 .tab .n{text-align:right;font-family:var(--mono)}
 .oneline{font-size:17px;color:var(--ink);border-left:3px solid var(--hot);padding:6px 0 6px 14px;margin:0 0 16px;max-width:66ch}
 .oneline b{color:var(--hot)}
-/* the letter */
 .letterbox{margin:34px 0 0;padding:26px 0 0;border-top:1px solid var(--line)}
 .letterbox h2{font:700 24px/1.2 var(--serif);margin:0 0 10px}
-.letterbox .form{max-width:620px}
 .letterbox select{flex:1 1 100%;background:#101208;border:1px solid var(--line);color:var(--ink);padding:11px 13px;border-radius:3px;font:14px var(--sans)}
-.lbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:18px 0 12px}
-.lbar .fine{flex:1 1 300px;margin:0}
-.paper{background:#fff;color:#111;font:15px/1.55 Georgia,"Times New Roman",serif;padding:52px 56px;max-width:760px;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
-.paper p{margin:0 0 14px;max-width:none}
-.paper .addr{white-space:pre-line}
-.paper .re{font-weight:700;margin:18px 0}
-.paper .sig{margin-top:40px}
-.paper .sigline{display:inline-block;min-width:280px;border-bottom:1px solid #111;height:34px}
-.paper .small{font-size:12.5px;color:#444}
-@media(max-width:620px){.paper{padding:28px 22px}}
-@media print{
-  body *{visibility:hidden} .paper,.paper *{visibility:visible}
-  .paper{position:absolute;left:0;top:0;width:100%;max-width:none;box-shadow:none;border-radius:0;padding:0.75in 0.9in;font-size:12.5pt}
-  html,body{background:#fff}
-}
 </style>
 </head>
 <body>
@@ -112,24 +95,8 @@
     <form class="form" id="lf" onsubmit="return false">
       <label for="co">The company</label>
       <select id="co" required><option value="">Choose from the list above</option></select>
-      <label for="yn">Your name</label>
-      <input id="yn" placeholder="Full name" autocomplete="name" required>
-      <label for="ya">Your address</label>
-      <textarea id="ya" placeholder="Street&#10;City, State ZIP" rows="3" autocomplete="street-address" required style="min-height:80px"></textarea>
-      <label for="ye">Your email and telephone (optional, for the Commission&rsquo;s reply)</label>
-      <input id="ye" placeholder="email · telephone">
-      <label for="yh">Do you hold the stock?</label>
-      <select id="yh"><option value="hold">I hold shares of this company</option><option value="held">I held shares of this company</option><option value="investor">I am an investor considering this company</option></select>
-      <button type="button" id="draw">Draw the letter</button>
     </form>
-    <div id="letterout" hidden>
-      <div class="lbar">
-        <button type="button" class="wbuy gold" id="print">Print the letter</button>
-        <button type="button" class="wbuy ghost" id="copy">Copy the text</button>
-        <span class="fine">Print to paper, sign it, and send by <b>USPS Certified Mail</b> with return receipt. Keep your copy and the receipt.</span>
-      </div>
-      <article class="paper" id="paper"></article>
-    </div>
+    <div id="letterout"></div>
   </section>
 
 </div></main>
@@ -147,6 +114,7 @@
 </footer></div>
 
 <script src="/wire.js"></script>
+<script src="/letter.js"></script>
 <script>
 (function () {
   "use strict";
@@ -180,6 +148,7 @@
     /* ?t=TICKER pre-selects, so a company page can link straight to its letter */
     var pre = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
     if (pre) list.forEach(function (o, i) { if ((o.ticker || "").toUpperCase() === pre) { sel.value = i; document.getElementById("letter").scrollIntoView(); } });
+    document.dispatchEvent(new Event("wwlist"));
     if (!list.length) { page.innerHTML = '<div class="quiet">No filing has graded F or below yet.</div>'; return; }
     page.innerHTML = '<p class="fine">' + list.length + ' companies, ' + rows.length + ' filings graded F or below, from the ' + (d.rows || []).length + ' worst grades on file. Press a ticker for the company&rsquo;s report.</p>'
       + '<div class="tblwrap"><table class="tab"><thead><tr><th>Company</th><th>Worst grade</th><th style="text-align:right">Filings F or below</th><th>Latest</th></tr></thead><tbody>'
@@ -190,52 +159,18 @@
       + '</tbody></table></div>';
   }).catch(function () { page.innerHTML = '<div class="quiet">The grader is not answering just now.</div>'; });
 
-  /* ---- the letter --------------------------------------------------------
-     ⚠ FACTS FROM THE RECORD, WORDS THE INVESTOR SIGNS. The company, the filing,
-     the date, the accession number, the grade and the score come from the
-     grader. The letter asks the Commission to look; it does not allege. */
+  /* ---- the letter: drawn by letter.js, the same letter every report uses ----- */
   var LIST = [];
-  function today() { return new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); }
-  function draw() {
-    var i = document.getElementById("co").value, o = LIST[+i];
-    var yn = document.getElementById("yn").value.trim(), ya = document.getElementById("ya").value.trim(), ye = document.getElementById("ye").value.trim();
-    var yh = document.getElementById("yh").value;
-    if (!o) { alert("Choose the company first."); return; }
-    if (!yn || !ya) { alert("Your name and address go on the letter — it is sent under your name."); return; }
+  function mountFor() {
+    var o = LIST[+document.getElementById("co").value];
+    var out = document.getElementById("letterout");
+    if (!o) { out.innerHTML = ""; return; }
     var d = o.doc || {};
-    var stand = yh === "hold" ? "I hold shares of " : yh === "held" ? "I have held shares of " : "I am an investor who has considered an investment in ";
-    var gradeWords = d.grade === "WORD SALAD"
-      ? "the lowest grade on the scale, below F — a document that, by the measure, cannot be read"
-      : "a grade of F — a document a reader will have to dig through for the parts that matter";
-    var html = ''
-      + '<p class="addr">' + esc(yn) + '\n' + esc(ya) + (ye ? '\n' + esc(ye) : '') + '</p>'
-      + '<p>' + esc(today()) + '</p>'
-      + '<p class="addr">Office of Investor Education and Advocacy\nU.S. Securities and Exchange Commission\n100 F Street, NE\nWashington, DC 20549</p>'
-      + '<p class="addr">cc: Division of Corporation Finance\nU.S. Securities and Exchange Commission\n100 F Street, NE\nWashington, DC 20549</p>'
-      + '<p class="re">Re: Plain English requirements of Rule 421 (17 CFR 230.421) — ' + esc(o.company) + (o.ticker ? ' (' + esc(o.ticker) + ')' : '') + (d.cik ? ', CIK ' + esc(d.cik) : '') + '</p>'
-      + '<p>Dear Sir or Madam,</p>'
-      + '<p>' + stand + esc(o.company) + (o.ticker ? ' (ticker ' + esc(o.ticker) + ')' : '') + '. I am writing as an individual investor to ask the Commission to review whether the company’s filings meet the plain English requirements of Rule 421 under the Securities Act.</p>'
-      + '<p>Rule 421(b) requires that a prospectus be written so that the information is clear, concise and understandable, and Rule 421(d) requires that the cover page, summary and risk factors be written in plain English — short sentences, everyday language, active voice, and no legal or highly technical terms where plainer words would do. The rule exists so that an investor can read what he is buying.</p>'
-      + '<p>The following filing by ' + esc(o.company) + ' was measured against that standard using published readability measures'
-      + (d.form ? ': <b>Form ' + esc(d.form) + '</b>, filed <b>' + esc(d.filed_on) + '</b>, accession number <b>' + esc(d.accession) + '</b>' : '')
-      + '. It received ' + gradeWords + (d.score != null ? ' (readability score ' + esc(d.score) + (d.words ? ', ' + Number(d.words).toLocaleString() + ' words' : '') + ')' : '') + '.'
-      + (o.n > 1 ? ' In all, <b>' + o.n + '</b> of this company’s filings graded F or below.' : '') + '</p>'
-      + '<p>I am not able to read this filing well enough to understand what it says about my investment, and I do not believe an ordinary investor could. I respectfully ask that the Division of Corporation Finance review the filing against Rule 421 and, if it agrees, ask the company to revise it so that shareholders can read it.</p>'
-      + '<p>The grade is a measurement against the Commission’s own standard, made with a method that is published and can be reproduced. It is not a claim that the company or any person has broken the law; it is a request that the Commission look.</p>'
-      + '<p>Thank you for your attention. I would be grateful for a reply at the address above.</p>'
-      + '<p>Respectfully,</p>'
-      + '<p class="sig"><span class="sigline"></span><br>' + esc(yn) + '</p>'
-      + '<p class="small">Filing on EDGAR: https://www.sec.gov/Archives/edgar/data/' + esc(d.cik || "") + '/' + esc(String(d.accession || "").replace(/-/g, "")) + '/ · Method: https://warrantwire.com/grades.html · Sent by certified mail.</p>';
-    document.getElementById("paper").innerHTML = html;
-    document.getElementById("letterout").hidden = false;
-    document.getElementById("letterout").scrollIntoView({ behavior: "smooth", block: "start" });
+    WWLetter.mount(out, { company: o.company, ticker: o.ticker, cik: d.cik || "", n: o.n,
+      doc: { form: d.form, filed_on: d.filed_on, accession: d.accession, grade: d.grade, score: d.score, words: d.words } });
   }
-  document.getElementById("draw").addEventListener("click", draw);
-  document.getElementById("print").addEventListener("click", function () { window.print(); });
-  document.getElementById("copy").addEventListener("click", function () {
-    var t = document.getElementById("paper").innerText;
-    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { alert("Copied. Paste it into any word processor or email."); });
-  });
+  document.getElementById("co").addEventListener("change", mountFor);
+  document.addEventListener("wwlist", mountFor);
 })();
 </script>
 <script src="/clock.js"></script>

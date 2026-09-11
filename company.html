@@ -29,6 +29,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .r421 .gl .says{font-size:14px;color:var(--ink2)}
 .r421 p{margin:0;font-size:13.5px;color:var(--ink2);max-width:70ch}
 .r421 p b{color:var(--ink)} .r421 a{color:var(--cool)} .r421.bad p b a{color:var(--hot)}
+.r421 .lettertoggle{margin:12px 0 0;border-top:1px solid rgba(198,90,74,.35);padding-top:10px}
+.r421 .lettertoggle summary{cursor:pointer;font-size:14.5px;color:var(--ink2);list-style:none}
+.r421 .lettertoggle summary b{color:var(--hot);font-size:15.5px}
+.r421 .lettertoggle > div{margin-top:12px}
 /* the filings table, for a paid buyer */
 .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .ftab{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -125,6 +129,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
 <script src="/wire.js"></script>
 <script src="/verdict.js"></script>
+<script src="/letter.js"></script>
 <script>
 (function () {
   "use strict";
@@ -278,6 +283,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      potential-violation list. Free on every search — it is a measurement
      against a public rule, and the method is published. */
   var GRADE_ORDER = { "A": 5, "B": 4, "C": 3, "D": 2, "F": 1, "WORD SALAD": 0 };
+  var nameOnPage = "", cikOnPage = "";
   function grade421(ticker) {
     var el = document.getElementById("grade421");
     if (!el) return;
@@ -288,16 +294,23 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         var w = d.worst_document, g = String(w.grade).toUpperCase();
         var bad = (GRADE_ORDER[g] != null ? GRADE_ORDER[g] : 3) <= 1;
         var graded = d.graded || (d.filings && d.filings.length) || 0;
+        var failing = (d.filings || []).filter(function (x) { return /^(F|WORD SALAD)$/i.test(String(x.grade || "")); }).length;
         el.innerHTML = '<div class="r421' + (bad ? ' bad' : '') + '">'
-          + '<span class="k">' + (bad ? '&#9888; Potential Rule 421 violation' : 'Rule 421 &mdash; plain English') + '</span>'
+          + '<span class="k">' + (bad ? '&#9888; Rule 421 violation &mdash; on the list' : 'Rule 421 &mdash; plain English') + '</span>'
           + '<div class="gl"><span class="mark" style="color:' + esc(w.hex || "") + '">' + (w.mark || "") + '</span>'
           + '<b style="color:' + esc(w.hex || "") + '">' + esc(g) + '</b>'
           + '<span class="says">' + esc(w.says || "") + '</span></div>'
           + '<p>Worst filing graded: <b>' + esc(w.form || "") + '</b> of ' + esc(w.filed_on || "") + (graded ? ', of ' + graded + ' graded' : '') + '. '
           + 'Every filing is marked against the SEC&rsquo;s own plain English rule, 17 CFR 230.421 &mdash; the cover, summary and risk factors must be clear, concise and understandable. '
-          + (bad ? '<b>F or below puts a company on <a href="/violations.html">the potential-violation list</a>.</b> <a href="/violations.html?t=' + encodeURIComponent(ticker) + '#letter">Write to the SEC about it &rarr;</a> ' : '')
-          + 'A grade is a measurement against the standard, never a finding that a rule was broken. <a href="/grades.html">How it is graded &rarr;</a></p>'
+          + (bad ? '<b>Based on the rules of the SEC and a review of the clarity by a program built to evaluate it, this company is in violation of Rule 421</b> and is on <a href="/violations.html">the list</a>. ' : '')
+          + '<a href="/grades.html">How it is graded &rarr;</a></p>'
+          + (bad ? '<details class="lettertoggle" open><summary><b>&#9993; Write to the SEC about ' + esc(ticker) + '</b> &mdash; the letter is drawn for this company; print it and send it by certified mail</summary><div id="letter421"></div></details>' : '')
           + '</div>';
+        if (bad && window.WWLetter) {
+          WWLetter.mount(document.getElementById("letter421"), {
+            company: esc(nameOnPage || ticker), ticker: ticker, cik: cikOnPage || "", n: failing,
+            doc: { form: w.form, filed_on: w.filed_on, accession: w.accession, grade: g, score: w.score, words: w.words } });
+        }
       })
       .catch(function () {});
   }
@@ -520,6 +533,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     .then(function (d) {
       var c = d.company || {}, a = d.about || null;
       var tk = (c.ticker || (a && a.ticker) || T).toUpperCase();
+      nameOnPage = c.name || (a && a.company) || tk; cikOnPage = String(c.cik || "");
       var open = !!d.paid || !!SAMPLE[tk];
       var v = WWVerdict.render(d);
 
