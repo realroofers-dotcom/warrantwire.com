@@ -90,6 +90,7 @@ function Deploy-One([string]$n) {
       if ($w.type -eq "d1" -and $w.id) { $live += [pscustomobject]@{ type="d1"; name=$w.name; id=$w.id } }
       elseif ($w.type -eq "r2_bucket" -and $w.bucket) { $live += [pscustomobject]@{ type="r2_bucket"; name=$w.name; bucket_name=$w.bucket } }
       elseif ($w.type -eq "kv_namespace" -and $w.namespace) { $live += [pscustomobject]@{ type="kv_namespace"; name=$w.name; namespace_id=$w.namespace } }
+      elseif ($w.type -eq "send_email") { $live += [pscustomobject]@{ type="send_email"; name=$w.name } }
       # plain_text and secret_text are never added from the file - they carry values
     }
   }
@@ -103,6 +104,17 @@ function Deploy-One([string]$n) {
       # carry every secret forward; sending one without its value is a 400
       "plain_text"    { $keep += @{ type="plain_text"; name=$b.name; text=$b.text } }
       "service"       { $keep += @{ type="service"; name=$b.name; service=$b.service; environment=$b.environment } }
+      "send_email"    { $e = @{ type="send_email"; name=$b.name }; if ($b.destination_address) { $e.destination_address = $b.destination_address }; if ($b.allowed_destination_addresses) { $e.allowed_destination_addresses = $b.allowed_destination_addresses }; $keep += $e }
+      "queue"         { $keep += @{ type="queue"; name=$b.name; queue_name=$b.queue_name } }
+      "durable_object_namespace" { $keep += @{ type="durable_object_namespace"; name=$b.name; class_name=$b.class_name; script_name=$b.script_name } }
+      "analytics_engine" { $keep += @{ type="analytics_engine"; name=$b.name; dataset=$b.dataset } }
+      "ai"            { $keep += @{ type="ai"; name=$b.name } }
+      "browser"       { $keep += @{ type="browser"; name=$b.name } }
+      "secret_text"   { }
+      # ⚠ ANYTHING ELSE IS A HARD STOP. A binding type this tool does not know
+      # would be silently dropped by the deploy - which is what happened to the
+      # wire's EMAIL (send_email) binding on 11 Sep. Refuse rather than drop.
+      default         { throw "deploy of $n refused: live binding '$($b.name)' has type '$($b.type)', which this tool does not know how to carry forward. Add it to Deploy-One before deploying." }
     }
   }
   $meta = @{ main_module = "worker.js"; compatibility_date = "2026-09-01"; bindings = $keep;

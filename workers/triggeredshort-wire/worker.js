@@ -1189,8 +1189,13 @@ async function wireSearch(env, asked, q, request) {
   const pendingWeeks = await walkPending(env);
 
   /* ⚠ THE GATE, ASKED AFTER THE ANSWER IS BUILT AND BEFORE IT IS SENT. The
-     counts, the company and the terms are free; the documents are not. */
-  const gate = await paidFor(env, q, request);
+     counts, the company and the terms are free; the documents are not.
+     ⚠ THE SAMPLE IS OPEN. His call, 11 Sep 2026: TOVX is the worked example
+     on the home page, the company he has read every filing of — the full
+     report, filings included, is free to anyone so the product can be
+     checked before it is bought. */
+  const SAMPLES = ["TOVX"];
+  const gate = SAMPLES.indexOf(tk) > -1 ? { paid: true, how: "the sample" } : await paidFor(env, q, request);
 
   /* ⚠ THE CAP, CHECKED BEFORE ANYTHING IS SERVED AND COUNTED ONLY IF IT IS.
      A refusal costs the buyer nothing, which matters: somebody who hits his
