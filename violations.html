@@ -22,6 +22,28 @@
 .tab .g{font:700 12px var(--mono);letter-spacing:.06em;color:var(--hot);white-space:nowrap}
 .tab .m{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:var(--ink2)}
 .tab .n{text-align:right;font-family:var(--mono)}
+.oneline{font-size:17px;color:var(--ink);border-left:3px solid var(--hot);padding:6px 0 6px 14px;margin:0 0 16px;max-width:66ch}
+.oneline b{color:var(--hot)}
+/* the letter */
+.letterbox{margin:34px 0 0;padding:26px 0 0;border-top:1px solid var(--line)}
+.letterbox h2{font:700 24px/1.2 var(--serif);margin:0 0 10px}
+.letterbox .form{max-width:620px}
+.letterbox select{flex:1 1 100%;background:#101208;border:1px solid var(--line);color:var(--ink);padding:11px 13px;border-radius:3px;font:14px var(--sans)}
+.lbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:18px 0 12px}
+.lbar .fine{flex:1 1 300px;margin:0}
+.paper{background:#fff;color:#111;font:15px/1.55 Georgia,"Times New Roman",serif;padding:52px 56px;max-width:760px;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.paper p{margin:0 0 14px;max-width:none}
+.paper .addr{white-space:pre-line}
+.paper .re{font-weight:700;margin:18px 0}
+.paper .sig{margin-top:40px}
+.paper .sigline{display:inline-block;min-width:280px;border-bottom:1px solid #111;height:34px}
+.paper .small{font-size:12.5px;color:#444}
+@media(max-width:620px){.paper{padding:28px 22px}}
+@media print{
+  body *{visibility:hidden} .paper,.paper *{visibility:visible}
+  .paper{position:absolute;left:0;top:0;width:100%;max-width:none;box-shadow:none;border-radius:0;padding:0.75in 0.9in;font-size:12.5pt}
+  html,body{background:#fff}
+}
 </style>
 </head>
 <body>
@@ -54,11 +76,13 @@
 <main><div class="wrap">
 
   <h1>Potential Rule 421 violations</h1>
-  <p class="lede"><b>The SEC&rsquo;s own plain English rule, 17 CFR 230.421, says a prospectus must be clear, concise
-  and understandable</b> &mdash; and that the cover page, the summary and the risk factors must be in plain English:
-  short sentences, everyday words, no legal jargon. Every filing on the wire is marked against that rule, A to F,
-  with one grade below F for a document that cannot be read at all. This is the list of companies whose filing
-  graded <b>F or below</b>.</p>
+  <p class="oneline"><b>In one line:</b> the SEC requires a company to write its filings so an investor can read them
+  &mdash; Rule 421, 17 CFR 230.421 &mdash; and these companies filed documents that grade F or below against it.</p>
+  <p class="lede">The rule says a prospectus must be <b>clear, concise and understandable</b>, and that the cover page,
+  the summary and the risk factors must be in plain English: short sentences, everyday words, no legal jargon. Every
+  filing on the wire is marked against that rule, A to F, with one grade below F for a document that cannot be read
+  at all. Below the list is a <a href="#letter">letter to the SEC</a> you can draw up for any company on it, print,
+  and send under your own name.</p>
 
   <div class="standing">
     <p><b>A grade is a measurement against the standard, never a finding that a rule was broken.</b> The rule
@@ -71,6 +95,42 @@
   </div>
 
   <div id="page"><div class="quiet">Reading the grades&hellip;</div></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ⚠ THE LETTER. His ask, 11 Sep: a form letter investors can send to
+       the SEC, drawn for the company they pick from the list, printed and
+       mailed — certified mail suggested. Nothing is sent from here. It is
+       the investor's letter, under the investor's name; the page only
+       fills in the facts of the filing and the grade.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="letterbox" id="letter">
+    <h2>Write to the SEC about one of these companies</h2>
+    <p class="pintro">Pick the company. Put in your name and address. The letter is drawn for that company &mdash;
+    its filing, the date, the grade, the rule &mdash; and you print it and mail it. <b>Send it by certified mail</b>,
+    so there is a record it arrived. It is your letter: read it before you sign it, and change anything you do not
+    agree with.</p>
+    <form class="form" id="lf" onsubmit="return false">
+      <label for="co">The company</label>
+      <select id="co" required><option value="">Choose from the list above</option></select>
+      <label for="yn">Your name</label>
+      <input id="yn" placeholder="Full name" autocomplete="name" required>
+      <label for="ya">Your address</label>
+      <textarea id="ya" placeholder="Street&#10;City, State ZIP" rows="3" autocomplete="street-address" required style="min-height:80px"></textarea>
+      <label for="ye">Your email and telephone (optional, for the Commission&rsquo;s reply)</label>
+      <input id="ye" placeholder="email · telephone">
+      <label for="yh">Do you hold the stock?</label>
+      <select id="yh"><option value="hold">I hold shares of this company</option><option value="held">I held shares of this company</option><option value="investor">I am an investor considering this company</option></select>
+      <button type="button" id="draw">Draw the letter</button>
+    </form>
+    <div id="letterout" hidden>
+      <div class="lbar">
+        <button type="button" class="wbuy gold" id="print">Print the letter</button>
+        <button type="button" class="wbuy ghost" id="copy">Copy the text</button>
+        <span class="fine">Print to paper, sign it, and send by <b>USPS Certified Mail</b> with return receipt. Keep your copy and the receipt.</span>
+      </div>
+      <article class="paper" id="paper"></article>
+    </div>
+  </section>
 
 </div></main>
 
@@ -98,13 +158,28 @@
     var by = {};
     rows.forEach(function (x) {
       var k = (x.ticker || x.company || "?").toUpperCase();
-      var o = by[k] || (by[k] = { ticker: x.ticker, company: WW.nameOf(String(x.company || "").replace(/\s*\([^)]*\)\s*$/, "")), n: 0, worst: "F", latest: "", form: "" });
+      /* the grader's company string carries "(TOVX) (CIK 0000894158)" on the end; the name is what is left */
+      var o = by[k] || (by[k] = { ticker: x.ticker, company: String(x.company || "").replace(/(\s*\([^)]*\))+\s*$/, "").trim(), n: 0, worst: "F", latest: "", form: "" });
       o.n++;
       if (String(x.grade).toUpperCase() === "WORD SALAD") o.worst = "WORD SALAD";
       if (!o.latest || x.filed_on > o.latest) { o.latest = x.filed_on; o.form = x.form; }
     });
     var list = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return (b.worst === "WORD SALAD") - (a.worst === "WORD SALAD") || b.n - a.n; });
     document.getElementById("live").textContent = list.length + " companies";
+    /* the letter needs the worst filing itself for each company: accession, form, date, grade, score, CIK */
+    rows.forEach(function (x) {
+      var k = (x.ticker || x.company || "?").toUpperCase(), o = by[k];
+      var cik = (String(x.company || "").match(/CIK\s*0*(\d+)/i) || [])[1] || "";
+      var worse = String(x.grade).toUpperCase() === "WORD SALAD" ? 0 : 1;
+      if (!o.doc || worse < o.doc.rank || (worse === o.doc.rank && x.filed_on > o.doc.filed_on))
+        o.doc = { accession: x.accession, form: x.form, filed_on: x.filed_on, grade: String(x.grade).toUpperCase(), score: x.score, words: x.words, cik: cik, rank: worse };
+    });
+    LIST = list;
+    var sel = document.getElementById("co");
+    list.forEach(function (o, i) { var opt = document.createElement("option"); opt.value = i; opt.textContent = (o.ticker || "—") + " — " + o.company + " (" + o.worst + ")"; sel.appendChild(opt); });
+    /* ?t=TICKER pre-selects, so a company page can link straight to its letter */
+    var pre = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
+    if (pre) list.forEach(function (o, i) { if ((o.ticker || "").toUpperCase() === pre) { sel.value = i; document.getElementById("letter").scrollIntoView(); } });
     if (!list.length) { page.innerHTML = '<div class="quiet">No filing has graded F or below yet.</div>'; return; }
     page.innerHTML = '<p class="fine">' + list.length + ' companies, ' + rows.length + ' filings graded F or below, from the ' + (d.rows || []).length + ' worst grades on file. Press a ticker for the company&rsquo;s report.</p>'
       + '<div class="tblwrap"><table class="tab"><thead><tr><th>Company</th><th>Worst grade</th><th style="text-align:right">Filings F or below</th><th>Latest</th></tr></thead><tbody>'
@@ -114,6 +189,53 @@
         }).join("")
       + '</tbody></table></div>';
   }).catch(function () { page.innerHTML = '<div class="quiet">The grader is not answering just now.</div>'; });
+
+  /* ---- the letter --------------------------------------------------------
+     ⚠ FACTS FROM THE RECORD, WORDS THE INVESTOR SIGNS. The company, the filing,
+     the date, the accession number, the grade and the score come from the
+     grader. The letter asks the Commission to look; it does not allege. */
+  var LIST = [];
+  function today() { return new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); }
+  function draw() {
+    var i = document.getElementById("co").value, o = LIST[+i];
+    var yn = document.getElementById("yn").value.trim(), ya = document.getElementById("ya").value.trim(), ye = document.getElementById("ye").value.trim();
+    var yh = document.getElementById("yh").value;
+    if (!o) { alert("Choose the company first."); return; }
+    if (!yn || !ya) { alert("Your name and address go on the letter — it is sent under your name."); return; }
+    var d = o.doc || {};
+    var stand = yh === "hold" ? "I hold shares of " : yh === "held" ? "I have held shares of " : "I am an investor who has considered an investment in ";
+    var gradeWords = d.grade === "WORD SALAD"
+      ? "the lowest grade on the scale, below F — a document that, by the measure, cannot be read"
+      : "a grade of F — a document a reader will have to dig through for the parts that matter";
+    var html = ''
+      + '<p class="addr">' + esc(yn) + '\n' + esc(ya) + (ye ? '\n' + esc(ye) : '') + '</p>'
+      + '<p>' + esc(today()) + '</p>'
+      + '<p class="addr">Office of Investor Education and Advocacy\nU.S. Securities and Exchange Commission\n100 F Street, NE\nWashington, DC 20549</p>'
+      + '<p class="addr">cc: Division of Corporation Finance\nU.S. Securities and Exchange Commission\n100 F Street, NE\nWashington, DC 20549</p>'
+      + '<p class="re">Re: Plain English requirements of Rule 421 (17 CFR 230.421) — ' + esc(o.company) + (o.ticker ? ' (' + esc(o.ticker) + ')' : '') + (d.cik ? ', CIK ' + esc(d.cik) : '') + '</p>'
+      + '<p>Dear Sir or Madam,</p>'
+      + '<p>' + stand + esc(o.company) + (o.ticker ? ' (ticker ' + esc(o.ticker) + ')' : '') + '. I am writing as an individual investor to ask the Commission to review whether the company’s filings meet the plain English requirements of Rule 421 under the Securities Act.</p>'
+      + '<p>Rule 421(b) requires that a prospectus be written so that the information is clear, concise and understandable, and Rule 421(d) requires that the cover page, summary and risk factors be written in plain English — short sentences, everyday language, active voice, and no legal or highly technical terms where plainer words would do. The rule exists so that an investor can read what he is buying.</p>'
+      + '<p>The following filing by ' + esc(o.company) + ' was measured against that standard using published readability measures'
+      + (d.form ? ': <b>Form ' + esc(d.form) + '</b>, filed <b>' + esc(d.filed_on) + '</b>, accession number <b>' + esc(d.accession) + '</b>' : '')
+      + '. It received ' + gradeWords + (d.score != null ? ' (readability score ' + esc(d.score) + (d.words ? ', ' + Number(d.words).toLocaleString() + ' words' : '') + ')' : '') + '.'
+      + (o.n > 1 ? ' In all, <b>' + o.n + '</b> of this company’s filings graded F or below.' : '') + '</p>'
+      + '<p>I am not able to read this filing well enough to understand what it says about my investment, and I do not believe an ordinary investor could. I respectfully ask that the Division of Corporation Finance review the filing against Rule 421 and, if it agrees, ask the company to revise it so that shareholders can read it.</p>'
+      + '<p>The grade is a measurement against the Commission’s own standard, made with a method that is published and can be reproduced. It is not a claim that the company or any person has broken the law; it is a request that the Commission look.</p>'
+      + '<p>Thank you for your attention. I would be grateful for a reply at the address above.</p>'
+      + '<p>Respectfully,</p>'
+      + '<p class="sig"><span class="sigline"></span><br>' + esc(yn) + '</p>'
+      + '<p class="small">Filing on EDGAR: https://www.sec.gov/Archives/edgar/data/' + esc(d.cik || "") + '/' + esc(String(d.accession || "").replace(/-/g, "")) + '/ · Method: https://warrantwire.com/grades.html · Sent by certified mail.</p>';
+    document.getElementById("paper").innerHTML = html;
+    document.getElementById("letterout").hidden = false;
+    document.getElementById("letterout").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  document.getElementById("draw").addEventListener("click", draw);
+  document.getElementById("print").addEventListener("click", function () { window.print(); });
+  document.getElementById("copy").addEventListener("click", function () {
+    var t = document.getElementById("paper").innerText;
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { alert("Copied. Paste it into any word processor or email."); });
+  });
 })();
 </script>
 <script src="/clock.js"></script>

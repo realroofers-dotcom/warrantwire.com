@@ -295,7 +295,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           + '<span class="says">' + esc(w.says || "") + '</span></div>'
           + '<p>Worst filing graded: <b>' + esc(w.form || "") + '</b> of ' + esc(w.filed_on || "") + (graded ? ', of ' + graded + ' graded' : '') + '. '
           + 'Every filing is marked against the SEC&rsquo;s own plain English rule, 17 CFR 230.421 &mdash; the cover, summary and risk factors must be clear, concise and understandable. '
-          + (bad ? '<b>F or below puts a company on <a href="/violations.html">the potential-violation list</a>.</b> ' : '')
+          + (bad ? '<b>F or below puts a company on <a href="/violations.html">the potential-violation list</a>.</b> <a href="/violations.html?t=' + encodeURIComponent(ticker) + '#letter">Write to the SEC about it &rarr;</a> ' : '')
           + 'A grade is a measurement against the standard, never a finding that a rule was broken. <a href="/grades.html">How it is graded &rarr;</a></p>'
           + '</div>';
       })
