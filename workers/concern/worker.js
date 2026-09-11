@@ -118,7 +118,16 @@ export default {
       const a = q.get("action") || "";
       if (!a) {
         if (q.get("method"))  return json(method(), H);
-        if (q.get("today"))   return json(await today(env, +(q.get("days") || 1)), H);
+        /* ⚠ THE LIST IS THE PRODUCT. His ruling, 11 Sep 2026: the going
+           concern list is $80 a year, 365 days from purchase, sold on Warrant
+           Wire and 8K10Q. Unpaid, the answer is the counts and three tickers.
+           The fact about ONE company (?company=) stays free — it is the
+           urgent warning on the company page. */
+        if (q.get("today")) {
+          const gate = await paidFor(env, q, req);
+          if (gate.paid) return json(await today(env, +(q.get("days") || 1)), H);
+          return json(await veiled(env, +(q.get("days") || 1), gate), H);
+        }
         if (q.get("league"))  return json(await league(env, +(q.get("days") || 365)), H);
         if (q.get("company")) return json(await oneCompany(env, q.get("company")), H);
       }
@@ -383,8 +392,46 @@ function pad10(c) { return String(c).replace(/\D/g, "").padStart(10, "0"); }
 /* ============================================================
    THE FREE LIST
    ============================================================ */
+/* ⚠ ONE FUNCTION DECIDES WHO HAS PAID, the same way the wire does: the owner
+   key, or an email with a live `concern` entitlement at the pay desk. */
+const PAY_DEFAULT = "https://pay.realroofers.workers.dev";
+async function paidFor(env, q, req) {
+  const key = (req && req.headers.get("X-Auth-Key")) || q.get("key") || "";
+  if (key && env.LOG_KEY && key === env.LOG_KEY) return { paid: true, how: "owner key" };
+  const email = String(q.get("email") || "").trim().toLowerCase();
+  if (!email || email.indexOf("@") < 1) return { paid: false, why: "no account on this list" };
+  try {
+    const r = await fetch((env.PAY || PAY_DEFAULT) + "/?me=1&email=" + encodeURIComponent(email));
+    const j = await r.json();
+    if (j && j.has && j.has.concern) return { paid: true, how: "entitlement", email };
+    return { paid: false, why: "nothing on that address yet", email };
+  } catch (e) { return { paid: false, why: "could not reach the payment desk" }; }
+}
+
+/* the free answer: how many, since when, and three names — enough to see the
+   list is real and nothing a subscriber is paying for */
+async function veiled(env, days, gate) {
+  days = Math.max(1, Math.min(365, days || 1));
+  const from = addDays(today_iso(), -days);
+  const c = await env.OVERHANG.prepare(
+    `SELECT COUNT(*) n, COUNT(DISTINCT cik) companies,
+            SUM(CASE WHEN said_by <> 'management' THEN 1 ELSE 0 END) auditor_said_it
+       FROM concern_hits WHERE filed_on >= ?`).bind(from).first();
+  const t = await env.OVERHANG.prepare(
+    `SELECT DISTINCT ticker FROM concern_hits WHERE filed_on >= ? AND ticker IS NOT NULL AND ticker <> ''
+      ORDER BY filed_on DESC LIMIT 3`).bind(from).all();
+  return { ok:true, build: BUILD, since: from, paid: false, why: gate.why,
+    filings: (c && c.n) || 0, companies: (c && c.companies) || 0,
+    auditor_said_it: (c && c.auditor_said_it) || 0,
+    sample: (t.results || []).map(x => x.ticker),
+    price: 80, sku: "concern_year",
+    note: "The list — every company, the form, the date, who said it, and what the shareholders " +
+          "have put in — is $80 a year, 365 days from the day you buy. A single company's going " +
+          "concern record is free on its own page." };
+}
+
 async function today(env, days) {
-  days = Math.max(1, Math.min(30, days || 1));
+  days = Math.max(1, Math.min(365, days || 1));
   const from = addDays(today_iso(), -days);
   const r = await env.OVERHANG.prepare(
     `SELECT h.accession, h.cik, h.ticker, h.company, h.form, h.filed_on, h.said_by,

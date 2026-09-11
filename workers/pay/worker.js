@@ -136,6 +136,14 @@ const SKU = {
                   label:"The Daily Chart — every day for a year",
                   grants:"chart_year", days: 365 },
 
+  /* ---------- THE GOING CONCERN LIST — 11 Sep 2026 ----------
+     His ruling: $80 a year, 365 days from purchase, on Warrant Wire and
+     8K10Q alike (pass &on=k8 to sell it there). One company's going concern
+     record stays free on its page; the LIST is what this buys. */
+  concern_year: { site:"wire", cents: 8000, mode:"payment",
+                  label:"Going concern — every company that said it, for a year",
+                  grants:"concern", days: 365 },
+
   /* ---------- THE VERDICTS — 11 Sep 2026 ----------
      The automatic verdict is included in wire_search. These two are the
      human ones. The founder's is a fixed $200. A reader's is priced by the

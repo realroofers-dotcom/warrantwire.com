@@ -18,6 +18,13 @@
 .samplemark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
   color:var(--cool);border:1px solid var(--cool);border-radius:3px;padding:3px 8px;margin:0 0 12px}
 time{font:400 11.5px var(--mono);color:var(--ink3)}
+/* the urgent warning: red, first, impossible to scroll past */
+.urgent{border:2px solid var(--hot);border-radius:10px;padding:16px 20px;margin:16px 0 0;background:#2b1c18}
+.urgent .k{display:block;font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 6px}
+.urgent .big{font-size:16.5px;line-height:1.5;color:var(--ink);margin:0 0 8px;max-width:none}
+.urgent .big b{color:#ffb3a6}
+.urgent p{margin:0;font-size:13.5px;color:var(--ink2);max-width:70ch}
+.urgent a{color:var(--hot)}
 /* ratings */
 .verdict .lbl .rate{margin-left:auto;letter-spacing:0;text-transform:none}
 .stars{color:var(--warm);font-size:14px;letter-spacing:.06em}
@@ -40,6 +47,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 <div class="navscrim" id="navscrim"></div>
 <nav class="navpanel" id="navpanel" aria-label="Site">
   <a href="/">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/concern.html">Going concern<small>Every company that said it — $80 a year</small></a>
   <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
   <a href="/patterns.html">The patterns<small>What we see, with the formula for each</small></a>
   <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
@@ -80,7 +88,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
 <div class="wrap"><footer>
   <div class="footnav">
-    <a href="/">The wire</a><a href="/rules.html">How the verdict is rendered</a><a href="/patterns.html">The patterns</a>
+    <a href="/">The wire</a><a href="/concern.html">Going concern</a><a href="/rules.html">How the verdict is rendered</a><a href="/patterns.html">The patterns</a>
     <a href="/prices.html">What it costs</a><a href="/readers.html">GIG readers</a><a href="/about.html">Who runs the wire</a>
     <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
   </div>
@@ -100,6 +108,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   "use strict";
   var esc = WW.esc;
   var VERDICT = "https://verdict.realroofers.workers.dev";   /* part two — the hand-built record */
+  var CONCERN = "https://concern.realroofers.workers.dev";   /* going concern: free for one company, an urgent warning */
   var PEOPLE  = "https://people.realroofers.workers.dev";    /* officers and directors, from Form 4 */
 
   /* ⚠ THE SAMPLE IS THE FULL VERDICT, UNLOCKED. His call: the home page gives
@@ -188,6 +197,30 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<button class="wbuy gold" data-sku="wire_search" data-t="' + esc(T) + '">Buy the verdict &mdash; $12</button></div>'
       + '<p class="vgap">Rules version ' + v.version + '. <a href="/rules.html" style="color:var(--cool)">Read how it is rendered</a> before you buy.</p>'
       + '</section>';
+  }
+
+  /* ---- going concern: free for one company, and it is an URGENT WARNING ---
+     His ruling: a search is free in the report, but this is highlighted — the
+     one fact a holder cannot afford to scroll past. */
+  function concern(ticker) {
+    var el = document.getElementById("concern");
+    if (!el) return;
+    fetch(CONCERN + "/?company=" + encodeURIComponent(ticker))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok || !d.times) return;
+        var last = (d.rows || [])[0] || {};
+        var by = last.said_by === "both" ? "the auditor and the company" : last.said_by === "auditor" ? "the auditor" : "the company itself";
+        el.innerHTML = '<div class="urgent" role="alert">'
+          + '<span class="k">&#9888; Urgent &mdash; going concern</span>'
+          + '<p class="big"><b>' + esc(ticker) + ' has said there is substantial doubt it can continue.</b> '
+          + 'Said by ' + by + ' in its ' + esc(last.form || "filing") + ' of ' + esc(last.filed_on || "") + (d.auditor ? ', auditor ' + esc(d.auditor) : '') + '.'
+          + (d.times > 1 ? ' On file ' + d.times + ' times, ' + esc(d.first) + ' to ' + esc(d.latest) + '.' : '') + '</p>'
+          + '<p>A required disclosure, not a finding of wrongdoing &mdash; and the one line in a filing a holder cannot afford to miss. '
+          + 'Every company that has said it is on <a href="/concern.html">the going concern list</a>, $80 a year.</p>'
+          + '</div>';
+      })
+      .catch(function () {});
   }
 
   /* ---- part two, where the hand-built record exists ------------------------ */
@@ -423,6 +456,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + '</div></div></div>' : "";
 
       page.innerHTML = who(c, a, SAMPLE[tk])
+        + '<div id="concern"></div>'
         + row
         + '<div class="verdicts" id="auto">' + autoBox(v, open, a || {}) + '</div>'
         + '<div class="verdicts" id="humans"></div>'
@@ -432,6 +466,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       if (open && !v.none) deep(tk);
       humans(tk, open);
       people(tk);
+      concern(tk);
       WW.clips.reveal();
     })
     .catch(function () {
