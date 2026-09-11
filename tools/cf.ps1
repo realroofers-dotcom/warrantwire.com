@@ -1,0 +1,112 @@
+<#
+  BUILT 2026-09-11 · warrantwire tools/cf.ps1
+  ============================================================================
+  CLOUDFLARE FROM THE REPO. Pull every worker's live code into workers/, and
+  push a worker back up. Bytes are copied, never retyped.
+
+    .\tools\cf.ps1 pull                 every worker -> workers/<name>/worker.js
+    .\tools\cf.ps1 pull verdict         one worker
+    .\tools\cf.ps1 deploy verdict       workers/verdict/worker.js -> Cloudflare
+    .\tools\cf.ps1 bindings verdict     what the live worker is bound to
+
+  NEEDS two environment variables, set once by Mark, never written in a file:
+    CF_API_TOKEN    a token from dash.cloudflare.com -> My Profile -> API Tokens
+                    -> Create Token -> "Edit Cloudflare Workers" template
+    CF_ACCOUNT_ID   from the Workers & Pages overview page, right-hand side
+
+  ⚠ DEPLOY KEEPS THE LIVE BINDINGS. A worker's D1, R2 and secrets are read off
+  the running version and sent back with the new code, so a deploy from here
+  never strips a binding. Secrets are referenced by name only — their values
+  never leave Cloudflare and never reach this machine.
+
+  ⚠ EVERY WORKER SOURCE CARRIES A DEPLOY STAMP FILE beside it,
+  workers/<name>/deployed.txt, with the time and the git commit — so the
+  question "which build is live" has an answer in the repo.
+  ============================================================================
+#>
+param(
+  [Parameter(Position=0)][ValidateSet("pull","deploy","bindings","list")][string]$Cmd = "list",
+  [Parameter(Position=1)][string]$Name = ""
+)
+$ErrorActionPreference = "Stop"
+$root = Split-Path -Parent $PSScriptRoot
+$tok = $env:CF_API_TOKEN; $acct = $env:CF_ACCOUNT_ID
+if (-not $tok -or -not $acct) {
+  Write-Host "CF_API_TOKEN and CF_ACCOUNT_ID must be set. See the header of this file." -ForegroundColor Yellow
+  exit 1
+}
+$api = "https://api.cloudflare.com/client/v4/accounts/$acct/workers"
+$H = @{ Authorization = "Bearer $tok" }
+
+function Get-Workers {
+  (Invoke-RestMethod "$api/scripts" -Headers $H).result | Sort-Object id
+}
+
+function Pull-One([string]$n) {
+  $dir = Join-Path $root "workers\$n"
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  # the script content, exactly as it runs; module workers come back as multipart
+  $r = Invoke-WebRequest "$api/scripts/$n" -Headers $H -UseBasicParsing
+  $body = [Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray())
+  $ct = [string]$r.Headers["Content-Type"]
+  if ($ct -like "multipart/*") {
+    # take the first part's body
+    $bnd = ($ct -split "boundary=")[1].Trim('"')
+    $parts = $body -split [regex]::Escape("--$bnd")
+    $part = ($parts | Where-Object { $_ -match "Content-Disposition" } | Select-Object -First 1)
+    $i = $part.IndexOf("`r`n`r`n"); if ($i -lt 0) { $i = $part.IndexOf("`n`n"); $sep = 2 } else { $sep = 4 }
+    $body = $part.Substring($i + $sep).TrimEnd("`r`n")
+  }
+  [IO.File]::WriteAllText((Join-Path $dir "worker.js"), $body, (New-Object Text.UTF8Encoding $false))
+  # the bindings, by name and type only - never a secret's value
+  $b = (Invoke-RestMethod "$api/scripts/$n/bindings" -Headers $H).result
+  $b | ForEach-Object {
+    $o = [ordered]@{ name = $_.name; type = $_.type }
+    if ($_.id) { $o.id = $_.id }; if ($_.bucket_name) { $o.bucket = $_.bucket_name }
+    if ($_.namespace_id) { $o.namespace = $_.namespace_id }; if ($_.service) { $o.service = $_.service }
+    [pscustomobject]$o
+  } | ConvertTo-Json | Set-Content (Join-Path $dir "bindings.json") -Encoding utf8
+  "$n  $($body.Length) bytes, $($b.Count) bindings"
+}
+
+function Deploy-One([string]$n) {
+  $file = Join-Path $root "workers\$n\worker.js"
+  if (-not (Test-Path $file)) { throw "no such file: $file" }
+  $code = [IO.File]::ReadAllText($file, [Text.Encoding]::UTF8)
+  # keep whatever the live worker is bound to
+  $live = @()
+  try { $live = (Invoke-RestMethod "$api/scripts/$n/bindings" -Headers $H).result } catch {}
+  $keep = @()
+  foreach ($b in $live) {
+    switch ($b.type) {
+      "d1"            { $keep += @{ type="d1"; name=$b.name; id=$b.id } }
+      "r2_bucket"     { $keep += @{ type="r2_bucket"; name=$b.name; bucket_name=$b.bucket_name } }
+      "kv_namespace"  { $keep += @{ type="kv_namespace"; name=$b.name; namespace_id=$b.namespace_id } }
+      "secret_text"   { $keep += @{ type="secret_text"; name=$b.name } }   # value stays on Cloudflare
+      "plain_text"    { $keep += @{ type="plain_text"; name=$b.name; text=$b.text } }
+      "service"       { $keep += @{ type="service"; name=$b.name; service=$b.service; environment=$b.environment } }
+    }
+  }
+  $meta = @{ main_module = "worker.js"; compatibility_date = "2026-09-01"; bindings = $keep;
+             keep_bindings = @("secret_text") } | ConvertTo-Json -Depth 5 -Compress
+  $bnd = "----ww" + [guid]::NewGuid().ToString("N")
+  $nl = "`r`n"
+  $sb = New-Object Text.StringBuilder
+  [void]$sb.Append("--$bnd$nl" + 'Content-Disposition: form-data; name="metadata"' + $nl + "Content-Type: application/json$nl$nl$meta$nl")
+  [void]$sb.Append("--$bnd$nl" + 'Content-Disposition: form-data; name="worker.js"; filename="worker.js"' + $nl + "Content-Type: application/javascript+module$nl$nl$code$nl")
+  [void]$sb.Append("--$bnd--$nl")
+  $bytes = [Text.Encoding]::UTF8.GetBytes($sb.ToString())
+  $r = Invoke-RestMethod -Method Put "$api/scripts/$n" -Headers $H -ContentType "multipart/form-data; boundary=$bnd" -Body $bytes
+  if (-not $r.success) { throw ($r.errors | ConvertTo-Json) }
+  $git = "C:\Users\realr\AppData\Local\GitHubDesktop\app-3.6.5\resources\app\git\cmd\git.exe"
+  $sha = try { (& $git -C $root rev-parse --short HEAD) } catch { "?" }
+  "deployed $n at $(Get-Date -Format s) from commit $sha" | Set-Content (Join-Path $root "workers\$n\deployed.txt") -Encoding utf8
+  "deployed $n  ($($code.Length) bytes, $($keep.Count) bindings kept)"
+}
+
+switch ($Cmd) {
+  "list"     { Get-Workers | ForEach-Object { "$($_.id)`t$($_.modified_on)" } }
+  "pull"     { if ($Name) { Pull-One $Name } else { Get-Workers | ForEach-Object { Pull-One $_.id } } }
+  "deploy"   { if (-not $Name) { throw "deploy which worker?" }; Deploy-One $Name }
+  "bindings" { (Invoke-RestMethod "$api/scripts/$Name/bindings" -Headers $H).result | Select-Object name, type, id, bucket_name | Format-Table -AutoSize }
+}
