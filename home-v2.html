@@ -1,0 +1,257 @@
+<!-- MOCK · 2026-09-12 · warrantwire home-v2 · THE THREE-SECOND HOME PAGE. Not live. index.html is untouched until Mark says so. -->
+<!--
+   THE BRIEF, in his words, 12 Sep: people get to the site and say forget it,
+   too much to read. They should get the idea of what the site does in THREE
+   SECONDS, then the deep information waits underneath. Icons with labels
+   that bring them to buy.
+
+   THREE SECONDS = one line, one picture, one thing to do.
+     the line     Getting screwed in the market? It's in your company's filings. We read them.
+     the picture  FILE SALAD — a filing with the salad greyed out and one clause
+                  circled, with the plain-English translation beside it
+     the thing    the ticker box
+
+   Under that, six doors — each a question a burned shareholder is already
+   asking, each ending at a purchase or the free alert. Then the proof (the
+   live counts), his caveat verbatim, the footer. The 8K10Q rail, the radio
+   and the companion sites are gone from this page; they live in the footer.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warrant Wire — getting screwed in the market? It's in the filings.</title>
+<meta name="description" content="Type your ticker. We read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.wrapn{max-width:1100px;margin:0 auto;padding:0 22px}
+/* the three seconds */
+.three{padding:44px 0 34px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+@media(max-width:860px){.three{grid-template-columns:1fr;gap:26px;padding-top:30px}}
+.three h1{font:700 clamp(30px,4.2vw,46px)/1.08 var(--serif);color:var(--ink);margin:0 0 14px;letter-spacing:-.01em}
+.three h1 em{font-style:normal;color:var(--hot)}
+.three .sub{font-size:17px;color:var(--ink2);margin:0 0 6px;max-width:48ch;line-height:1.55}
+.three .finder{max-width:520px}
+.three .finder input{font-size:17px;padding:14px 16px}
+.three .finder button{font-size:16px;padding:0 22px}
+.three .freenote{font-size:14px;color:var(--ink3)}
+.three .freenote a{color:var(--cool)}
+/* FILE SALAD — the picture that explains the site */
+.salad{background:#f4f1e8;color:#1a1a1a;border-radius:6px;padding:26px 26px 20px;box-shadow:0 14px 40px rgba(0,0,0,.45);position:relative;font:13.5px/1.5 Georgia,"Times New Roman",serif;transform:rotate(-1.2deg)}
+.salad .hdr{font:700 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#6a6a6a;margin:0 0 10px;display:flex;justify-content:space-between}
+.salad p{margin:0 0 9px;color:#333;filter:blur(1.6px);user-select:none}
+.salad p.clear{filter:none;color:#1a1a1a;position:relative;padding:6px 8px;margin:6px -8px 9px;border:2.5px solid var(--hot);border-radius:6px;background:rgba(198,90,74,.07)}
+.salad p.clear b{color:#8d2f22}
+.salad .tag{position:absolute;top:-14px;right:18px;background:var(--hot);color:#160f06;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:6px 10px;border-radius:3px;transform:rotate(2deg);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.trans{margin:14px 0 0;border-left:3px solid var(--hot);padding:2px 0 2px 14px}
+.trans .k{display:block;font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 4px}
+.trans p{margin:0;font-size:15.5px;color:var(--ink);line-height:1.5}
+.trans small{display:block;margin-top:6px;font:400 11.5px var(--mono);color:var(--ink3)}
+/* the six doors */
+.doors{padding:34px 0 10px}
+.doors h2{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.door{display:block;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:22px 20px 20px;background:var(--panel);color:var(--ink);transition:border-color .15s,transform .15s}
+.door:hover{border-color:var(--hot);transform:translateY(-2px)}
+.door svg{width:38px;height:38px;display:block;margin:0 0 14px;stroke:var(--hot);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.door.cool svg{stroke:var(--cool)} .door.warm svg{stroke:var(--warm)}
+.door b{display:block;font:700 19px/1.2 var(--serif);margin:0 0 8px}
+.door span{display:block;font-size:13.5px;color:var(--ink2);line-height:1.5}
+.door i{display:block;margin-top:12px;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hot);font-style:normal}
+.door.cool i{color:var(--cool)} .door.warm i{color:var(--warm)}
+/* the proof */
+.proof{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:26px 0 8px}
+@media(max-width:700px){.proof{grid-template-columns:1fr}}
+.proof div{border-top:2px solid var(--line);padding:12px 0 0}
+.proof b{display:block;font:700 30px/1 var(--mono);color:var(--ink);letter-spacing:-.02em}
+.proof b.hot{color:var(--hot)}
+.proof span{display:block;margin-top:6px;font-size:13.5px;color:var(--ink2)}
+.proof a{color:var(--cool);text-decoration:none;font-size:13px}
+/* the sample line */
+.sampleline{margin:26px 0 0;padding:16px 18px;border:1px solid var(--cool);border-radius:10px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:rgba(111,168,140,.05)}
+.sampleline p{margin:0;font-size:14.5px;color:var(--ink2);flex:1 1 320px}
+.sampleline p b{color:var(--ink)}
+/* the menu, cut to five */
+.five{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:14px}
+.five a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--ink3)}
+.five a:hover{color:var(--ink)}
+.mockflag{position:fixed;left:14px;bottom:14px;z-index:9;background:var(--warm);color:#160f06;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<span class="mockflag">Mock · not live</span>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>We read the filings. All of them.</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">Wire is live</span></span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<main><div class="wrapn">
+
+  <!-- ═══ THE THREE SECONDS ═══ -->
+  <section class="three">
+    <div>
+      <h1>Getting screwed in the market? <em>It&rsquo;s in your company&rsquo;s filings.</em> We read them.</h1>
+      <p class="sub">Every SEC filing, exhibits included, read for the warrant clauses that decide what happens to your shares &mdash; and who is behind them.</p>
+      <div class="finder">
+        <input id="q" type="text" placeholder="YOUR TICKER" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <button id="go" type="button">Read mine</button>
+      </div>
+      <p class="freenote">If there&rsquo;s nothing on your company, it costs nothing. If there is, the whole report is <b style="color:var(--ink)">$12</b> for a year. <a href="/company.html?t=TOVX">See one for free &rarr;</a></p>
+      <p class="five">
+        <a href="/company.html">Search</a><a href="/concern.html">Going concern</a><a href="/patterns.html">The patterns</a><a href="/prices.html">Prices</a><a href="/about.html">Who we are</a>
+      </p>
+    </div>
+
+    <div>
+      <div class="salad" aria-label="A filing, most of it unreadable, one clause circled">
+        <span class="tag">File Salad</span>
+        <div class="hdr"><span>Form 424B5 &middot; Prospectus supplement</span><span>p. S-14</span></div>
+        <p>Subject to the terms and conditions set forth herein and in the Securities Purchase Agreement, the Company shall issue to each Purchaser, severally and not jointly, Common Warrants to purchase up to an aggregate number of shares of Common Stock equal to 100% of the shares of Common Stock (including the Pre-Funded Warrant Shares) purchased by such Purchaser hereunder.</p>
+        <p class="clear"><b>If at any time while this Warrant is outstanding the Company sells any Common Stock at a price per share less than the Exercise Price then in effect, the Exercise Price shall be reduced to equal such lower price.</b></p>
+        <p>Notwithstanding the foregoing, the Holder shall not have the right to exercise any portion of this Warrant to the extent that after giving effect to such issuance the Holder, together with its Affiliates and Attribution Parties, would beneficially own in excess of the Beneficial Ownership Limitation, which shall be 4.99% of the number of shares outstanding immediately after giving effect to the issuance.</p>
+        <p>The Company shall not effect any exercise of this Warrant, and a Holder shall not have the right to exercise any portion of this Warrant, pursuant to Section 2 or otherwise, to the extent that the foregoing would result in a Fundamental Transaction as defined herein, subject to the Black Scholes Value calculation set forth in Section 3(e).</p>
+      </div>
+      <div class="trans">
+        <span class="k">In plain English</span>
+        <p>If the company ever sells stock cheaper, every warrant already out gets repriced down to match &mdash; and your stake shrinks to pay for it.</p>
+        <small>A real clause. Theriva Biologics (TOVX), 424B5. The full read is the report.</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE SIX DOORS ═══ -->
+  <section class="doors">
+    <h2>What do you want to know?</h2>
+    <div class="grid">
+      <a class="door" href="/company.html">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="2"/></svg>
+        <b>Is it my stock?</b>
+        <span>Type the ticker. Every warrant filing your company has made since 2021, and the verdict the rules render on them.</span>
+        <i>The report &middot; $12 a year</i>
+      </a>
+      <a class="door" href="/concern.html">
+        <svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18v.5"/></svg>
+        <b>Is it about to fold?</b>
+        <span>Every company whose own auditor or board has said there is substantial doubt it can continue. Updated as it is filed.</span>
+        <i>The going concern list &middot; $80 a year</i>
+      </a>
+      <a class="door warm" href="/patterns.html">
+        <svg viewBox="0 0 24 24"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M4 12h16" stroke-dasharray="2 2"/></svg>
+        <b>Why did I get reverse-split?</b>
+        <span>The pattern: warrants, the price falls, the split, the authorized shares left standing, the next raise. With the formula for each.</span>
+        <i>The patterns &middot; free</i>
+      </a>
+      <a class="door" href="/company.html?t=TOVX#could">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M15 6h6M15 10h6M17 14h4"/></svg>
+        <b>Who&rsquo;s behind it &mdash; and where were they before?</b>
+        <span>Each officer and director, and every other company they filed at: what it was renamed, whether it still trades, what its filings show.</span>
+        <i>What could happen &middot; in the report</i>
+      </a>
+      <a class="door cool" href="/violations.html">
+        <svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 11h8M8 14h5" stroke-dasharray="1.5 1.5"/><path d="M15 15l4 4" /></svg>
+        <b>Why can&rsquo;t I read the filing?</b>
+        <span>Every filing graded against the SEC&rsquo;s own plain-English rule. The worst grade is <b style="display:inline;font:inherit;color:var(--cool)">WORD SALAD</b> &mdash; and the letter to the SEC is drawn for you.</span>
+        <i>File Salad &middot; free</i>
+      </a>
+      <a class="door cool" href="#alerts">
+        <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <b>Warn me when it&rsquo;s mine.</b>
+        <span>Tell us the tickers you hold. The day one of them files warrant paper, you get an email. No charge, ever.</span>
+        <i>The alert &middot; free</i>
+      </a>
+    </div>
+
+    <!-- ═══ THE PROOF ═══ -->
+    <div class="proof">
+      <div><b id="p-filings">&mdash;</b><span>filings carrying warrant terms in the last 7 days. <a href="/company.html">See the five free rows &rarr;</a></span></div>
+      <div><b class="hot" id="p-letters">&mdash;</b><span>letters to the SEC drawn here about <span id="p-cos">&mdash;</span> companies. <a href="/violations.html">Who they were about &rarr;</a></span></div>
+      <div><b id="p-concern">&mdash;</b><span>companies that have said they may not continue. <a href="/concern.html">The list &rarr;</a></span></div>
+    </div>
+
+    <div class="sampleline">
+      <p><b>See a whole report first.</b> Theriva Biologics (TOVX): sixty filings, four repricings, a going concern notice, and four of five insiders with a trail through other companies that no longer trade. Open to anyone.</p>
+      <a class="wbuy ghost" href="/company.html?t=TOVX">Open the sample &rarr;</a>
+    </div>
+  </section>
+
+  <!-- ═══ HIS WORDS, VERBATIM ═══ -->
+  <div class="caveat" style="margin-top:30px"><b>Read this with the list</b>
+    A match is not a finding. However, based on past experience, the results we
+    search for bring suspicion because they have been seen before. You must read
+    everything in the markets today. This language is ordinary and lawful, and
+    most of these deals are unremarkable. A filing appears here because the
+    document is worth reading &mdash;
+    <b class="in">nothing on this page says any company or any person did anything wrong.</b>
+    <span class="sig">Thank you.<br><em>Mark Nejmeh</em>, founder</span>
+  </div>
+
+  <!-- ═══ THE ALERT ═══ -->
+  <div class="band" id="alerts">
+    <div class="alerts">
+      <h2>Be told when it is your company</h2>
+      <p><b style="color:var(--ink)">Tell us the tickers you hold and we will write to you the day one of them files warrant paper. That costs nothing and it always will.</b></p>
+      <div class="form" id="form">
+        <input id="em" type="email" placeholder="your email" autocomplete="email">
+        <input id="tk" type="text" placeholder="tickers you hold — TOVX WGRX IBM">
+        <button type="button" id="signup">Put me on the list</button>
+      </div>
+      <p class="fine" id="fine">No charge and no card. Your tickers are used to decide what to send you and are never published or sold.</p>
+    </div>
+  </div>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/company.html">Search</a><a href="/concern.html">Going concern</a><a href="/patterns.html">The patterns</a><a href="/violations.html">File Salad</a>
+    <a href="/rules.html">How the verdict is rendered</a><a href="/prices.html">What it costs</a><a href="/readers.html">GIG readers</a><a href="/look.html">Look at this</a>
+    <a href="/cost.html">What the raising costs</a><a href="/counter.html">The screw</a><a href="/player.html">On air</a>
+    <a href="https://8k10q.com">8K10Q &mdash; read any filing</a><a href="https://triggeredshort.com">TriggeredShort &mdash; the docket</a>
+    <a href="/about.html">Who runs the wire</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
+  Warrant Wire reads the full text of SEC filings, exhibits included, and records those that carry
+  warrant financing language. Nothing here is investment advice, nothing here is a recommendation to
+  buy or sell any security, and nothing here alleges that anyone broke any law.<br>
+  Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a> &middot;
+  <a href="https://triggeredshort.com/method.html">Method and corrections</a>
+  <p class="stamp">Mock &middot; 2026-09-12 &middot; warrantwire home-v2</p>
+</footer></div>
+
+<script src="/wire.js"></script>
+<script>
+(function () {
+  "use strict";
+  /* the proof: three live numbers, nothing else fetched on this page */
+  fetch(WW.API + "?wire=1&days=7").then(function (r) { return r.json(); }).then(function (d) {
+    document.getElementById("p-filings").textContent = (d.rows || []).length.toLocaleString("en-US");
+  }).catch(function () {});
+  fetch("https://grade.realroofers.workers.dev/?letters=1").then(function (r) { return r.json(); }).then(function (d) {
+    document.getElementById("p-letters").textContent = ((d.total || {}).drawn || 0).toLocaleString("en-US");
+    document.getElementById("p-cos").textContent = ((d.total || {}).companies || 0).toLocaleString("en-US");
+  }).catch(function () {});
+  fetch("https://concern.realroofers.workers.dev/?count=1").then(function (r) { return r.json(); }).then(function (d) {
+    var n = d.companies || d.count || d.total || (d.rows && d.rows.length);
+    if (n) document.getElementById("p-concern").textContent = Number(n).toLocaleString("en-US");
+  }).catch(function () {});
+
+  document.getElementById("signup").addEventListener("click", function () {
+    var em = document.getElementById("em").value.trim(), tk = document.getElementById("tk").value.trim();
+    if (!em || em.indexOf("@") < 1) { document.getElementById("fine").textContent = "An email address, please — that is the only part we need."; return; }
+    document.getElementById("form").innerHTML = '<p class="ok">On the list. We will write before anything costs anything.</p>';
+    document.getElementById("fine").textContent = "Nothing has been charged and no card was asked for.";
+    fetch(WW.API + "?alert=1&email=" + encodeURIComponent(em) + "&tickers=" + encodeURIComponent(tk)).catch(function () {});
+  });
+})();
+</script>
+<script src="/clock.js"></script>
+</body>
+</html>
