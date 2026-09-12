@@ -81,6 +81,17 @@
 .five a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--ink3)}
 .five a:hover{color:var(--ink)}
 .mockflag{position:fixed;left:14px;bottom:14px;z-index:9;background:var(--warm);color:#160f06;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;border-radius:3px}
+/* THE SCREW — the counter, first thing on the page, sized to fit a phone.
+   ⚠ THE FONT SCALES WITH THE SCREEN, and the digits are tabular so the
+   number does not jitter as it ticks. 18 characters at 5.4vw fits 360px. */
+.screw{border-bottom:1px solid var(--line);padding:22px 0 20px;text-align:center}
+.screw .k{display:inline-block;font:700 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--hot);border:1px solid var(--hot);border-radius:3px;padding:4px 9px;margin:0 0 12px}
+.screw .odo{font:700 clamp(26px,5.4vw,60px)/1 var(--mono);color:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:clip;margin:0 0 10px}
+.screw .odo i{font-style:normal;color:var(--hot)}
+.screw p{margin:0 auto;font-size:clamp(14px,1.6vw,17px);color:var(--ink2);max-width:70ch;line-height:1.5}
+.screw p b{color:var(--ink)}
+.screw p a{color:var(--hot);text-decoration:none;font-weight:700;white-space:nowrap}
+.screw small{display:block;margin-top:8px;font:400 11px var(--mono);color:var(--ink3)}
 </style>
 </head>
 <body>
@@ -94,6 +105,15 @@
 </div></div></header>
 
 <main><div class="wrapn">
+
+  <!-- ═══ THE SCREW — first, before anything ═══ -->
+  <section class="screw" aria-live="off">
+    <span class="k">The screw</span>
+    <div class="odo"><i>$</i><span id="odo">13,288,659,808,368</span></div>
+    <p><b>Bagholders lost that much</b> in the <span id="fell">1,359</span> companies that ran heavy warrant paper and fell, <span id="yrs">2016&ndash;2026</span>.
+    <a href="#q" id="checkme">Was some of it yours? Check your stock now &darr;</a></p>
+    <small id="rate">Counting at the decade&rsquo;s average rate. A rate, not a live measurement. <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
+  </section>
 
   <!-- ═══ THE THREE SECONDS ═══ -->
   <section class="three">
@@ -230,6 +250,22 @@
 <script>
 (function () {
   "use strict";
+  /* THE SCREW: the same number and the same rate as /counter.html — what the
+     fallers among the warrant-paper companies lost, ticking at the decade's
+     average rate from the moment the page opens */
+  function commas(n) { return Math.floor(Number(n) || 0).toLocaleString("en-US"); }
+  fetch("https://counter.realroofers.workers.dev/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || !d.ok || !d.warrant) return;
+    var years = Math.max(1, d.to_year - d.from_year);
+    var lost = d.warrant.lost_by_fallers, perSec = lost / (years * 31557600), t0 = Date.now();
+    document.getElementById("fell").textContent = commas(d.warrant.fell);
+    document.getElementById("yrs").textContent = d.from_year + "–" + d.to_year;
+    var odo = document.getElementById("odo");
+    function tick() { odo.textContent = commas(lost + perSec * (Date.now() - t0) / 1000); }
+    tick(); if (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(tick, 200);
+  }).catch(function () {});
+  document.getElementById("checkme").addEventListener("click", function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); });
+
   /* the proof: three live numbers, nothing else fetched on this page */
   fetch(WW.API + "?wire=1&days=7").then(function (r) { return r.json(); }).then(function (d) {
     document.getElementById("p-filings").textContent = (d.rows || []).length.toLocaleString("en-US");
