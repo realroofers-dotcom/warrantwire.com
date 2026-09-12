@@ -68,13 +68,15 @@
      ?method=1                     every parameter, threshold and weight
      ?grade=1&accession=…          the grade, if it has been computed
      ?worst=1[&n=25]               the worst graded so far
+     ?letter=1&ticker=&how=        count a letter to the SEC drawn / printed / copied
+     ?letters=1[&ticker=]          the count — total, by company, by day. THE NEWS.
    PRIVATE
      ?action=grade&accession=…     fetch the document and grade it
      ?action=text                  grade text pasted in the body (POST)
      ?action=batch&n=10            grade the next few ungraded filings
    ========================================================================== */
 
-const BUILD = "grade-1l · 2026-09-10 21:40 ET";
+const BUILD = "grade-1m · 2026-09-12 · the letters are counted";
 const UA = "JobCreation.us Warrant Wire research (research@warrantwire.com)";
 
 /* ============================================================
@@ -353,6 +355,10 @@ export default {
         if (q.get("logo")) return await serveLogo(env, q.get("logo"));
         if (q.get("logos")) return json(await heldLogos(env), H);
         if (q.get("method")) return json(method(), H);
+        /* the letters: count one, or read the count — before ?ticker=, which
+           they carry too */
+        if (q.get("letter"))  return json(await countLetter(env, q, req), H);
+        if (q.get("letters")) return json(await letterCounts(env, q.get("ticker")), H);
         if (q.get("grade"))  return json(await stored(env, q.get("grade")), H);
         if (q.get("ticker")) return json(await profile(env, q.get("ticker")), H);
         if (q.get("worst"))  return json(await worst(env, +(q.get("n") || 25)), H);
@@ -391,6 +397,71 @@ async function setup(env) {
        ticker TEXT, company TEXT, form TEXT, filed_on TEXT,
        score REAL, grade TEXT, words INTEGER, sentences INTEGER,
        detail TEXT, graded TEXT DEFAULT (datetime('now')))`).run();
+
+  /* ⚠ THE LETTERS — grade-1m, 12 Sep 2026. His ask: if many start sending,
+     the letter has power, and the COUNT is the news. Every letter drawn,
+     printed or copied is counted, in total and by company. Nothing about the
+     writer is kept — no name, no address, no email — only a one-day hash of
+     the address it came from, so one person pressing Print five times counts
+     once. The count is what it is: letters drawn on this site, not letters
+     the Commission received. */
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS letters (
+       day TEXT NOT NULL, who TEXT NOT NULL,
+       ticker TEXT NOT NULL, cik TEXT, accession TEXT,
+       how TEXT NOT NULL,                       /* drawn | printed | copied */
+       at TEXT DEFAULT (datetime('now')),
+       PRIMARY KEY (day, who, ticker, how))`).run();
+}
+
+/* count one — public, write-only, deduplicated for the day */
+async function countLetter(env, q, req) {
+  const tk = String(q.get("ticker") || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "").slice(0, 12);
+  const how = String(q.get("how") || "drawn").toLowerCase();
+  if (!tk) return { ok:false, build: BUILD, error:"a ticker, please" };
+  if (["drawn", "printed", "copied"].indexOf(how) < 0) return { ok:false, build: BUILD, error:"how: drawn, printed or copied" };
+  const day = new Date().toISOString().slice(0, 10);
+  const ip = req.headers.get("CF-Connecting-IP") || "";
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(day + "|" + ip + "|" + (req.headers.get("User-Agent") || "")));
+  const who = Array.from(new Uint8Array(buf)).slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join("");
+  await env.OVERHANG.prepare(
+    `INSERT OR IGNORE INTO letters (day, who, ticker, cik, accession, how) VALUES (?,?,?,?,?,?)`)
+    .bind(day, who, tk, String(q.get("cik") || "").replace(/\D/g, "").slice(0, 10) || null,
+          String(q.get("accession") || "").slice(0, 24) || null, how).run();
+  return { ok:true, build: BUILD, counted: { ticker: tk, how, day } };
+}
+
+/* the news: how many, in total and by company */
+async function letterCounts(env, ticker) {
+  const tk = String(ticker || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  const tot = await env.OVERHANG.prepare(
+    `SELECT how, COUNT(*) n, COUNT(DISTINCT ticker) companies, MIN(day) first, MAX(day) last
+       FROM letters GROUP BY how`).all();
+  const by = await env.OVERHANG.prepare(
+    `SELECT ticker, cik,
+            SUM(how='drawn') drawn, SUM(how='printed') printed, SUM(how='copied') copied,
+            MIN(day) first, MAX(day) last
+       FROM letters ${tk ? "WHERE ticker = ?" : ""}
+       GROUP BY ticker ORDER BY printed DESC, drawn DESC LIMIT 200`);
+  const rows = (tk ? await by.bind(tk).all() : await by.all()).results || [];
+  const days = await env.OVERHANG.prepare(
+    `SELECT day, SUM(how='drawn') drawn, SUM(how='printed') printed
+       FROM letters WHERE day >= date('now','-30 days') GROUP BY day ORDER BY day`).all();
+  const t = {}; for (const x of (tot.results || [])) t[x.how] = x;
+  return { ok:true, build: BUILD,
+    total: { drawn: (t.drawn || {}).n || 0, printed: (t.printed || {}).n || 0, copied: (t.copied || {}).n || 0,
+             companies: (t.drawn || {}).companies || 0,
+             since: (t.drawn || {}).first || null, latest: (t.drawn || {}).last || null },
+    by_company: rows,
+    last_30_days: days.results || [],
+    what_it_is:
+      "Letters to the SEC drawn on this site under Rule 421 — drawn is the letter " +
+      "written out with the investor's name on it, printed is the print button " +
+      "pressed, copied is the text copied out. One person, one company, one day " +
+      "counts once.",
+    the_limit:
+      "A count of letters drawn here, not of letters the Commission received. " +
+      "Nothing about any writer is kept." };
 }
 
 function method() {

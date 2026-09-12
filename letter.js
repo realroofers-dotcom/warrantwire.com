@@ -1,4 +1,4 @@
-/* BUILT 2026-09-11 · warrantwire letter.js 1a
+/* BUILT 2026-09-12 · warrantwire letter.js 1b · every letter drawn, printed or copied is counted (the ticker, never the writer)
    ============================================================================
    THE LETTER TO THE SEC — one copy, drawn on the Rule 421 page and on every
    company report that grades F or below.
@@ -75,17 +75,26 @@
       + '<span class="fine">Print it, sign it, and send by <b>USPS Certified Mail</b> with return receipt. Keep your copy and the receipt.</span></div>'
       + '<article class="paper"></article></div>';
     var q = function (c) { return el.querySelector(c); };
+    /* ⚠ THE COUNT IS THE NEWS. Every letter drawn, printed or copied is counted
+       at the grade worker — the ticker and the filing, never the writer. One
+       person, one company, one day counts once; the worker sees to that. */
+    var count = function (how) {
+      var d = f.doc || {};
+      try { fetch("https://grade.realroofers.workers.dev/?letter=1&ticker=" + encodeURIComponent(f.ticker || "") + "&cik=" + encodeURIComponent(f.cik || "") + "&accession=" + encodeURIComponent(d.accession || "") + "&how=" + how, { keepalive: true }).catch(function () {}); } catch (e) {}
+    };
     q(".draw").addEventListener("click", function () {
       var you = { name: q(".yn").value.trim(), address: q(".ya").value.trim(), contact: q(".ye").value.trim(), hold: q(".yh").value };
       if (!you.name || !you.address) { alert("Your name and address go on the letter — it is sent under your name."); return; }
       q(".paper").innerHTML = letter(f, you);
       q(".out").hidden = false;
       q(".out").scrollIntoView({ behavior: "smooth", block: "start" });
+      count("drawn");
     });
-    q(".print").addEventListener("click", function () { window.print(); });
+    q(".print").addEventListener("click", function () { count("printed"); window.print(); });
     q(".copy").addEventListener("click", function () {
       var t = q(".paper").innerText;
       if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { alert("Copied. Paste it into any word processor or email."); });
+      count("copied");
     });
   }
 
