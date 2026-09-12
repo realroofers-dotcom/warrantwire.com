@@ -1,0 +1,114 @@
+<!-- BUILT 2026-09-12 · warrantwire feedback-1a · a page for suggestions. His ask, 12 Sep. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suggestions — Warrant Wire</title>
+<meta name="description" content="Tell the founder what the wire should do, what it got wrong, or what it got right. Every note is read.">
+<link rel="canonical" href="https://warrantwire.com/feedback.html">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.fb{max-width:680px;padding:34px 0 60px}
+.fb h1{font:700 clamp(28px,4.2vw,40px)/1.12 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+.fb .lede{font-size:17px;color:var(--ink2);margin:0 0 24px;line-height:1.6}
+.fb .lede b{color:var(--ink)}
+.fb form{display:grid;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 24px}
+.fb label{display:block;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 6px}
+.fb label span{display:block;font:400 12px var(--sans);letter-spacing:0;text-transform:none;color:var(--ink3);margin-top:2px}
+.fb input,.fb textarea,.fb select{width:100%;background:#101208;border:1px solid var(--line);color:var(--ink);padding:11px 12px;border-radius:4px;font:15px var(--sans)}
+.fb textarea{min-height:170px;resize:vertical;line-height:1.5}
+.fb input:focus,.fb textarea:focus,.fb select:focus{outline:3px solid rgba(138,106,28,.35);outline-offset:1px}
+.fb .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.fb .two{grid-template-columns:1fr}}
+.fb .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.fb .msg{font-size:14px;color:var(--cool)}
+.fb .ok{border:1px solid var(--cool);border-radius:10px;padding:20px 22px;font-size:16px;color:var(--ink);background:rgba(111,168,140,.06)}
+.fb .ok b{color:var(--cool)}
+.fb .fine{font-size:13px;color:var(--ink3);margin:14px 0 0}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>Suggestions</span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/feedback.html" aria-current="page">Suggestions</a>
+  <a href="/about.html">Who runs the wire</a>
+</nav></div>
+
+<main><div class="wrap"><div class="fb">
+  <h1>Tell us what the wire should do.</h1>
+  <p class="lede"><b>Every note goes to the founder as it is written</b> &mdash; a suggestion, a mistake you found, a company we should look at, a page that made no sense. A name and an email are optional; if you leave one you may hear back. Nothing sent here is published.</p>
+
+  <form id="f" onsubmit="return false">
+    <div>
+      <label for="kind">What is it</label>
+      <select id="kind">
+        <option value="suggestion">A suggestion &mdash; something the wire should do</option>
+        <option value="correction">A correction &mdash; something on the site is wrong</option>
+        <option value="bug">Something broke</option>
+        <option value="praise">Something worked</option>
+        <option value="other">Something else</option>
+      </select>
+    </div>
+    <div>
+      <label for="text">Your note<span>Say it plainly. A sentence is enough; a page is fine.</span></label>
+      <textarea id="text" maxlength="4000" required placeholder="What should the wire do that it does not? What did it get wrong?"></textarea>
+    </div>
+    <div class="two">
+      <div><label for="name">Your name<span>optional</span></label><input id="name" maxlength="80" autocomplete="name"></div>
+      <div><label for="email">Your email<span>optional &mdash; only if you want a reply</span></label><input id="email" type="email" maxlength="120" autocomplete="email"></div>
+    </div>
+    <div class="row">
+      <button type="button" class="wbuy gold" id="send">Send it to the founder</button>
+      <span class="msg" id="msg"></span>
+    </div>
+  </form>
+  <p class="fine">The page you came from is noted with your message so it can be found. Nothing else about you is recorded.</p>
+</div></div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/company.html">Search</a><a href="/concern.html">Going concern</a><a href="/patterns.html">The patterns</a>
+    <a href="/prices.html">What it costs</a><a href="/feedback.html" aria-current="page">Suggestions</a><a href="/about.html">Who runs the wire</a>
+    <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
+  Nothing here is investment advice, nothing here is a recommendation to buy or sell any security, and nothing here alleges that anyone broke any law.
+  <p class="stamp">Built 2026-09-12 &middot; warrantwire feedback-1a</p>
+</footer></div>
+
+<script>
+(function () {
+  "use strict";
+  var from = "";
+  try { from = document.referrer && new URL(document.referrer).host.indexOf("warrantwire") > -1 ? new URL(document.referrer).pathname + new URL(document.referrer).search : ""; } catch (e) {}
+  var q = new URLSearchParams(location.search).get("from"); if (q) from = q;
+  document.getElementById("send").addEventListener("click", function () {
+    var text = document.getElementById("text").value.trim(), msg = document.getElementById("msg");
+    if (text.length < 5) { msg.textContent = "Say something first — a sentence is enough."; return; }
+    msg.textContent = "Sending…";
+    fetch("https://warrantwire.com/api/w/feedback", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind: document.getElementById("kind").value, text: text,
+        name: document.getElementById("name").value.trim(), email: document.getElementById("email").value.trim(), page: from }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) { msg.textContent = d.error || "Not sent."; return; }
+        document.getElementById("f").outerHTML = '<div class="ok"><b>Received.</b> ' + (d.note || "") + '</div>';
+      })
+      .catch(function () { msg.textContent = "Could not reach the desk. Try again in a minute."; });
+  });
+})();
+</script>
+<script src="/clock.js"></script>
+</body>
+</html>

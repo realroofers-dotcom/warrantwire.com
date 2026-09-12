@@ -363,6 +363,37 @@ async function api(action, req, env, u, SITE) {
   /* ---- ratings: public to read, public to give, one per email per writer ---- */
   const CORS = { 'content-type': 'application/json', 'access-control-allow-origin': '*',
                  'access-control-allow-headers': 'content-type', 'cache-control': 'no-store' };
+
+  /* ---- feedback: his ask, 12 Sep — a page for suggestions. Anyone may send
+     one; a name and an email are optional. Every one is kept, dated, with the
+     page it came from, and mailed to the founder as it arrives. Nothing is
+     published. ---- */
+  if (action === 'feedback') {
+    if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+    if (req.method !== 'POST') return new Response(JSON.stringify({ ok: false, error: 'POST' }), { status: 405, headers: CORS });
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS w_feedback (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         name TEXT, email TEXT, page TEXT, kind TEXT, text TEXT NOT NULL,
+         at TEXT DEFAULT (datetime('now')), seen TEXT)`).run();
+    const b = await req.json().catch(() => ({}));
+    const text = String(b.text || '').trim().slice(0, 4000);
+    if (text.length < 5) return new Response(JSON.stringify({ ok: false, error: 'say something — a sentence is enough' }), { status: 400, headers: CORS });
+    const name = String(b.name || '').trim().slice(0, 80) || null;
+    const email = String(b.email || '').trim().toLowerCase().slice(0, 120) || null;
+    const page = String(b.page || '').trim().slice(0, 200) || null;
+    const kind = ['suggestion', 'bug', 'correction', 'praise', 'other'].includes(String(b.kind)) ? String(b.kind) : 'suggestion';
+    const r = await env.DB.prepare('INSERT INTO w_feedback (name, email, page, kind, text) VALUES (?,?,?,?,?)')
+      .bind(name, email, page, kind, text).run();
+    if (env.EMAIL && env.EMAIL.send) {
+      try { await env.EMAIL.send({
+        from: { email: 'research@warrantwire.com', name: 'Warrant Wire feedback' },
+        to: 'realroofers@gmail.com', subject: 'Feedback #' + (r.meta && r.meta.last_row_id) + ' — ' + kind + (name ? ' from ' + name : ''),
+        text: text + '\n\n— ' + (name || 'no name') + (email ? ' <' + email + '>' : '') + (page ? '\nfrom ' + page : '') }); } catch (e) {}
+    }
+    return new Response(JSON.stringify({ ok: true, id: r.meta && r.meta.last_row_id,
+      note: 'Received. It goes to the founder as it is; if you left an email you may hear back.' }), { headers: CORS });
+  }
   if (action === 'rating' || action === 'rate') {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     if (action === 'rating') {
