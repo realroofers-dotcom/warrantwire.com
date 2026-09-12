@@ -870,7 +870,9 @@ async function people(env, ticker, origin) {
     for (const x of (r.results || [])) pics[x.id] = 1;
   } catch (e) {}
   const picFor = x => {
-    const id = String(x.person_cik || "").replace(/\D/g, "") || slug(x.name);
+    /* ⚠ THE CIK IS STORED WITHOUT ITS LEADING ZEROS (photoId strips them);
+       Form 4 carries it padded to ten. Strip here too or no face ever matches. */
+    const id = String(x.person_cik || "").replace(/\D/g, "").replace(/^0+/, "") || slug(x.name);
     return pics[id] ? ((origin || "") + "/?photo=" + encodeURIComponent(id)) : null;
   };
 
