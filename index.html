@@ -74,8 +74,9 @@ html.light .edgar .ehd{background:#dfeaf6}
 /* the six doors */
 .doors{padding:34px 0 10px}
 .doors h2{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 16px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.grid{grid-template-columns:1fr}}
 /* ⚠ THE DOORS ARE COLOURED, AND FEW WORDS. His note: friendly shapes, colour,
    we get lost in the words and the black. Each door has its own colour, the
@@ -93,7 +94,7 @@ html.light .edgar .ehd{background:#dfeaf6}
 /* the sample, cherry red, under the first door — his ask */
 .sample{display:block;text-align:center;font:700 14px var(--sans);color:#e3242b;text-decoration:none;padding:9px 12px;border:2px solid #e3242b;border-radius:10px;background:rgba(227,36,43,.06)}
 .sample:hover{background:#e3242b;color:#fff}
-.door.lime{--c:#a6f542} .door.amber{--c:#e5b83a} .door.green{--c:#63c48f} .door.blue{--c:#6fa8e0} .door.violet{--c:#b48be6} .door.orange{--c:#f0904a}
+.door.lime{--c:#a6f542} .door.amber{--c:#e5b83a} .door.green{--c:#63c48f} .door.blue{--c:#6fa8e0} .door.violet{--c:#b48be6} .door.orange{--c:#f0904a} .door.teal{--c:#4fd1c5} .door.rose{--c:#f28cb1}
 /* the proof */
 .proof{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:26px 0 8px}
 @media(max-width:700px){.proof{grid-template-columns:1fr}}
@@ -194,6 +195,16 @@ html.light .edgar .ehd{background:#dfeaf6}
         <div class="disc"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
         <b>Warn me when it&rsquo;s mine.</b>
         <i>Free, always</i>
+      </a>
+      <a class="door teal" href="/wire.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/><circle cx="18" cy="6" r="3" fill="#14150f" stroke="none"/></svg></div>
+        <b>Today&rsquo;s free reports.</b>
+        <i>Five a day, free</i>
+      </a>
+      <a class="door rose" href="/player.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg></div>
+        <b>On air.</b>
+        <i>The broadcast</i>
       </a>
     </div>
 
