@@ -27,8 +27,8 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
 :root{
-  --ink:#14150f; --panel:#1c1e16; --line:#2e3125;
-  --text:#eceae0; --dim:#a8aa9a; --faint:#767a68;
+  --ink:#ffffff; --panel:#f6f5ef; --line:#dcdad0;
+  --text:#14150f; --dim:#474a3e; --faint:#7a7d70;
   --cut:#c65a4a; --climb:#6fa88c; --room:#e8c547;
   --mono:"Roboto Mono",ui-monospace,monospace;
   --serif:Spectral,Georgia,serif;
@@ -95,32 +95,32 @@ footer a{color:var(--dim)}
    shape on this page. The index kept it; these two lost it. */
 .navbtn{position:fixed;top:14px;right:14px;z-index:60;width:44px;height:44px;
   display:flex;flex-direction:column;justify-content:center;align-items:center;
-  gap:5px;background:rgba(20,21,15,.92);border:1px solid var(--line,#2e3125);
+  gap:5px;background:rgba(20,21,15,.92);border:1px solid var(--line,#dcdad0);
   border-radius:5px;cursor:pointer;padding:0}
-.navbtn span{display:block;width:20px;height:2px;background:var(--text,#eceae0);
+.navbtn span{display:block;width:20px;height:2px;background:var(--text,#14150f);
   transition:transform .18s ease, opacity .18s ease}
 .navbtn[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .navbtn[aria-expanded="true"] span:nth-child(2){opacity:0}
 .navbtn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.navbtn:focus-visible{outline:2px solid var(--text,#eceae0);outline-offset:2px}
+.navbtn:focus-visible{outline:2px solid var(--text,#14150f);outline-offset:2px}
 
 .navpanel{position:fixed;top:0;right:0;bottom:0;width:min(310px,86vw);z-index:59;
-  background:#1c1e16;border-left:1px solid var(--line,#2e3125);
+  background:#fff;border-left:1px solid var(--line,#dcdad0);
   padding:76px 0 24px;transform:translateX(100%);transition:transform .22s ease;
   overflow-y:auto}
 .navpanel[data-open="1"]{transform:translateX(0)}
-.navpanel a{display:block;padding:14px 24px;color:#eceae0;text-decoration:none;
+.navpanel a{display:block;padding:14px 24px;color:#14150f;text-decoration:none;
   font:400 16px/1.3 inherit;border-bottom:1px solid rgba(46,49,37,.7)}
-.navpanel a:hover{background:rgba(255,255,255,.04)}
-.navpanel a small{display:block;margin-top:3px;font-size:13px;color:#767a68}
+.navpanel a:hover{background:rgba(20,21,15,.04)}
+.navpanel a small{display:block;margin-top:3px;font-size:13px;color:#7a7d70}
 .navscrim{position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.5);
   opacity:0;pointer-events:none;transition:opacity .22s ease}
 .navscrim[data-open="1"]{opacity:1;pointer-events:auto}
 
 .footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 16px;
-  padding:0 0 14px;border-bottom:1px solid var(--line,#2e3125)}
-.footnav a{color:#a8aa9a;text-decoration:none;padding:5px 0;font-size:14px}
-.footnav a:hover{color:#eceae0}
+  padding:0 0 14px;border-bottom:1px solid var(--line,#dcdad0)}
+.footnav a{color:#474a3e;text-decoration:none;padding:5px 0;font-size:14px}
+.footnav a:hover{color:#14150f}
 
 @media (prefers-reduced-motion: reduce){
   .navpanel,.navscrim,.navbtn span{transition:none}
@@ -139,11 +139,11 @@ footer a{color:var(--dim)}
    leaves the dot red and lit, and the flag still says what it is. */
 .wwflag{position:fixed;top:14px;right:66px;z-index:60;display:flex;
   align-items:center;height:44px;padding:0 15px;
-  background:rgba(20,21,15,.92);border:1px solid var(--line,#2e3125);
-  border-radius:5px;text-decoration:none;color:var(--text,#eceae0);
+  background:rgba(20,21,15,.92);border:1px solid var(--line,#dcdad0);
+  border-radius:5px;text-decoration:none;color:var(--text,#14150f);
   font:500 14px/1 var(--mono,ui-monospace,monospace);white-space:nowrap}
 .wwflag:hover{border-color:#c65a4a}
-.wwflag:focus-visible{outline:2px solid var(--text,#eceae0);outline-offset:2px}
+.wwflag:focus-visible{outline:2px solid var(--text,#14150f);outline-offset:2px}
 
 /* the label carries the dot above its first word */
 .wwflag .label{position:relative;display:inline-block;padding-top:2px}

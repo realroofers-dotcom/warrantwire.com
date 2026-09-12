@@ -30,9 +30,9 @@
 <link rel="canonical" href="https://warrantwire.com/therivabiologics/tovx">
 <style>
 :root{
-  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
-  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
-  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --paper:#ffffff; --panel:#f6f5ef; --line:#dcdad0; --line2:#e6e4da;
+  --ink:#14150f; --ink2:#474a3e; --ink3:#7a7d70;
+  --hot:#c0392b; --warm:#9a7a12; --cool:#2f7a5a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
 }
@@ -361,7 +361,7 @@ html,body{overflow-x:clip}
       var th = "";
       ["A","B","C","D","F","WORD SALAD"].forEach(function(g){
         if (!tally[g]) return;
-        th += '<span style="color:' + esc(hexOf[g]||"#a8aa9a") + '"><b>' + esc(g) +
+        th += '<span style="color:' + esc(hexOf[g]||"#474a3e") + '"><b>' + esc(g) +
               '</b> ' + tally[g] + '</span>';
       });
       box("tally", th);

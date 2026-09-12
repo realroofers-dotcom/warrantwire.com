@@ -1,4 +1,4 @@
-/* BUILT 2026-09-11 · warrantwire wire.css 1a
+/* BUILT 2026-09-12 · warrantwire wire.css 2a · WHITE. His call, 12 Sep: "white is so much more trustworthy." Every page at once, from here.
    ============================================================================
    ONE STYLESHEET FOR THE SITE. v1.2.
 
@@ -16,9 +16,9 @@
 
 /* ---- tokens ---------------------------------------------------------------- */
 :root{
-  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
-  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
-  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c; --gold:#C9A227; --good:#7FD8A6;
+  --paper:#ffffff; --panel:#f6f5ef; --line:#dcdad0; --line2:#e6e4da;
+  --ink:#14150f; --ink2:#474a3e; --ink3:#7a7d70;
+  --hot:#c0392b; --warm:#9a7a12; --cool:#2f7a5a; --gold:#C9A227; --good:#2e8b57;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
@@ -50,20 +50,20 @@ h2{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 12px}
 .shell > *{min-width:0}
 /* ⚠ THE RAIL IS INVENTORY, NOT NAVIGATION. His ruling. It is a column that is
    sold, so nothing that helps a reader get around the site goes in it. */
-.rail{position:sticky;top:20px;background:#33342A;border:1px solid #414233;
+.rail{position:sticky;top:20px;background:var(--panel);border:1px solid var(--line);
   border-radius:10px;padding:18px 16px}
-.k8{display:block;padding:0 0 15px;border-bottom:1px solid #4B4C3B}
+.k8{display:block;padding:0 0 15px;border-bottom:1px solid var(--line)}
 .k8 a{display:block;text-decoration:none}
 .k8 img{display:block;width:100%;height:auto;border-radius:4px}
 .k8 a:hover{opacity:.92}
 .k8 .why{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:#A29B79;margin-top:9px;line-height:1.5}
-.railbox{border-bottom:1px solid #4B4C3B;padding:16px 0}
+  text-transform:uppercase;color:var(--ink3);margin-top:9px;line-height:1.5}
+.railbox{border-bottom:1px solid var(--line);padding:16px 0}
 .railbox h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;
-  text-transform:uppercase;color:#C4B77F;margin:0 0 8px}
+  text-transform:uppercase;color:var(--warm);margin:0 0 8px}
 .railbox p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--ink2)}
 .railbox a.ghost{display:block;text-align:center;font-family:var(--mono);font-size:11px;
-  letter-spacing:.06em;padding:9px 12px;border:1px solid #55563F;border-radius:3px;
+  letter-spacing:.06em;padding:9px 12px;border:1px solid var(--line);border-radius:3px;
   color:var(--ink2);text-decoration:none;margin-top:8px}
 .railbox a.ghost:hover{border-color:#C9A227;color:#C9A227}
 .railslot{padding:16px 0 0;min-height:60px}
@@ -77,7 +77,7 @@ h2{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 12px}
 }
 
 /* ---- masthead -------------------------------------------------------------- */
-header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#191b13,#14150f)}
+header.top{border-bottom:1px solid var(--line);background:var(--paper)}
 .masthead{padding:26px 22px 22px}
 .mast{display:flex;align-items:center;gap:16px;flex-wrap:wrap;row-gap:14px}
 .mast .logo{flex:1 0 100%}
@@ -102,7 +102,7 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
 /* ---- navigation: the three bars, and the same links in the footer ---------- */
 .navbtn{position:fixed;top:14px;right:14px;z-index:60;width:44px;height:44px;
   display:flex;flex-direction:column;justify-content:center;align-items:center;
-  gap:5px;background:rgba(20,21,15,.92);border:1px solid var(--line);
+  gap:5px;background:rgba(255,255,255,.94);border:1px solid var(--line);
   border-radius:5px;cursor:pointer;padding:0}
 .navbtn span{display:block;width:20px;height:2px;background:var(--ink);
   transition:transform .18s ease, opacity .18s ease}
@@ -111,14 +111,14 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
 .navbtn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 .navbtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .navpanel{position:fixed;top:0;right:0;bottom:0;width:min(310px,86vw);z-index:59;
-  background:#1c1e16;border-left:1px solid var(--line);
+  background:var(--paper);border-left:1px solid var(--line);
   padding:76px 0 24px;transform:translateX(100%);transition:transform .22s ease;overflow-y:auto}
 .navpanel[data-open="1"]{transform:translateX(0)}
 .navpanel a{display:block;padding:14px 24px;color:var(--ink);text-decoration:none;
-  font:400 16px/1.3 inherit;border-bottom:1px solid rgba(46,49,37,.7)}
-.navpanel a:hover{background:rgba(255,255,255,.04)}
+  font:400 16px/1.3 inherit;border-bottom:1px solid var(--line2)}
+.navpanel a:hover{background:var(--panel)}
 .navpanel a small{display:block;margin-top:3px;font-size:13px;color:var(--ink3)}
-.navscrim{position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.5);
+.navscrim{position:fixed;inset:0;z-index:58;background:rgba(20,21,15,.35);
   opacity:0;pointer-events:none;transition:opacity .22s ease}
 .navscrim[data-open="1"]{opacity:1;pointer-events:auto}
 .footnav{display:flex;flex-wrap:wrap;gap:0 22px;margin:0 0 16px;
@@ -130,7 +130,7 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
 /* ---- the corner: the flag, then the player and the bulletin under it ------- */
 .wwflag{position:fixed;top:14px;right:66px;z-index:60;display:flex;
   align-items:center;height:44px;padding:0 15px;
-  background:rgba(20,21,15,.92);border:1px solid var(--line);
+  background:rgba(255,255,255,.94);border:1px solid var(--line);
   border-radius:5px;text-decoration:none;color:var(--ink);
   font:500 14px/1 var(--mono);white-space:nowrap}
 .wwflag:hover{border-color:var(--hot)}
@@ -152,9 +152,9 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
    never before the logo. */
 @media(max-width:820px){ #topstack{position:static;width:auto;margin:18px 0 0} }
 
-.squawk{border:1px solid var(--line);border-radius:8px;background:rgba(28,30,22,.96);
+.squawk{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.97);
   padding:11px 13px;margin:0;font:400 14px/1.4 Spectral,Georgia,serif;color:var(--ink);
-  box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  box-shadow:0 8px 24px rgba(0,0,0,.12)}
 .squawk .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 7px}
 .squawk .onair{display:flex;align-items:center;gap:7px;font:700 11px/1 var(--mono);
   letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
@@ -177,7 +177,7 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
 .squawk .mid{flex:1 1 auto;min-width:0}
 .squawk .line{font-size:12.5px;color:var(--ink2);margin:0 0 5px}
 .squawk .line b{color:var(--ink)}
-.squawk .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;padding:0;display:block}
+.squawk .bar{height:4px;border-radius:2px;background:var(--line2);overflow:hidden;padding:0;display:block}
 .squawk .bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .25s linear}
 .squawk .next{font:400 11px var(--mono);color:var(--ink3);margin:7px 0 0}
 .squawk .next b{color:var(--ink2);font-weight:500}
@@ -185,9 +185,9 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
 .squawk .times[hidden]{display:none}
 .squawk .times span.now{color:var(--gold)}
 
-.bkcorner{position:relative;z-index:55;width:100%;background:#1c1e16;border:1px solid var(--line);
+.bkcorner{position:relative;z-index:55;width:100%;background:var(--paper);border:1px solid var(--line);
   border-left:3px solid var(--hot);border-radius:6px;padding:15px 17px 15px 16px;display:none;
-  box-shadow:0 12px 34px rgba(0,0,0,.45);font:400 15px/1.55 Spectral,Georgia,serif;color:var(--ink)}
+  box-shadow:0 12px 34px rgba(0,0,0,.14);font:400 15px/1.55 Spectral,Georgia,serif;color:var(--ink)}
 .bkcorner[data-show="1"]{display:block}
 .bkcorner .hd{display:flex;align-items:center;gap:8px;margin:0 0 8px}
 .bkcorner .dot{width:8px;height:8px;border-radius:50%;background:var(--hot);flex:0 0 8px;
@@ -219,7 +219,7 @@ header.top{border-bottom:1px solid var(--line);background:linear-gradient(180deg
   text-transform:uppercase;padding:11px 14px;border:2px solid var(--cool);
   border-radius:6px;background:#fff;color:#14150f}
 .finder input:focus{outline:3px solid rgba(138,106,28,.35);outline-offset:1px}
-.finder button{font:700 14.5px var(--sans);background:var(--hot);border:0;color:#160f06;
+.finder button{font:700 14.5px var(--sans);background:var(--hot);border:0;color:#fff;
   padding:11px 18px;border-radius:6px;cursor:pointer;white-space:nowrap}
 .finder button:hover{filter:brightness(1.08)}
 .freenote{margin:7px 0 0;font-size:13px;color:var(--ink3);max-width:520px}
@@ -240,7 +240,7 @@ p.filedsub{color:var(--ink2);font-size:15.5px;margin:0 0 18px;max-width:60ch}
 .sell b span{font-size:11px;color:var(--cool);font-weight:400}
 .row{border-bottom:1px solid var(--line2);padding:14px 0;display:grid;
   grid-template-columns:66px minmax(0,1fr) auto;gap:16px;align-items:start}
-.row:hover{background:#181a12}
+.row:hover{background:var(--panel)}
 .row.heavy .tk{color:var(--hot)}
 .tk{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.03em;color:var(--ink)}
 .tk a{text-decoration:none}
@@ -252,15 +252,15 @@ p.filedsub{color:var(--ink2);font-size:15.5px;margin:0 0 18px;max-width:60ch}
 .marks{margin:7px 0 0}
 .m{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;
   border:1px solid var(--line);color:var(--ink2);padding:2px 7px;border-radius:2px;margin:0 4px 4px 0}
-.m.h{border-color:#4a2a24;background:#241a17;color:var(--hot)}
+.m.h{border-color:#e6b7b1;background:#fbeeec;color:var(--hot)}
 /* ⚠ ONLY PRE-FUNDED WARRANTS FLASH, and the text is not red — the border
    pulses behind it. "Look here" is a direction; red text is a judgement. */
-.m.pf{border-color:#7a3a2e;background:#2b1c18;animation:pfflash 2.4s ease-in-out infinite}
+.m.pf{border-color:#d9877c;background:#fbeeec;animation:pfflash 2.4s ease-in-out infinite}
 @keyframes pfflash{
-  0%,100%{border-color:#4a2a24;background:#241a17;box-shadow:0 0 0 0 rgba(198,90,74,0)}
-  50%    {border-color:#c65a4a;background:#3a221c;box-shadow:0 0 0 3px rgba(198,90,74,.16)}
+  0%,100%{border-color:#e6b7b1;background:#fbeeec;box-shadow:0 0 0 0 rgba(198,90,74,0)}
+  50%    {border-color:#c0392b;background:#f6d9d5;box-shadow:0 0 0 3px rgba(198,90,74,.16)}
 }
-@media (prefers-reduced-motion: reduce){ .m.pf{animation:none;border-color:#c65a4a;background:#3a221c} }
+@media (prefers-reduced-motion: reduce){ .m.pf{animation:none;border-color:#c0392b;background:#f6d9d5} }
 /* the speaker beside the name — hidden until a clip is known to exist */
 .spk{display:none;vertical-align:middle;margin-left:8px;background:none;
   border:1px solid var(--line);border-radius:999px;width:26px;height:26px;
@@ -276,7 +276,7 @@ p.filedsub{color:var(--ink2);font-size:15.5px;margin:0 0 18px;max-width:60ch}
   border:1px solid var(--line);color:var(--ink2);padding:5px 10px;border-radius:2px;
   text-decoration:none;margin:0 0 5px}
 .go a:hover{border-color:var(--cool);color:var(--cool)}
-.go a.verdict{border-color:#3d4a34;color:var(--cool)}
+.go a.verdict{border-color:var(--cool);color:var(--cool)}
 .go button.readbtn{display:inline-block;font-family:var(--mono);font-size:10.5px;
   letter-spacing:.05em;background:var(--cool);border:1px solid var(--cool);
   color:#14150f;font-weight:700;padding:6px 11px;border-radius:2px;cursor:pointer;margin:0 0 5px}
@@ -335,11 +335,11 @@ p.filedsub{color:var(--ink2);font-size:15.5px;margin:0 0 18px;max-width:60ch}
 .alerts h2{margin-top:0}
 .alerts p{color:var(--ink2);max-width:60ch}
 .form{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 0}
-.form input,.form textarea,.form select{flex:1;min-width:190px;background:#101208;border:1px solid var(--line);
+.form input,.form textarea,.form select{flex:1;min-width:190px;background:#fff;border:1px solid var(--line);
   color:var(--ink);padding:11px 13px;border-radius:3px;font:14px var(--sans)}
 .form textarea{flex:1 1 100%;min-height:120px;resize:vertical;line-height:1.5}
 .form input:focus,.form textarea:focus,.form select:focus{outline:none;border-color:var(--cool)}
-.form button{background:var(--cool);border:1px solid var(--cool);color:#0f1a14;
+.form button{background:var(--cool);border:1px solid var(--cool);color:#fff;
   padding:11px 20px;border-radius:3px;font:14px var(--sans);font-weight:600;cursor:pointer}
 .form label{flex:1 1 100%;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:8px 0 -4px}
 .fine{font-size:12.5px;color:var(--ink3);margin:11px 0 0;line-height:1.55}
@@ -360,7 +360,7 @@ main{padding:30px 0 60px}
 .who .flag{color:var(--hot);font-weight:700}
 .stnote{font-size:12.5px;line-height:1.45;color:var(--ink2);margin:8px 0 0;border-left:2px solid var(--hot);padding-left:10px}
 .stnote b{color:var(--ink)}
-.clean{font-size:15.5px;color:var(--ink);background:rgba(255,255,255,.04);border-radius:8px;padding:12px 14px;margin:0 0 10px}
+.clean{font-size:15.5px;color:var(--ink);background:var(--panel);border-radius:8px;padding:12px 14px;margin:0 0 10px}
 .clean b{color:var(--good)}
 
 /* the three verdicts stack in one column, each in its own box, labelled */
@@ -402,7 +402,7 @@ main{padding:30px 0 60px}
 .vpeople{margin:8px 0 0}
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:10px 0 0}
 .vcard{margin:0;display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line2);border-radius:8px;padding:12px}
-.vface{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 56px;background:#2a2c22}
+.vface{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 56px;background:var(--line2)}
 .vinit{display:flex;align-items:center;justify-content:center;font:700 16px var(--mono);color:var(--ink3);letter-spacing:.04em}
 .vcard figcaption{min-width:0;font-size:13px;line-height:1.45;color:var(--ink2)}
 .vcard figcaption b{display:block;color:var(--ink);font-size:14px}

@@ -23,9 +23,9 @@
 <link rel="canonical" href="https://warrantwire.com/grades.html">
 <style>
 :root{
-  --paper:#14150f; --panel:#1c1e16; --line:#2e3125; --line2:#262a1e;
-  --ink:#eceae0; --ink2:#a8aa9a; --ink3:#767a68;
-  --hot:#c65a4a; --warm:#c9a227; --cool:#6fa88c;
+  --paper:#ffffff; --panel:#f6f5ef; --line:#dcdad0; --line2:#e6e4da;
+  --ink:#14150f; --ink2:#474a3e; --ink3:#7a7d70;
+  --hot:#c0392b; --warm:#9a7a12; --cool:#2f7a5a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
 }
@@ -269,7 +269,7 @@ html,body{overflow-x:clip}
         order.forEach(function(g){
           if (!tally[g]) return;
           var b = bandOf(g);
-          ch += '<div><div class="n" style="color:' + esc(b.hex || "#a8aa9a") + '">' +
+          ch += '<div><div class="n" style="color:' + esc(b.hex || "#474a3e") + '">' +
                 tally[g] + '</div><div class="l">' + esc(g) + '</div></div>';
         });
         box("counts", ch);

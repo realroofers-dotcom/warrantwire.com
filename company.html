@@ -20,7 +20,7 @@
 time{font:400 11.5px var(--mono);color:var(--ink3)}
 /* Rule 421: the plain-English grade */
 .r421{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0 0;background:var(--panel)}
-.r421.bad{border-color:var(--hot);background:#2b1c18}
+.r421.bad{border-color:var(--hot);background:#fbeeec}
 .r421 .k{display:block;font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
 .r421.bad .k{color:var(--hot)}
 .r421 .gl{display:flex;align-items:center;gap:10px;margin:0 0 8px}
@@ -44,10 +44,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .ftab td a.k8{color:var(--warm)}
 .ftab .marks{margin:0}
 /* the urgent warning: red, first, impossible to scroll past */
-.urgent{border:2px solid var(--hot);border-radius:10px;padding:16px 20px;margin:16px 0 0;background:#2b1c18}
+.urgent{border:2px solid var(--hot);border-radius:10px;padding:16px 20px;margin:16px 0 0;background:#fbeeec}
 .urgent .k{display:block;font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 6px}
 .urgent .big{font-size:16.5px;line-height:1.5;color:var(--ink);margin:0 0 8px;max-width:none}
-.urgent .big b{color:#ffb3a6}
+.urgent .big b{color:var(--hot)}
 .urgent p{margin:0;font-size:13.5px;color:var(--ink2);max-width:70ch}
 .urgent a{color:var(--hot)}
 /* ratings */
@@ -58,7 +58,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .linkbtn{background:none;border:0;padding:0;color:var(--cool);font:inherit;cursor:pointer;text-decoration:underline}
 .rateform{display:grid;gap:8px;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line2);max-width:520px}
 .rateform .pick button{background:none;border:0;color:var(--warm);font-size:26px;line-height:1;cursor:pointer;padding:0 2px}
-.rateform input,.rateform textarea{background:#101208;border:1px solid var(--line);color:var(--ink);padding:9px 11px;border-radius:3px;font:14px var(--sans)}
+.rateform input,.rateform textarea{background:#fff;border:1px solid var(--line);color:var(--ink);padding:9px 11px;border-radius:3px;font:14px var(--sans)}
 .rateform textarea{min-height:70px;resize:vertical}
 .rateform .ratemsg{font-size:13px;color:var(--cool)}
 .worth{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:-4px 0 14px;font-size:14px;color:var(--ink2)}
@@ -73,7 +73,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .could ol.permits li b{color:var(--ink)}
 .could ol.permits li .src{display:block;font:400 11px var(--mono);color:var(--ink3);margin-top:2px}
 .could .gc{border-left:3px solid var(--hot);padding:2px 0 2px 12px;margin:0 0 12px;font-size:15.5px;color:var(--ink);max-width:70ch}
-.could .gc b{color:#ffb3a6}
+.could .gc b{color:var(--hot)}
 .trail{border:1px solid var(--line2);border-radius:8px;padding:12px 14px;margin:0 0 10px}
 .trail .tname{font-size:15px;color:var(--ink);font-weight:600}
 .trail .tname span{font-weight:400;color:var(--ink3);font-size:13px}
@@ -690,6 +690,25 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       nameOnPage = c.name || (a && a.company) || tk; cikOnPage = String(c.cik || "");
       var open = !!d.paid || !!SAMPLE[tk];
       var v = WWVerdict.render(d);
+
+      /* ⚠ THE META IS THIS COMPANY'S, NOT THE SITE'S. His ask, 12 Sep: the
+         meta should be for each company — what we built is the critical
+         information, and a link to TOVX should say TOVX, its filings and
+         its verdict, wherever the link lands. Title, description, og:, and
+         a canonical address for the ticker. */
+      (function () {
+        var n = a ? Number(a.filings || 0) : 0;
+        var desc = nameOnPage + " (" + tk + "): " + (n ? n + " warrant filing" + (n === 1 ? "" : "s") + " on record since 2021" + (a.heavy ? ", " + a.heavy + " with the heavier terms" : "") : "nothing on the wire since 2021 — not a clean bill of health")
+                 + ". The verdict, what the paper permits, who is behind it and where they have been — read from the filings, exhibits included.";
+        var set = function (sel, attr, val) { var el = document.querySelector(sel); if (!el) { el = document.createElement(sel.indexOf("link") === 0 ? "link" : "meta"); var m = /\[(\w+)="([^"]+)"\]/.exec(sel); if (m) el.setAttribute(m[1], m[2]); document.head.appendChild(el); } el.setAttribute(attr, val); };
+        document.title = nameOnPage + " (" + tk + ") — the warrant verdict — Warrant Wire";
+        set('meta[name="description"]', "content", desc);
+        set('meta[property="og:title"]', "content", nameOnPage + " (" + tk + ") — what its warrant paper permits");
+        set('meta[property="og:description"]', "content", desc);
+        set('meta[property="og:type"]', "content", "article");
+        set('meta[property="og:url"]', "content", "https://warrantwire.com/company.html?t=" + encodeURIComponent(tk));
+        set('link[rel="canonical"]', "href", "https://warrantwire.com/company.html?t=" + encodeURIComponent(tk));
+      })();
 
       var row = a ? '<div class="rows"><div class="row' + (a.heavy ? ' heavy' : '') + '">'
         + '<div class="tk">' + esc(tk) + '</div>'
