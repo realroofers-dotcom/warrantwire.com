@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3c · 2026-09-12 · ?sbcheck=1 says whether the Wall St Domains database answers (no key needed, nothing revealed)";
+const BUILD = "pay-3d · 2026-09-12 · the Wall St Domains watch: every ten minutes, new submissions, contacts and captured emails are mailed to the founder";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -238,7 +238,12 @@ const SKU = {
 export default {
   /* ⚠ THE CRON. Every six hours: pay every reader whose money is due. Set on
      the worker as a schedule, minute 0 of every sixth hour; nothing else runs on it. */
-  async scheduled(event, env, ctx) { ctx.waitUntil(release(env)); },
+  async scheduled(event, env, ctx) {
+    /* two clocks: every ten minutes the Wall St Domains watch; every sixth
+       hour the payouts as before. Which one fired is on event.cron. */
+    if (String(event.cron || "").startsWith("*/10")) ctx.waitUntil(wsdWatch(env));
+    else ctx.waitUntil(release(env));
+  },
 
   async fetch(request, env) {
     const url = new URL(request.url), q = url.searchParams;
@@ -300,7 +305,14 @@ export default {
       /* does the Wall St Domains database answer this worker? Presence of the
          secret was visible in the dashboard; whether it WORKS was not. Reports
          reachable-or-not and a row count — never the key, never a row. */
-      if (q.get("sbcheck")) return json(await sbCheck(env), cors);
+      if (q.get("sbcheck")) {
+        const c = await sbCheck(env);
+        /* &watch=1 runs the ten-minute watch now. Safe to expose: it can only
+           ever send each item once, the watermark sees to that. */
+        if (q.get("watch") === "1") c.watch = await wsdWatch(env);
+        else { try { c.watch_marks = (await env.OVERHANG.prepare("SELECT * FROM wsd_watch").all()).results; } catch (e) {} }
+        return json(c, cors);
+      }
       if (q.get("me"))  return json(await me(env, q), cors);
       /* the seller page on Wall St Domains, back from Stripe: was this session paid? */
       if (q.get("paid")) return json(await sessionPaid(env, q), cors);
@@ -1042,6 +1054,67 @@ async function sbCheck(env) {
   } catch (e) {
     return { ok:false, build: BUILD, supabase: "UNREACHABLE", error: String(e) };
   }
+}
+
+/* ============================================================
+   THE WALL ST DOMAINS WATCH — 12 Sep 2026
+
+   Bolt built the marketplace to email the founder on every submission,
+   contact and captured address — through SendGrid and Resend keys kept in
+   a `secrets` table. There is no working key, so nothing has ever been
+   sent: the rows land in Supabase and nobody is told. Tested 12 Sep:
+   capture-email 200, every send-* function 500.
+
+   So the telling is done from here, where mail already works. Every ten
+   minutes, on the cron: read what is new in the four tables that mean a
+   human did something, mail the founder one note per item, and remember
+   the high-water mark in D1 so nothing is sent twice. If the mail fails
+   the mark is NOT advanced, so the next run tries again.
+   ============================================================ */
+const WSD_TABLES = [
+  { table: "domain_sell_submissions", what: "a domain SUBMITTED for listing",
+    line: r => [ (r.domains || r.name || "?"), "seller " + (r.seller_name || r.name || "?") + " · " + (r.email || "?") + " · " + (r.phone || r.tel_number || "?") + (r.whatsapp_number ? " · WhatsApp " + r.whatsapp_number : ""),
+                 "asking $" + (r.sell_price || "?") + (r.rent_price_1m ? " · rent $" + r.rent_price_1m + "/mo" : ""), r.domain_story ? "story: " + String(r.domain_story).slice(0, 300) : "", "status " + (r.status || "?") + " · paid " + (r.payment_status || "no"),
+                 "admin: " + WSD_HOME + "/admin" ] },
+  { table: "contact_entries", what: "a CONTACT message",
+    line: r => [ (r.name || "?") + " · " + (r.email || "?") + (r.phone ? " · " + r.phone : ""), r.subject ? "re: " + r.subject : "", String(r.message || r.text || "").slice(0, 600) ] },
+  { table: "email_captures", what: "an EMAIL captured (interest)",
+    line: r => [ r.email || "?", "purpose: " + (r.purpose || r.source || "?"), r.domain_name ? "domain: " + r.domain_name : (r.domain_id ? "domain id " + r.domain_id : "") ] },
+  { table: "seller_view_notifications", what: "a SELLER VIEW notice",
+    line: r => [ JSON.stringify(r).slice(0, 400) ] }
+];
+
+async function wsdWatch(env) {
+  const s = sb(env);
+  if (!s) return { ok:false, error:"no Supabase on this worker" };
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS wsd_watch (tbl TEXT PRIMARY KEY, since TEXT, checked TEXT, sent INTEGER DEFAULT 0)`).run();
+  const out = [];
+  for (const t of WSD_TABLES) {
+    let mark = await env.OVERHANG.prepare("SELECT since FROM wsd_watch WHERE tbl = ?").bind(t.table).first();
+    /* first run: start from now, do not replay history into the inbox */
+    if (!mark) {
+      await env.OVERHANG.prepare("INSERT INTO wsd_watch (tbl, since, checked) VALUES (?, datetime('now'), datetime('now'))").bind(t.table).run();
+      out.push(t.table + ": watermark set, nothing replayed"); continue;
+    }
+    const since = String(mark.since).replace(" ", "T") + "Z";
+    let rows = [];
+    try { rows = await sbGet(s, t.table + "?select=*&created_at=gt." + encodeURIComponent(since) + "&order=created_at.asc&limit=50"); }
+    catch (e) { out.push(t.table + ": read failed — " + String(e).slice(0, 120)); continue; }
+    if (!Array.isArray(rows) || !rows.length) { await env.OVERHANG.prepare("UPDATE wsd_watch SET checked = datetime('now') WHERE tbl = ?").bind(t.table).run(); out.push(t.table + ": nothing new"); continue; }
+    let sent = 0, last = null;
+    for (const r of rows) {
+      const ok = await mailFounder(env, "Wall St Domains: " + t.what + (r.domains || r.domain_name || r.name ? " — " + (r.domains || r.domain_name || r.name) : ""),
+        t.line(r).filter(Boolean).concat(["", "received " + (r.created_at || "?") + " · id " + (r.id || "?")]).join("\n"));
+      if (!ok) break;                       /* mail failed: stop, keep the mark, retry next run */
+      sent++; last = r.created_at;
+    }
+    if (last) await env.OVERHANG.prepare("UPDATE wsd_watch SET since = ?, checked = datetime('now'), sent = sent + ? WHERE tbl = ?")
+      .bind(String(last).replace("T", " ").replace(/\+.*$|Z$/, ""), sent, t.table).run();
+    out.push(t.table + ": " + sent + " of " + rows.length + " mailed");
+  }
+  await log(env, { kind:"wsd-watch", note: out.join(" | ") }).catch(() => {});
+  return { ok:true, watched: out };
 }
 
 /* the number in "asking $12,000" and its kin, when the old form put prices in the notes */
