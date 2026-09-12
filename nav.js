@@ -1,4 +1,4 @@
-/* BUILT 2026-09-12 · warrantwire nav.js 1a
+/* BUILT 2026-09-12 · warrantwire nav.js 1b · on a phone the doors are a grid at the foot of the page, scrolled to
    ============================================================================
    THE ICON NAV — the nine doors from the home page, on every page, in one
    row under the masthead. His ruling, 12 Sep: navigation should be icon
@@ -39,7 +39,10 @@
     + '.wwnav .d svg{width:17px;height:17px;stroke:#14150f;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}'
     + '.wwnav .d.live::after{content:"";position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#e3242b;border:2px solid #fff;animation:wwonair 1.6s ease-in-out infinite}'
     + '@keyframes wwonair{0%,100%{box-shadow:0 0 0 0 rgba(227,36,43,.6)}60%{box-shadow:0 0 0 6px rgba(227,36,43,0)}}'
-    + '@media(max-width:700px){.wwnav ul{padding:8px 12px}.wwnav a{flex-direction:column;gap:4px;padding:6px 6px;font-size:10.5px;min-width:64px;text-align:center}.wwnav .d{width:34px;height:34px;flex-basis:34px}.wwnav .d svg{width:19px;height:19px}}'
+    /* ⚠ ON A PHONE THE DOORS ARE A LIST YOU SCROLL DOWN TO — one on top of the
+       other, like the home page on a phone — not a ribbon across the top. His
+       note, 12 Sep. The strip is moved to the foot of the page by draw(). */
+    + '@media(max-width:700px){.wwnav{border-top:1px solid var(--line,#dcdad0);border-bottom:0;margin-top:26px}.wwnav ul{display:grid;grid-template-columns:1fr;gap:8px;padding:16px 14px 18px;overflow:visible}.wwnav li{flex:none}.wwnav a{flex-direction:row;gap:12px;padding:10px 14px 10px 10px;font-size:15px;text-align:left;white-space:normal;border:1px solid var(--line,#dcdad0);border-radius:14px;background:var(--panel,#f6f5ef)}.wwnav .d{width:46px;height:46px;flex-basis:46px}.wwnav .d svg{width:24px;height:24px}}'
     /* one navigation, not two: the old hamburger panel goes */
     + '.navbtn,.navpanel,.navscrim,.wwflag{display:none !important}'
     + '@media(max-width:820px){.masthead{padding-top:26px !important}}';
@@ -60,9 +63,17 @@
       li.appendChild(a); ul.appendChild(li);
     });
     nav.appendChild(ul);
-    var top = document.querySelector("header.top") || document.querySelector("header");
-    if (top && top.parentNode) top.parentNode.insertBefore(nav, top.nextSibling);
-    else document.body.insertBefore(nav, document.body.firstChild);
+    var phone = window.matchMedia && window.matchMedia("(max-width:700px)").matches;
+    var foot = document.querySelector("footer");
+    if (phone && foot) {
+      /* the foot of the page: before the footer, inside its wrapper if it has one */
+      var host = foot.parentNode;
+      host.insertBefore(nav, foot);
+    } else {
+      var top = document.querySelector("header.top") || document.querySelector("header");
+      if (top && top.parentNode) top.parentNode.insertBefore(nav, top.nextSibling);
+      else document.body.insertBefore(nav, document.body.firstChild);
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", draw); else draw();
 })();
