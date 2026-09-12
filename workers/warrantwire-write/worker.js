@@ -272,6 +272,7 @@ export default {
       if (p === '/write/2fa')    return req.method === 'POST' ? totpEnrolPost(req, env) : totpEnrolPage(env, req);
       if (p === '/write/code')   return req.method === 'POST' ? totpLoginPost(req, env) : page('Your code', codeForm());
       if (p === '/write/resets') return resetsPage(env, req, SITE);
+      if (p === '/write/suggestions') return suggestionsPage(env, req);
       if (p === '/write/verdict') return verdictDesk(env, req, u);
       if (p === '/write')        return desk(env, req);
 
@@ -1548,6 +1549,57 @@ fetch('/api/w/resetlink',{method:'POST',headers:{'content-type':'application/jso
 }
 
 /* ============================================================
+   THE SUGGESTIONS — every note from /feedback.html, newest first, for the
+   founder only. His ask, 12 Sep: we need to know what customers want, and a
+   list as their requests come in. Mark one "seen" and it drops to the tail;
+   nothing is ever deleted.
+   ============================================================ */
+async function suggestionsPage(env, req) {
+  const me = await who(env, req);
+  if (!me) return new Response(null, { status: 303, headers: { location: '/write/login' } });
+  if (me.kind !== 'house') return page('Suggestions', '<h1>The founder reads these.</h1>');
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS w_feedback (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, page TEXT, kind TEXT, text TEXT NOT NULL, at TEXT DEFAULT (datetime('now')), seen TEXT)`).run();
+  const u = new URL(req.url);
+  if (u.searchParams.get('seen')) {
+    await env.DB.prepare('UPDATE w_feedback SET seen = datetime(\'now\') WHERE id = ?').bind(+u.searchParams.get('seen')).run();
+    return new Response(null, { status: 303, headers: { location: '/write/suggestions' } });
+  }
+  const r = await env.DB.prepare('SELECT * FROM w_feedback ORDER BY (seen IS NOT NULL), id DESC LIMIT 500').all();
+  const all = r.results || [];
+  const open = all.filter(x => !x.seen).length;
+  const byKind = {}; all.forEach(x => { byKind[x.kind] = (byKind[x.kind] || 0) + 1; });
+  const rows = all.map(x => `<tr class="${x.seen ? 'seen' : ''}"><td class="n">#${x.id}<br><span class="quiet">${esc(String(x.at).slice(0, 16).replace('T', ' '))}</span></td>
+    <td><span class="kind ${esc(x.kind)}">${esc(x.kind)}</span></td>
+    <td class="txt">${esc(x.text).replace(/\n/g, '<br>')}${x.page ? `<br><span class="quiet">from ${esc(x.page)}</span>` : ''}</td>
+    <td>${esc(x.name || '—')}${x.email ? `<br><a href="mailto:${esc(x.email)}" style="color:var(--cool)">${esc(x.email)}</a>` : ''}</td>
+    <td>${x.seen ? '<span class="quiet">seen ' + esc(String(x.seen).slice(0, 10)) + '</span>' : `<a class="mark" href="/write/suggestions?seen=${x.id}">Mark seen</a>`}</td></tr>`).join('');
+  return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Suggestions — the list</title>
+<meta name="robots" content="noindex"><link rel="stylesheet" href="/wire.css?v=2a">
+<style>main{padding:22px 0 60px}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+td.n{font:600 12.5px var(--mono);white-space:nowrap}td.txt{max-width:56ch;line-height:1.5}
+tr.seen td{color:var(--ink3)}.quiet{color:var(--ink3);font-size:12.5px}
+.kind{display:inline-block;font:700 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.kind.correction,.kind.bug{border-color:var(--hot);color:var(--hot)}.kind.praise{border-color:var(--cool);color:var(--cool)}
+.mark{color:var(--cool);text-decoration:none;font-weight:600;white-space:nowrap}
+.bar{padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}.bar a{color:var(--cool);text-decoration:none;margin-right:16px}
+.tally{display:flex;flex-wrap:wrap;gap:8px 18px;margin:16px 0;font-size:14px;color:var(--ink2)}.tally b{color:var(--ink)}
+@media(max-width:700px){table,thead,tbody,tr,th,td{display:block}th{display:none}td{padding:4px 0}tr{padding:12px 0;border-bottom:1px solid var(--line)}td{border:0}td.txt{max-width:none}}</style></head><body>
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>Suggestions</span></div></div></header>
+<main><div class="wrap">
+  <div class="bar"><a href="/write">Dashboard</a><a href="/write/verdict">Write a verdict</a><a href="/write/writers">Writers</a><b style="color:var(--ink)">Suggestions</b></div>
+  <div class="tally"><span><b>${all.length}</b> in all</span><span><b>${open}</b> not yet seen</span>${Object.keys(byKind).map(k => `<span>${esc(k)} <b>${byKind[k]}</b></span>`).join('')}</div>
+  <p class="quiet">Everything sent from <a href="/feedback.html" style="color:var(--cool)">/feedback.html</a>, newest first; the ones you have marked seen sit at the bottom. Each one was also emailed to you as it arrived. Nothing here is ever deleted.</p>
+  <table><thead><tr><th>#</th><th>What</th><th>The note</th><th>Who</th><th></th></tr></thead>
+  <tbody>${rows || '<tr><td colspan="5" class="quiet">Nothing yet.</td></tr>'}</tbody></table>
+</div></main></body></html>`, { headers: H.html });
+}
+
+/* ============================================================
    THE DESK — served by the worker, so there is no file to upload
    ============================================================ */
 async function desk(env, req) {
@@ -1989,7 +2041,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.55}
 
 <div class="bar"><b>Dashboard</b>
   <a href="/write/verdict"><b>Write a verdict</b></a>
-  ${me.kind === 'house' ? '<a href="/write/writers">Writers</a> <a href="/write/resets">Password resets</a>' : ''}
+  ${me.kind === 'house' ? '<a href="/write/writers">Writers</a> <a href="/write/resets">Password resets</a> <a href="/write/suggestions">Suggestions</a>' : ''}
   <a href="/write/2fa">${me.totp_on ? 'Authenticator: on' : 'Set up authenticator'}</a>
   <span class="who">${esc(me.name || me.email)} · ${me.kind === 'house' ? 'editor' : 'contributing writer'}</span>
   <a href="/writing" target="_blank">See the site</a>
