@@ -369,6 +369,18 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      public rule, a count off EDGAR. "Permits" is the document's word for
      what it allows; nothing here says what WILL happen. The label — his
      word for what it adds up to — goes in his verdict, under his name. */
+  /* ⚠ A FORM 4 NAME IS ALWAYS SURNAME FIRST — "SHALLCROSS STEVEN A",
+     "Tufaro Francis" — whatever the case. The first word goes to the end,
+     every time; a rule that only flipped capitals printed "Kraws Jeffrey J"
+     under a face. Used wherever a Form 4 name is printed. */
+  function personName(s) {
+    var w = String(s || "").trim().split(/\s+/);
+    if (w.length > 1) w.push(w.shift());
+    return w.map(function (x) {
+      if (x.length === 1) return x.toUpperCase();
+      return x[0].toUpperCase() + x.slice(1).toLowerCase();
+    }).join(" ");
+  }
   function n(x) {
     x = Number(x); if (!isFinite(x) || x === 0) return "";
     var a = Math.abs(x);
@@ -456,7 +468,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           : 'The index of these people has not been read yet.') + '</p>';
       } else {
         ppl.forEach(function (p) {
-          h += '<div class="trail"><div class="tname">' + esc(p.name) + ' <span>— ' + esc(p.role_here || "") + ' here</span></div>';
+          h += '<div class="trail"><div class="tname">' + esc(personName(p.name)) + ' <span>— ' + esc(p.role_here || "") + ' here</span></div>';
           p.elsewhere.forEach(function (x) {
             var chain = (x.names_it_has_had || []).filter(function (nm) { return nm && nm.toLowerCase() !== String(x.as_filed || "").toLowerCase(); });
             h += '<div class="tiss"><div class="as"><b>' + esc(x.as_filed) + '</b>' + (x.now_called && x.now_called.toLowerCase() !== String(x.as_filed).toLowerCase() ? ' — now ' + esc(x.now_called) : '') + (x.role ? ' · ' + esc(x.role) : '') + '</div>';
@@ -519,18 +531,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.ok) return;
-        var name = function (s) {
-          /* ⚠ A FORM 4 NAME IS ALWAYS SURNAME FIRST — "SHALLCROSS STEVEN A",
-             "Tufaro Francis" — whatever the case. The first word goes to the
-             end, every time; a rule that only flipped capitals printed
-             "Kraws Jeffrey J" under a face. */
-          var w = String(s || "").trim().split(/\s+/);
-          if (w.length > 1) w.push(w.shift());
-          return w.map(function (x) {
-            if (x.length === 1) return x.toUpperCase();
-            return x[0].toUpperCase() + x.slice(1).toLowerCase();
-          }).join(" ");
-        };
+        var name = personName;
         var mk = function (p, role) {
           return { name: name(p.name), role: p.title || role, photo: p.photo || null,
                    note: (p.still_filing === false ? "No Form 4 since " + p.last_filed : (p.filings ? p.filings + " insider filings, " + p.first_filed + " to " + p.last_filed : "")) };

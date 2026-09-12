@@ -500,8 +500,12 @@ async function edgarOwner(personCik) {
     let name = cells[0], current = "";
     const cn = /^(.*?)\s*Current Name:\s*(.+)$/i.exec(name);
     if (cn) { name = cn[1].trim(); current = cn[2].trim(); }
+    /* ⚠ THE LAST CELL RUNS ON. On some rows EDGAR's footnote ("Items 1 - 47
+       The information presented below…") lands in the owner-type cell. The
+       type is everything before that footnote, and never more than a line. */
+    const type = String(cells[3] || "").replace(/\s*Items\s+\d+\s*-\s*\d+.*$/i, "").slice(0, 120).trim();
     out.push({ issuer_cik: String(+m[1]), issuer_name: name, current_name: current,
-               last_transaction: cells[2] || "", owner_type: cells[3] || "" });
+               last_transaction: (cells[2] || "").slice(0, 10), owner_type: type });
   }
   return { ok:true, issuers: out };
 }
