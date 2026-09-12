@@ -23,8 +23,8 @@
 :root{
   /* ⚠ GREY, NOT BLACK — the same three levels as the checkout, so moving
      between them does not feel like two different sites. */
-  --paper:#1e211a; --panel:#2a2e24; --line:#464b3a;
-  --ink:#f0efe6; --ink2:#b9bcab; --ink3:#8b8f7c;
+  --paper:#ffffff; --panel:#f6f5ef; --line:#dcdad0;
+  --ink:#14150f; --ink2:#474a3e; --ink3:#7a7d70;
   --hot:#c0392b; --warm:#9a7a12; --cool:#2f7a5a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -277,5 +277,6 @@ function refreshCart(){
      going stale. It fetches the prices from whichever site it is loaded on, so
      each one shows its own. -->
 <script src="https://cart.realroofers.workers.dev/" defer></script>
+<script src="/nav.js" defer></script>
 </body>
 </html>

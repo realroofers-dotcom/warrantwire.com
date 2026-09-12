@@ -45,8 +45,8 @@
      hesitate at the worst possible moment. This is a proper grey: the page
      light, the card lighter still, the panels holding the detail sitting a
      shade below, and the fields below those. Four steps, all of them visible. */
-  --paper:#3f4539; --panel:#4d5443; --line:#7d8568;
-  --ink:#f7f6ee; --ink2:#d3d5c4; --ink3:#a1a690;
+  --paper:#ffffff; --panel:#f6f5ef; --line:#dcdad0;
+  --ink:#14150f; --ink2:#474a3e; --ink3:#7a7d70;
   --hot:#c0392b; --warm:#9a7a12; --cool:#2f7a5a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -84,7 +84,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
   padding-top:12px;border-top:1px solid var(--line)}
 
 /* what you are buying */
-.item{background:#434a3a;border:1px solid var(--line);border-radius:8px;
+.item{background:#fff;border:1px solid var(--line);border-radius:8px;
   padding:17px 20px}
 .item h1{font:400 26px/1.2 Georgia,serif;margin:0}
 .item .ctx{font:600 12px var(--mono);letter-spacing:.1em;color:var(--warm);
@@ -131,7 +131,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
    border and no background of its own, so it sat straight on the page and the
    whole lower half read as one flat sheet. Making the page grey was not enough
    — the eye needs an edge to know where the form starts. */
-.pay{margin-top:0;background:#434a3a;border:1px solid var(--line);
+.pay{margin-top:0;background:#fff;border:1px solid var(--line);
   border-radius:8px;padding:4px 10px 8px}
 
 /* ============================================================
@@ -157,7 +157,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
      somewhere to write rather than a shaded rectangle. */
   border:1px solid #8a9270 !important;
   border-bottom:2.5px solid #b6c092 !important;
-  background:#333a2b !important;
+  background:#f6f5ef !important;
   color:var(--ink) !important;
   border-radius:5px !important;
   padding:12px 13px !important;
@@ -168,7 +168,7 @@ header.mast{display:flex;justify-content:space-between;align-items:baseline;
 .achplug select:focus{
   border-color:var(--warm) !important;
   border-bottom-color:var(--warm) !important;
-  background:#353c2c !important;
+  background:#f6f5ef !important;
   outline:2px solid rgba(201,162,39,.30) !important;
   outline-offset:1px !important;
 }
@@ -504,5 +504,6 @@ if (!list.length) {
   }).observe(document.body, { childList:true, subtree:true, characterData:true });
 })();
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>
