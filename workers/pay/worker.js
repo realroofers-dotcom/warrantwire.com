@@ -1008,6 +1008,9 @@ async function listingPaid(env, q) {
    second row.
    ============================================================ */
 const WSD_HOME = "https://wallstdomains.com";
+/* ⚠ EVERYTHING ABOUT WALL ST DOMAINS GOES TO THIS ADDRESS — his instruction,
+   12 Sep: the paid-listing note, the watch, the reply-to on every thank-you. */
+const WSD_MAIL = "wallstdomains@gmail.com";
 
 function sb(env) {
   const url = String(env.SUPABASE_URL || "").replace(/\/$/, "");
@@ -1071,14 +1074,39 @@ async function sbCheck(env) {
    the high-water mark in D1 so nothing is sent twice. If the mail fails
    the mark is NOT advanced, so the next run tries again.
    ============================================================ */
+/* ⚠ THE VISITOR IS THANKED, FROM HERE TOO. Bolt's thank-you never sent for
+   the same reason. Each table names what the visitor gets. Sent from
+   desk@wallstdomains.com when Cloudflare will send from that domain, else
+   from desk@warrantwire.com signed Wall St Domains — the founder's address
+   is the reply-to either way, so an answer comes straight to him. */
+async function mailVisitor(env, to, subject, text) {
+  const e = String(to || "").trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return false;
+  if (!(env.EMAIL && env.EMAIL.send)) return false;
+  const replyTo = env.FOUNDER_EMAIL || "realroofers@gmail.com";
+  for (const from of ["desk@wallstdomains.com", "desk@warrantwire.com"]) {
+    try {
+      await env.EMAIL.send({ from: { email: from, name: "Wall St Domains" }, to: e, replyTo, subject, text });
+      return true;
+    } catch (err) { await log(env, { kind:"thanks-failed", email: e, note: from + " — " + String(err).slice(0, 160) }).catch(() => {}); }
+  }
+  return false;
+}
+const WSD_SIGN = "\n\nMark Nejmeh\nWall St Domains — " + WSD_HOME + "\nReply to this email and it reaches me.";
 const WSD_TABLES = [
   { table: "domain_sell_submissions", what: "a domain SUBMITTED for listing",
+    thank: r => ({ to: r.email, subject: "Wall St Domains: we have " + (r.domains || "your domain"),
+      text: (r.seller_name || r.name || "Hello") + ",\n\nYour submission of " + (r.domains || "your domain") + " is in. I read every one myself and I will be in touch" + (r.phone || r.tel_number ? " on " + (r.phone || r.tel_number) : "") + ".\n\nIf you have not paid for the listing yet, the listing goes live the moment you do: " + WSD_HOME + "/list-domain" + WSD_SIGN }),
     line: r => [ (r.domains || r.name || "?"), "seller " + (r.seller_name || r.name || "?") + " · " + (r.email || "?") + " · " + (r.phone || r.tel_number || "?") + (r.whatsapp_number ? " · WhatsApp " + r.whatsapp_number : ""),
                  "asking $" + (r.sell_price || "?") + (r.rent_price_1m ? " · rent $" + r.rent_price_1m + "/mo" : ""), r.domain_story ? "story: " + String(r.domain_story).slice(0, 300) : "", "status " + (r.status || "?") + " · paid " + (r.payment_status || "no"),
                  "admin: " + WSD_HOME + "/admin" ] },
   { table: "contact_entries", what: "a CONTACT message",
+    thank: r => ({ to: r.email, subject: "Wall St Domains: got your message",
+      text: (r.name || "Hello") + ",\n\nYour message is in front of me and I will answer it myself." + WSD_SIGN }),
     line: r => [ (r.name || "?") + " · " + (r.email || "?") + (r.phone ? " · " + r.phone : ""), r.subject ? "re: " + r.subject : "", String(r.message || r.text || "").slice(0, 600) ] },
   { table: "email_captures", what: "an EMAIL captured (interest)",
+    thank: r => ({ to: r.email, subject: "Wall St Domains: " + (r.domain_name ? r.domain_name : "thank you"),
+      text: "Thank you." + (r.domain_name ? "\n\nYou were looking at " + r.domain_name + ": " + WSD_HOME + "/domain/" + encodeURIComponent(r.domain_name) + "\n\nIf you want it, or want to talk about it — rent, partnership, an offer — reply to this email and it reaches me directly." : "\n\nYou are on the list. When a name you would want comes up, or a deal worth telling you about, you will hear from me — and nobody else, ever.") + WSD_SIGN }),
     line: r => [ r.email || "?", "purpose: " + (r.purpose || r.source || "?"), r.domain_name ? "domain: " + r.domain_name : (r.domain_id ? "domain id " + r.domain_id : "") ] }
   /* seller_view_notifications has no created_at column and is not watched */
 ];
@@ -1101,16 +1129,18 @@ async function wsdWatch(env) {
     try { rows = await sbGet(s, t.table + "?select=*&created_at=gt." + encodeURIComponent(since) + "&order=created_at.asc&limit=50"); }
     catch (e) { out.push(t.table + ": read failed — " + String(e).slice(0, 120)); continue; }
     if (!Array.isArray(rows) || !rows.length) { await env.OVERHANG.prepare("UPDATE wsd_watch SET checked = datetime('now') WHERE tbl = ?").bind(t.table).run(); out.push(t.table + ": nothing new"); continue; }
-    let sent = 0, last = null;
+    let sent = 0, thanked = 0, last = null;
     for (const r of rows) {
       const ok = await mailFounder(env, "Wall St Domains: " + t.what + (r.domains || r.domain_name || r.name ? " — " + (r.domains || r.domain_name || r.name) : ""),
-        t.line(r).filter(Boolean).concat(["", "received " + (r.created_at || "?") + " · id " + (r.id || "?")]).join("\n"));
+        t.line(r).filter(Boolean).concat(["", "received " + (r.created_at || "?") + " · id " + (r.id || "?")]).join("\n"), WSD_MAIL);
       if (!ok) break;                       /* mail failed: stop, keep the mark, retry next run */
       sent++; last = r.created_at;
+      /* and the visitor hears back — never the founder's own address */
+      if (t.thank) { const th = t.thank(r); if (th && th.to && String(th.to).toLowerCase() !== WSD_MAIL && await mailVisitor(env, th.to, th.subject, th.text)) thanked++; }
     }
     if (last) await env.OVERHANG.prepare("UPDATE wsd_watch SET since = ?, checked = datetime('now'), sent = sent + ? WHERE tbl = ?")
       .bind(String(last).replace("T", " ").replace(/\+.*$|Z$/, ""), sent, t.table).run();
-    out.push(t.table + ": " + sent + " of " + rows.length + " mailed");
+    out.push(t.table + ": " + sent + " of " + rows.length + " mailed, " + thanked + " thanked");
   }
   await log(env, { kind:"wsd-watch", note: out.join(" | ") }).catch(() => {});
   return { ok:true, watched: out };
@@ -1183,7 +1213,7 @@ async function publishListing(env, ref, opts) {
       "Call the seller. If it is false, take it down:",
       "  https://pay.realroofers.workers.dev/?action=unpublish&ref=" + ref + "&key=YOUR-KEY",
       "(the listing comes off the site; the submission stays in the queue as rejected)"
-    ].filter(x => x !== null).join("\n"));
+    ].filter(x => x !== null).join("\n"), WSD_MAIL);
 
   return { ok:true, name, page, domain_id: dom && dom.id, premium, partner, submission: ref };
 }
@@ -1207,8 +1237,8 @@ async function unpublishListing(env, ref, why) {
 
 /* Cloudflare Email Service: the EMAIL send_email binding, from warrantwire.com,
    the same way the wire worker writes to readers. To the founder only. */
-async function mailFounder(env, subject, text) {
-  const to = env.FOUNDER_EMAIL || "realroofers@gmail.com";
+async function mailFounder(env, subject, text, to) {
+  to = to || env.FOUNDER_EMAIL || "realroofers@gmail.com";
   if (!(env.EMAIL && env.EMAIL.send)) { await log(env, { kind:"mail-skipped", note: subject }); return false; }
   try {
     await env.EMAIL.send({ from: { email: "desk@warrantwire.com", name: "Wall St Domains desk" }, to, subject, text });
