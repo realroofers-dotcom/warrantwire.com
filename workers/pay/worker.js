@@ -1079,9 +1079,8 @@ const WSD_TABLES = [
   { table: "contact_entries", what: "a CONTACT message",
     line: r => [ (r.name || "?") + " · " + (r.email || "?") + (r.phone ? " · " + r.phone : ""), r.subject ? "re: " + r.subject : "", String(r.message || r.text || "").slice(0, 600) ] },
   { table: "email_captures", what: "an EMAIL captured (interest)",
-    line: r => [ r.email || "?", "purpose: " + (r.purpose || r.source || "?"), r.domain_name ? "domain: " + r.domain_name : (r.domain_id ? "domain id " + r.domain_id : "") ] },
-  { table: "seller_view_notifications", what: "a SELLER VIEW notice",
-    line: r => [ JSON.stringify(r).slice(0, 400) ] }
+    line: r => [ r.email || "?", "purpose: " + (r.purpose || r.source || "?"), r.domain_name ? "domain: " + r.domain_name : (r.domain_id ? "domain id " + r.domain_id : "") ] }
+  /* seller_view_notifications has no created_at column and is not watched */
 ];
 
 async function wsdWatch(env) {
