@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3b · 2026-09-11 · paid listings publish themselves on Wall St Domains (Supabase service key), founder emailed, ?action=publish / unpublish";
+const BUILD = "pay-3c · 2026-09-12 · ?sbcheck=1 says whether the Wall St Domains database answers (no key needed, nothing revealed)";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -297,6 +297,10 @@ export default {
           return json({ ok:false, error:"could not open a checkout" }, cors, 502);
         return new Response(null, { status: 303, headers: { location: made.url } });
       }
+      /* does the Wall St Domains database answer this worker? Presence of the
+         secret was visible in the dashboard; whether it WORKS was not. Reports
+         reachable-or-not and a row count — never the key, never a row. */
+      if (q.get("sbcheck")) return json(await sbCheck(env), cors);
       if (q.get("me"))  return json(await me(env, q), cors);
       /* the seller page on Wall St Domains, back from Stripe: was this session paid? */
       if (q.get("paid")) return json(await sessionPaid(env, q), cors);
@@ -1017,6 +1021,27 @@ async function sbWrite(s, method, path, body, prefer) {
   let j = null; try { j = JSON.parse(t); } catch (e) {}
   if (!r.ok) throw new Error("Supabase " + r.status + ": " + ((j && (j.message || j.error)) || t.slice(0, 200)));
   return j;
+}
+
+async function sbCheck(env) {
+  const s = sb(env);
+  if (!s) return { ok:false, build: BUILD, supabase: "NOT CONFIGURED",
+    url_set: !!env.SUPABASE_URL, key_set: !!env.SUPABASE_SERVICE_KEY };
+  try {
+    /* count=exact with limit=0: the header carries the total, no rows come back */
+    const r = await fetch(s.url + "/rest/v1/domains?select=id&limit=0",
+      { headers: { ...s.headers, "Prefer": "count=exact" } });
+    const range = r.headers.get("content-range") || "";
+    const total = Number((range.split("/")[1] || "").trim());
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      return { ok:false, build: BUILD, supabase: "REFUSED " + r.status, detail: t.slice(0, 200),
+        key_shape: String(env.SUPABASE_SERVICE_KEY).slice(0, 10) + "…" };
+    }
+    return { ok:true, build: BUILD, supabase: "reachable", domains_in_table: isNaN(total) ? null : total };
+  } catch (e) {
+    return { ok:false, build: BUILD, supabase: "UNREACHABLE", error: String(e) };
+  }
 }
 
 /* the number in "asking $12,000" and its kin, when the old form put prices in the notes */
