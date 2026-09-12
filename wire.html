@@ -1,0 +1,259 @@
+<!-- BUILT 2026-09-12 · warrantwire wire-1a · THE WIRE: the five free rows a day and his caveat, moved here from the home page when the home page became the three-second page (v1.3) -->
+<!--
+   ⚠ WHAT THIS PAGE IS FOR, v1.2. His note, 11 Sep: the home page was sloppy
+   and crowded — it was trying to be six pages. It does one thing now: type a
+   company, get the verdict. It shows a sample and the five free rows because
+   that is what we research and sell. Everything else has its own address:
+
+     the verdict on a company   /company.html?t=TICKER
+     how the verdict is rendered /rules.html
+     the pattern book            /patterns.html
+     the prices                  /prices.html
+     the GIG readers             /readers.html
+
+   The stylesheet is /wire.css, the shared code /wire.js, the corner /corner.js.
+   What is left inline is only what this page alone does: the free list.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The wire — five free warrant reports a day — Warrant Wire</title>
+<meta name="description" content="A daily record of every SEC filing that carries warrant financing language, and a verdict on any company you name — computed by published rules, with the founder's reading beside it.">
+<link rel="canonical" href="https://warrantwire.com/wire.html">
+<meta property="og:title" content="Warrant Wire">
+<meta property="og:description" content="Every warrant financing, as it is filed. Type a company, get the verdict.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://warrantwire.com/">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.sample{border:1px solid var(--cool);border-radius:10px;padding:18px 20px;margin:22px 0 0;
+  display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;background:rgba(111,168,140,.05)}
+.sample .k{display:block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cool);margin:0 0 4px}
+.sample div{flex:1 1 300px}
+.sample .t{font:600 16px var(--sans);color:var(--ink);margin:0 0 4px}
+.sample p{margin:0;font-size:14px;color:var(--ink2)}
+.sample a.wbuy{flex:0 0 auto}
+.wake{font:700 clamp(13px,2.1vw,16px)/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 10px}
+</style>
+</head>
+<body>
+
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="navscrim" id="navscrim"></div>
+<nav class="navpanel" id="navpanel" aria-label="Site">
+  <a href="/" aria-current="page">The wire<small>Every warrant financing, as it is filed</small></a>
+  <a href="/features.html">What the wire does<small>The mission, and every feature</small></a>
+  <a href="/company.html?t=TOVX">A worked example<small>TOVX — the full verdict, free</small></a>
+  <a href="/concern.html">Going concern<small>Every company that said it — $80 a year</small></a>
+  <a href="/violations.html">Potential Rule 421 violations<small>Every filing graded F or below</small></a>
+  <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
+  <a href="/patterns.html">The patterns<small>What we see, with the formula for each</small></a>
+  <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
+  <a href="/readers.html">GIG readers<small>Named people, opinions for sale</small></a>
+  <a href="/look.html">Look at this<small>A company's whole record, as it filed it</small></a>
+  <a href="/cost.html">What the raising costs<small>A running total, from the filings</small></a>
+  <a href="/counter.html">The screw<small>What the whole market put in, and what is left</small></a>
+  <a href="/grades.html">Company grades<small>Every filing marked against the SEC's plain English rule</small></a>
+  <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
+  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
+  <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
+</nav>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">Reading the wire</span></span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="shell">
+<aside class="rail">
+  <div class="k8">
+    <a href="https://8k10q.com" aria-label="8K10Q.com — we read, it's never as it seems"><img src="/8k10q.svg" alt="8K10Q.com — we read. It's never as it seems." width="953" height="326"></a>
+    <span class="why">Where a filing gets read</span>
+  </div>
+  <div class="railbox">
+    <h4>Read one</h4>
+    <p>Any filing on this list, in plain English, with the sections that matter marked. <b style="color:var(--ink)">$20</b>.</p>
+    <a class="ghost" href="https://8k10q.com">8k10q.com &rarr;</a>
+    <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
+    <a class="ghost" href="https://8k10q.com/army.html">Join the 8K10Q Army &rarr;</a>
+  </div>
+  <div class="railslot" data-ad="rail"></div>
+</aside>
+
+<div>
+
+<div class="hero" style="padding-bottom:18px"><h1>The wire.</h1><p class="lede">Every filing that carried warrant terms, as it was filed. Five a day are free. <a href="/" style="color:var(--cool)">Check your own stock &rarr;</a></p></div>
+<div style="padding:26px 0 0">
+  <h2 class="filed">Five free warrant reports a day.</h2>
+  <p class="filedsub">Filed in the last few days. We read the documents, not the press releases.
+  Name, industry, and what is in it &mdash; press the ticker for the verdict.</p>
+
+  <div class="bar">
+    <button class="on" data-d="7">7 days</button>
+    <button data-d="14">14 days</button>
+    <button data-d="30">30 days</button>
+    <button data-d="90">90 days</button>
+    <button data-h="1">Heavy terms only</button>
+    <span class="ct" id="ct"></span>
+  </div>
+  <div class="sell" id="sell"></div>
+  <div id="rows"><div class="quiet">Reading the wire&hellip;</div></div>
+  <p id="wbuymsg"></p>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ⚠ HIS WORDS, 10 Sep 2026, VERBATIM. Dictated by Mark and set here as
+       given — the only changes are punctuation and where the lines break.
+       Nothing in this block was written by anyone else and it carries his
+       name, so it is not to be reworded or tightened in a later pass.
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="caveat" style="margin-top:26px"><b>Read this with the list</b>
+    A match is not a finding. However, based on past experience, the results we
+    search for bring suspicion because they have been seen before. You must read
+    everything in the markets today. This language is ordinary and lawful, and
+    most of these deals are unremarkable. A filing appears here because the
+    document is worth reading &mdash;
+    <b class="in">nothing on this page says any company or any person did anything wrong.</b>
+    <span class="sig">Thank you.<br><em>Mark Nejmeh</em>, founder</span>
+  </div>
+</div>
+
+<div class="band">
+  <div class="priceline">
+    <b>$12</b>
+    <span>One company, for a year: every warrant filing on record back to 2021, the verdict and the
+    rules that fired, and its going concern status. One payment. Nothing recurring.</span>
+    <a href="/prices.html">Everything else we sell &rarr;</a>
+  </div>
+</div>
+
+<div class="band">
+  <div class="alerts">
+    <h2>Be told when it is your company</h2>
+    <p><b style="color:var(--ink)">Tell us the tickers you hold and we will write to you the day one of
+    them files warrant paper. That costs nothing and it always will.</b></p>
+    <div class="form" id="form">
+      <input id="em" type="email" placeholder="your email" autocomplete="email">
+      <input id="tk" type="text" placeholder="tickers you hold — TOVX WGRX IBM">
+      <button type="button" id="signup">Put me on the list</button>
+    </div>
+    <p class="fine" id="fine">No charge and no card. Your tickers are used to decide what to send you
+    and are never published or sold.</p>
+  </div>
+</div>
+
+<div class="band">
+  <h2>Companion sites</h2>
+  <div class="sis">
+    <a href="https://8k10q.com"><b>8K10Q.COM</b><span>We read any filing and deliver it in plain
+      English with the sections that matter marked.</span></a>
+    <a href="https://triggeredshort.com"><b>TRIGGEREDSHORT.COM</b><span>The research docket &mdash;
+      what we found, the ten questions we asked to find it, and what happened to the stock next.</span></a>
+  </div>
+</div>
+
+</div></div><!-- /.shell -->
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/" aria-current="page">The wire</a>
+    <a href="/company.html?t=TOVX">A worked example</a>
+    <a href="/rules.html">How the verdict is rendered</a>
+    <a href="/patterns.html">The patterns</a>
+    <a href="/prices.html">What it costs</a>
+    <a href="/readers.html">GIG readers</a>
+    <a href="/look.html">Look at this</a>
+    <a href="/cost.html">What the raising costs</a>
+    <a href="/counter.html">The screw</a>
+    <a href="/grades.html">Company grades</a>
+    <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
+    <a href="https://8k10q.com">Read a filing</a>
+    <a href="/about.html">Who runs the wire</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
+  Warrant Wire reads the full text of SEC filings, exhibits included, and records those that carry
+  warrant financing language. Nothing here is investment advice, nothing here is a recommendation to
+  buy or sell any security, and nothing here alleges that anyone broke any law.<br>
+  Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a> &middot;
+  <a href="https://triggeredshort.com/method.html">Method and corrections</a>
+  <p class="stamp">Built 2026-09-12 &middot; warrantwire wire-1a</p>
+</footer></div>
+
+<script src="/wire.js"></script>
+<script>
+/* THE FREE LIST. The only thing this page does that no other page does. */
+(function () {
+  "use strict";
+  var days = 7, heavy = 0;
+
+  document.querySelectorAll(".bar button").forEach(function (b) {
+    b.onclick = function () {
+      if (b.dataset.d) {
+        days = +b.dataset.d;
+        document.querySelectorAll(".bar button[data-d]").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+      } else { heavy = heavy ? 0 : 1; b.classList.toggle("on"); }
+      load();
+    };
+  });
+
+  function load() {
+    document.getElementById("rows").innerHTML = '<div class="quiet">Reading&hellip;</div>';
+    fetch(WW.API + "?wire=1&days=" + days + (heavy ? "&heavy=1" : ""))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) throw new Error("no data");
+        var rows = d.rows || [];
+        document.getElementById("ct").textContent = rows.length + " filings since " + d.since;
+        var already = d.already_screened || 0;
+        document.getElementById("sell").innerHTML =
+            '<div><b>' + rows.length + '</b>filings carrying warrant terms in this window</div>'
+          + '<div><b>' + already + ' <span>on the docket</span></b>already screened at triggeredshort.com</div>'
+          + '<div><b>' + (rows.length - already) + ' <span>unread</span></b>nobody has looked at these yet</div>'
+          + '<div><b>$12 <span>a company</span></b>the verdict on any one of them</div>';
+        document.getElementById("live").textContent = rows.length ? "Wire is live" : "Wire is quiet";
+
+        /* FIVE. NOT ALL OF THEM. The five most recent are the free part of this
+           site. Everything past five is the thing people pay for. */
+        var free = rows.slice(0, 5), rest = rows.length - free.length;
+        document.getElementById("rows").innerHTML = rows.length
+          ? free.map(WW.row).join("") + (rest > 0 ? WW.gate(rest) : "")
+          : '<div class="quiet">Nothing on the wire in this window. That is the record as it stands.</div>';
+        WW.clips.reveal();
+      })
+      .catch(function () {
+        document.getElementById("rows").innerHTML = '<div class="quiet">The wire is not reachable right now.</div>';
+      });
+  }
+  load();
+
+  /* the alert list: write-only, never reads back */
+  document.getElementById("signup").addEventListener("click", function () {
+    var em = document.getElementById("em").value.trim();
+    var tk = document.getElementById("tk").value.trim();
+    if (!em || em.indexOf("@") < 1) {
+      document.getElementById("fine").textContent = "An email address, please — that is the only part we need."; return;
+    }
+    document.getElementById("form").innerHTML = '<p class="ok">On the list. We will write before anything costs anything.</p>';
+    document.getElementById("fine").textContent = "Nothing has been charged and no card was asked for.";
+    fetch(WW.API + "?alert=1&email=" + encodeURIComponent(em) + "&tickers=" + encodeURIComponent(tk)).catch(function () {});
+  });
+
+  /* an old address with ?q= still lands on the right page */
+  var pre = new URLSearchParams(location.search).get("q");
+  if (pre) WW.go(pre);
+})();
+</script>
+<script src="/corner.js"></script>
+<script src="/clock.js"></script>
+<script src="https://adhotbox.com/box.js"></script>
+<script src="https://cart.realroofers.workers.dev/" defer></script>
+</body>
+</html>

@@ -1,249 +1,217 @@
-<!-- BUILT 2026-09-11 · warrantwire index-v1.2 · the search, the sample, the five free rows — and nothing that has its own page -->
+<!-- BUILT 2026-09-12 · warrantwire index-v1.3 · THE THREE-SECOND HOME PAGE: the screw, the headline, the box, six doors. The five free rows and his caveat moved to /wire.html. -->
 <!--
-   ⚠ WHAT THIS PAGE IS FOR, v1.2. His note, 11 Sep: the home page was sloppy
-   and crowded — it was trying to be six pages. It does one thing now: type a
-   company, get the verdict. It shows a sample and the five free rows because
-   that is what we research and sell. Everything else has its own address:
+   THE BRIEF, in his words, 12 Sep: people get to the site and say forget it,
+   too much to read. They should get the idea of what the site does in THREE
+   SECONDS, then the deep information waits underneath. Icons with labels
+   that bring them to buy.
 
-     the verdict on a company   /company.html?t=TICKER
-     how the verdict is rendered /rules.html
-     the pattern book            /patterns.html
-     the prices                  /prices.html
-     the GIG readers             /readers.html
+   THREE SECONDS = one line, one picture, one thing to do.
+     the line     Getting screwed in the market? It's in your company's filings. We read them.
+     the picture  FILE SALAD — a filing with the salad greyed out and one clause
+                  circled, with the plain-English translation beside it
+     the thing    the ticker box
 
-   The stylesheet is /wire.css, the shared code /wire.js, the corner /corner.js.
-   What is left inline is only what this page alone does: the free list.
+   Under that, six doors — each a question a burned shareholder is already
+   asking, each ending at a purchase or the free alert. Then the proof (the
+   live counts), his caveat verbatim, the footer. The 8K10Q rail, the radio
+   and the companion sites are gone from this page; they live in the footer.
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Warrant Wire — every warrant financing, as it is filed</title>
-<meta name="description" content="A daily record of every SEC filing that carries warrant financing language, and a verdict on any company you name — computed by published rules, with the founder's reading beside it.">
+<title>Warrant Wire — getting screwed in the market? It's in the filings.</title>
+<meta name="description" content="Type your ticker. We read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it.">
 <link rel="canonical" href="https://warrantwire.com/">
 <meta property="og:title" content="Warrant Wire">
-<meta property="og:description" content="Every warrant financing, as it is filed. Type a company, get the verdict.">
+<meta property="og:description" content="Getting screwed in the market? It is in your company's filings. We read them.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://warrantwire.com/">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="/wire.css">
 <style>
 /* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
-.sample{border:1px solid var(--cool);border-radius:10px;padding:18px 20px;margin:22px 0 0;
-  display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;background:rgba(111,168,140,.05)}
-.sample .k{display:block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cool);margin:0 0 4px}
-.sample div{flex:1 1 300px}
-.sample .t{font:600 16px var(--sans);color:var(--ink);margin:0 0 4px}
-.sample p{margin:0;font-size:14px;color:var(--ink2)}
-.sample a.wbuy{flex:0 0 auto}
-.wake{font:700 clamp(13px,2.1vw,16px)/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 10px}
+.wrapn{max-width:1100px;margin:0 auto;padding:0 22px}
+/* the three seconds */
+.three{padding:44px 0 34px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+@media(max-width:860px){.three{grid-template-columns:1fr;gap:26px;padding-top:30px}}
+.three h1{font:700 clamp(30px,4.2vw,46px)/1.08 var(--serif);color:var(--ink);margin:0 0 14px;letter-spacing:-.01em}
+.three h1 em{font-style:normal;color:var(--hot)}
+.three .sub{font-size:17px;color:var(--ink2);margin:0 0 6px;max-width:48ch;line-height:1.55}
+.three .finder{max-width:520px}
+.three .finder input{font-size:17px;padding:14px 16px}
+.three .finder button{font-size:16px;padding:0 22px;white-space:nowrap;transition:background .2s}
+.three .finder button.found{background:var(--warm)}
+.three .freenote{font-size:14px;color:var(--ink3)}
+.three .freenote a{color:var(--cool)}
+/* ONE CLAUSE, AS EDGAR SHOWS IT — the light-blue filing header a shareholder
+   actually meets, one sentence of the salad, and what it means. Small. */
+.edgar{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel);max-width:560px}
+.edgar .ehd{background:#dfeaf6;color:#1b3a5c;font:600 11.5px var(--sans);padding:8px 14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid #b9cde4}
+.edgar .eq{margin:0;padding:14px 16px 12px;font:italic 14px/1.55 Georgia,"Times New Roman",serif;color:var(--ink2);border-left:3px solid var(--hot)}
+.edgar .etr{padding:0 16px 14px}
+.edgar .etr .k{display:block;font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 4px}
+.edgar .etr p{margin:0;font-size:15.5px;color:var(--ink);line-height:1.5}
+/* the letter: if your stock comes up File Salad, send it to the SEC */
+.send{margin:26px 0 0;border:2px solid var(--hot);border-radius:12px;padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:14px 24px;align-items:center;background:rgba(198,90,74,.06)}
+@media(max-width:700px){.send{grid-template-columns:1fr}}
+.send .k{display:block;font:700 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 6px}
+.send h3{font:700 clamp(19px,2.4vw,26px)/1.2 var(--serif);color:var(--ink);margin:0 0 8px}
+.send p{margin:0;font-size:15px;color:var(--ink2);max-width:60ch;line-height:1.5}
+.send p b{color:var(--ink)}
+.send .n{text-align:center}
+.send .n b{display:block;font:700 34px/1 var(--mono);color:var(--hot)}
+.send .n span{display:block;font-size:12.5px;color:var(--ink2);margin:6px 0 12px;max-width:16ch}
+/* the six doors */
+.doors{padding:34px 0 10px}
+.doors h2{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+/* ⚠ THE DOORS ARE COLOURED, AND FEW WORDS. His note: friendly shapes, colour,
+   we get lost in the words and the black. Each door has its own colour, the
+   icon sits in a solid disc of it, the title is one line, the text is one
+   sentence, the price is the last line. */
+.door{--c:var(--hot);display:block;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;background:var(--panel);color:var(--ink);transition:border-color .15s,transform .15s,background .15s}
+.door:hover{border-color:var(--c);transform:translateY(-2px);background:color-mix(in srgb,var(--c) 8%,var(--panel))}
+.door .disc{width:56px;height:56px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;margin:0 0 14px;box-shadow:0 6px 18px color-mix(in srgb,var(--c) 45%,transparent)}
+.door svg{width:30px;height:30px;display:block;stroke:#14150f;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.door b{display:block;font:700 21px/1.2 var(--serif);margin:0 0 4px}
+.door span{display:block;font-size:13.5px;color:var(--ink2);line-height:1.5}
+.door i{display:inline-block;margin-top:12px;font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#14150f;background:var(--c);font-style:normal;padding:4px 9px;border-radius:999px}
+.door.lime{--c:#a6f542} .door.amber{--c:#e5b83a} .door.green{--c:#63c48f} .door.blue{--c:#6fa8e0} .door.violet{--c:#b48be6} .door.orange{--c:#f0904a}
+/* the proof */
+.proof{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:26px 0 8px}
+@media(max-width:700px){.proof{grid-template-columns:1fr}}
+.proof div{border-top:2px solid var(--line);padding:12px 0 0}
+.proof b{display:block;font:700 30px/1 var(--mono);color:var(--ink);letter-spacing:-.02em}
+.proof b.hot{color:var(--hot)}
+.proof span{display:block;margin-top:6px;font-size:13.5px;color:var(--ink2)}
+.proof a{color:var(--cool);text-decoration:none;font-size:13px}
+/* the sample line */
+.sampleline{margin:26px 0 0;padding:16px 18px;border:1px solid var(--cool);border-radius:10px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:rgba(111,168,140,.05)}
+.sampleline p{margin:0;font-size:14.5px;color:var(--ink2);flex:1 1 320px}
+.sampleline p b{color:var(--ink)}
+/* the menu, cut to five */
+.five{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:14px}
+.five a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--ink3)}
+.five a:hover{color:var(--ink)}
+.mockflag{position:fixed;left:14px;bottom:14px;z-index:9;background:var(--warm);color:#160f06;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;border-radius:3px}
+/* THE SCREW — the counter, first thing on the page, sized to fit a phone.
+   ⚠ THE FONT SCALES WITH THE SCREEN, and the digits are tabular so the
+   number does not jitter as it ticks. 18 characters at 5.4vw fits 360px. */
+.screw{border-bottom:1px solid var(--line);padding:22px 0 20px;text-align:center}
+.screw .k{display:inline-block;font:700 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--hot);border:1px solid var(--hot);border-radius:3px;padding:4px 9px;margin:0 0 12px}
+.screw .odo{font:700 clamp(26px,5.4vw,60px)/1 var(--mono);color:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:clip;margin:0 0 10px}
+.screw .odo i{font-style:normal;color:var(--hot)}
+.screw p{margin:0 auto;font-size:clamp(14px,1.6vw,17px);color:var(--ink2);max-width:70ch;line-height:1.5}
+.screw p b{color:var(--ink)}
+.screw p a{color:var(--hot);text-decoration:none;font-weight:700;white-space:nowrap}
+.screw small{display:block;margin-top:8px;font:400 11px var(--mono);color:var(--ink3)}
 </style>
 </head>
 <body>
 
-<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
-<button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="navpanel" aria-label="Menu"><span></span><span></span><span></span></button>
-<div class="navscrim" id="navscrim"></div>
-<nav class="navpanel" id="navpanel" aria-label="Site">
-  <a href="/" aria-current="page">The wire<small>Every warrant financing, as it is filed</small></a>
-  <a href="/features.html">What the wire does<small>The mission, and every feature</small></a>
-  <a href="/company.html?t=TOVX">A worked example<small>TOVX — the full verdict, free</small></a>
-  <a href="/concern.html">Going concern<small>Every company that said it — $80 a year</small></a>
-  <a href="/violations.html">Potential Rule 421 violations<small>Every filing graded F or below</small></a>
-  <a href="/rules.html">How the verdict is rendered<small>Every rule, in plain English, dated</small></a>
-  <a href="/patterns.html">The patterns<small>What we see, with the formula for each</small></a>
-  <a href="/prices.html">What it costs<small>Every product, one price each</small></a>
-  <a href="/readers.html">GIG readers<small>Named people, opinions for sale</small></a>
-  <a href="/look.html">Look at this<small>A company's whole record, as it filed it</small></a>
-  <a href="/cost.html">What the raising costs<small>A running total, from the filings</small></a>
-  <a href="/counter.html">The screw<small>What the whole market put in, and what is left</small></a>
-  <a href="/grades.html">Company grades<small>Every filing marked against the SEC's plain English rule</small></a>
-  <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
-  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
-  <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
-</nav>
-
 <header class="top"><div class="wrap masthead"><div class="mast">
-  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
-  <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">Reading the wire</span></span>
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>We read the filings. All of them.</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">Wire is live</span></span>
   <span id="nyc"></span>
 </div></div></header>
 
-<div class="shell">
-<aside class="rail">
-  <div class="k8">
-    <a href="https://8k10q.com" aria-label="8K10Q.com — we read, it's never as it seems"><img src="/8k10q.svg" alt="8K10Q.com — we read. It's never as it seems." width="953" height="326"></a>
-    <span class="why">Where a filing gets read</span>
-  </div>
-  <div class="railbox">
-    <h4>Read one</h4>
-    <p>Any filing on this list, in plain English, with the sections that matter marked. <b style="color:var(--ink)">$20</b>.</p>
-    <a class="ghost" href="https://8k10q.com">8k10q.com &rarr;</a>
-    <a class="ghost" href="https://triggeredshort.com">The research docket &rarr;</a>
-    <a class="ghost" href="https://8k10q.com/army.html">Join the 8K10Q Army &rarr;</a>
-  </div>
-  <div class="railslot" data-ad="rail"></div>
-</aside>
+<main><div class="wrapn">
 
-<div>
+  <!-- ═══ THE SCREW — first, before anything ═══ -->
+  <section class="screw" aria-live="off">
+    <span class="k">The screw</span>
+    <div class="odo"><i>$</i><span id="odo">13,288,659,808,368</span></div>
+    <p><b>Bagholders lost that much.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
+    <small id="rate"><span id="fell">1,359</span> companies, <span id="yrs">2016&ndash;2026</span>, at the decade&rsquo;s rate. <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
+  </section>
 
-<div class="hero">
-  <p class="wake">Wake up &mdash; it's in the warrants.</p>
-  <h1>Every warrant financing, as it is filed.</h1>
-  <p class="lede"><b>Type a company. Get the verdict</b> &mdash; what its warrant paper adds up to,
-  rendered by <a href="/rules.html" style="color:var(--cool)">published rules</a>, with the founder&rsquo;s
-  own reading beside it.</p>
-
-  <div class="finder">
-    <input id="q" type="text" placeholder="TICKER OR COMPANY" maxlength="40"
-           autocapitalize="characters" autocorrect="off" spellcheck="false">
-    <button id="go" type="button">Get the verdict</button>
-  </div>
-  <p class="freenote">The answer is free. The report &mdash; every filing, the verdict, and the going concern status &mdash; is $12 for a year. A search that finds nothing costs you nothing.</p>
-  <p class="links">
-    <a href="/features.html">What the wire does</a><i>|</i>
-    <a href="/rules.html">How the verdict is rendered</a><i>|</i>
-    <a href="/patterns.html">The patterns</a><i>|</i>
-    <a href="/prices.html">Prices</a><i>|</i>
-    <a class="hot" href="/counter.html">The screw</a>
-  </p>
-
-  <!-- ⚠ THE SAMPLE, ON THE HOME PAGE. His instruction: the home page gives a
-       sample. It is TOVX because it is the company he has read every filing
-       of — a sample nobody can check is worth less than one anybody can. -->
-  <div class="sample">
+  <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
+       come to get something done; the explanation is on the pages the doors
+       lead to. ═══ -->
+  <section class="three">
     <div>
-      <span class="k">The sample &mdash; free, in full</span>
-      <p class="t">Theriva Biologics (TOVX)</p>
-      <p>Sixty filings on the wire since 2021, four repricings, the last exercised 29% above the
-      market. The whole verdict, the rules that fired, and who signed &mdash; open to anyone.</p>
-    </div>
-    <a class="wbuy ghost" href="/company.html?t=TOVX">See the sample &rarr;</a>
-  </div>
-
-  <!-- the corner: fixed top right on a wide screen; in the flow, here, on a phone -->
-  <div id="topstack">
-  <div class="squawk" id="squawk" hidden>
-    <div class="top">
-      <span class="onair"><span class="dot" aria-hidden="true"></span><span id="sqstate">On air</span></span>
-      <span class="who" id="sqwho">Amalia</span>
-      <span class="when" id="sqwhen"></span>
-    </div>
-    <div class="row">
-      <button class="go" id="sqgo" aria-label="Play the squawk">
-        <span class="tri" aria-hidden="true"></span><span class="sq" aria-hidden="true"></span>
-      </button>
-      <div class="mid">
-        <p class="line" id="sqline"></p>
-        <div class="bar"><i id="sqbar"></i></div>
+      <h1>Getting screwed in the market? <em>It&rsquo;s in your company&rsquo;s filings.</em> We read them.</h1>
+      <p class="sub" style="font-family:var(--serif);font-size:21px;color:var(--ink);margin:0 0 6px">You can still win. <em style="color:var(--hot);font-style:normal;font-weight:700">If you read.</em></p>
+      <div class="finder">
+        <input id="q" type="text" placeholder="YOUR TICKER" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <button id="go" type="button">Check my stock</button>
       </div>
+      <p class="freenote" id="qnote" style="color:var(--ink2);min-height:0"></p>
+      <p class="freenote">Nothing found, nothing paid. <a href="/company.html?t=TOVX">See a report free &rarr;</a></p>
     </div>
-    <p class="next" id="sqnext"></p>
-    <p class="times" id="sqtimes" hidden></p>
-    <audio id="sqaudio" preload="none"></audio>
-  </div>
-  <div class="bkcorner" id="bkcorner" role="status" aria-live="polite">
-    <div class="hd">
-      <span class="dot" aria-hidden="true"></span>
-      <span class="lbl">Breaking</span>
-      <button class="x" id="bkx" aria-label="Close">&times;</button>
+  </section>
+
+  <!-- ═══ THE SIX DOORS ═══ -->
+  <section class="doors">
+    <h2>What do you want to know?</h2>
+    <div class="grid">
+      <a class="door lime" href="#q" id="door-search">
+        <div class="disc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <b>Is it my stock?</b>
+        <i>$12 a year</i>
+      </a>
+      <a class="door amber" href="/concern.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18v.5"/></svg></div>
+        <b>Is it about to fold?</b>
+        <i>$80 a year</i>
+      </a>
+      <a class="door orange" href="/patterns.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M4 12h16" stroke-dasharray="2 2"/></svg></div>
+        <b>Why did I get reverse-split?</b>
+        <i>Free</i>
+      </a>
+      <a class="door violet" href="/company.html?t=TOVX#could">
+        <div class="disc"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M15 6h6M15 10h6M17 14h4"/></svg></div>
+        <b>Who&rsquo;s behind it?</b>
+        <i>In the report</i>
+      </a>
+      <a class="door green" href="/violations.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 11h8M8 14h5" stroke-dasharray="1.5 1.5"/><path d="M15 15l4 4"/></svg></div>
+        <b>Why can&rsquo;t I read the filing?</b>
+        <i>Free</i>
+      </a>
+      <a class="door blue" href="#alerts">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
+        <b>Warn me when it&rsquo;s mine.</b>
+        <i>Free, always</i>
+      </a>
     </div>
-    <p id="bktext"></p>
-    <div id="bkaudio"></div>
-    <p class="by" id="bkby"></p>
-    <audio id="bkplayer" preload="none" style="display:none"></audio>
-  </div>
-  </div><!-- /#topstack -->
-</div>
 
-<div style="padding:26px 0 0">
-  <h2 class="filed">Five free warrant reports a day.</h2>
-  <p class="filedsub">Filed in the last few days. We read the documents, not the press releases.
-  Name, industry, and what is in it &mdash; press the ticker for the verdict.</p>
-
-  <div class="bar">
-    <button class="on" data-d="7">7 days</button>
-    <button data-d="14">14 days</button>
-    <button data-d="30">30 days</button>
-    <button data-d="90">90 days</button>
-    <button data-h="1">Heavy terms only</button>
-    <span class="ct" id="ct"></span>
-  </div>
-  <div class="sell" id="sell"></div>
-  <div id="rows"><div class="quiet">Reading the wire&hellip;</div></div>
-  <p id="wbuymsg"></p>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       ⚠ HIS WORDS, 10 Sep 2026, VERBATIM. Dictated by Mark and set here as
-       given — the only changes are punctuation and where the lines break.
-       Nothing in this block was written by anyone else and it carries his
-       name, so it is not to be reworded or tightened in a later pass.
-       ═══════════════════════════════════════════════════════════ -->
-  <div class="caveat" style="margin-top:26px"><b>Read this with the list</b>
-    A match is not a finding. However, based on past experience, the results we
-    search for bring suspicion because they have been seen before. You must read
-    everything in the markets today. This language is ordinary and lawful, and
-    most of these deals are unremarkable. A filing appears here because the
-    document is worth reading &mdash;
-    <b class="in">nothing on this page says any company or any person did anything wrong.</b>
-    <span class="sig">Thank you.<br><em>Mark Nejmeh</em>, founder</span>
-  </div>
-</div>
-
-<div class="band">
-  <div class="priceline">
-    <b>$12</b>
-    <span>One company, for a year: every warrant filing on record back to 2021, the verdict and the
-    rules that fired, and its going concern status. One payment. Nothing recurring.</span>
-    <a href="/prices.html">Everything else we sell &rarr;</a>
-  </div>
-</div>
-
-<div class="band">
-  <div class="alerts">
-    <h2>Be told when it is your company</h2>
-    <p><b style="color:var(--ink)">Tell us the tickers you hold and we will write to you the day one of
-    them files warrant paper. That costs nothing and it always will.</b></p>
-    <div class="form" id="form">
-      <input id="em" type="email" placeholder="your email" autocomplete="email">
-      <input id="tk" type="text" placeholder="tickers you hold — TOVX WGRX IBM">
-      <button type="button" id="signup">Put me on the list</button>
+    <!-- the letter: three numbers and a line, nothing more. The page it leads
+         to says the rest. -->
+    <div class="proof">
+      <div><b id="p-filings">&mdash;</b><span>warrant filings this week</span></div>
+      <div><b class="hot" id="p-letters">&mdash;</b><span>letters to the SEC drawn here, <span id="p-cos">&mdash;</span> companies. <a href="/violations.html">Send yours &rarr;</a></span></div>
+      <div><b id="p-concern">&mdash;</b><span>companies that said they may not continue</span></div>
     </div>
-    <p class="fine" id="fine">No charge and no card. Your tickers are used to decide what to send you
-    and are never published or sold.</p>
-  </div>
-</div>
+  </section>
 
-<div class="band">
-  <h2>Companion sites</h2>
-  <div class="sis">
-    <a href="https://8k10q.com"><b>8K10Q.COM</b><span>We read any filing and deliver it in plain
-      English with the sections that matter marked.</span></a>
-    <a href="https://triggeredshort.com"><b>TRIGGEREDSHORT.COM</b><span>The research docket &mdash;
-      what we found, the ten questions we asked to find it, and what happened to the stock next.</span></a>
+  <!-- ═══ THE ALERT — one line ═══ -->
+  <div class="band" id="alerts">
+    <div class="alerts">
+      <h2>Warn me when it&rsquo;s mine.</h2>
+      <div class="form" id="form">
+        <input id="em" type="email" placeholder="your email" autocomplete="email">
+        <input id="tk" type="text" placeholder="tickers you hold — TOVX WGRX IBM">
+        <button type="button" id="signup">Put me on the list</button>
+      </div>
+      <p class="fine" id="fine">Free, always. Never published or sold.</p>
+    </div>
   </div>
-</div>
 
-</div></div><!-- /.shell -->
+</div></main>
 
 <div class="wrap"><footer>
   <div class="footnav">
-    <a href="/" aria-current="page">The wire</a>
-    <a href="/company.html?t=TOVX">A worked example</a>
-    <a href="/rules.html">How the verdict is rendered</a>
-    <a href="/patterns.html">The patterns</a>
-    <a href="/prices.html">What it costs</a>
-    <a href="/readers.html">GIG readers</a>
-    <a href="/look.html">Look at this</a>
-    <a href="/cost.html">What the raising costs</a>
-    <a href="/counter.html">The screw</a>
-    <a href="/grades.html">Company grades</a>
-    <a href="https://triggeredshort.com/glossary.html">What the words mean</a>
-    <a href="https://8k10q.com">Read a filing</a>
-    <a href="/about.html">Who runs the wire</a>
-    <a href="/terms.html">Terms</a>
-    <a href="/privacy.html">Privacy</a>
+    <a href="/wire.html">The wire</a><a href="/company.html">Search</a><a href="/concern.html">Going concern</a><a href="/patterns.html">The patterns</a><a href="/violations.html">File Salad</a>
+    <a href="/rules.html">How the verdict is rendered</a><a href="/prices.html">What it costs</a><a href="/readers.html">GIG readers</a><a href="/look.html">Look at this</a>
+    <a href="/cost.html">What the raising costs</a><a href="/counter.html">The screw</a><a href="/player.html">On air</a>
+    <a href="https://8k10q.com">8K10Q &mdash; read any filing</a><a href="https://triggeredshort.com">TriggeredShort &mdash; the docket</a>
+    <a href="/feedback.html">Suggestions</a><a href="/about.html">Who runs the wire</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
   </div>
   <em>"It's never as it seems." &mdash; Mark Nejmeh</em><br><br>
   Warrant Wire reads the full text of SEC filings, exhibits included, and records those that carry
@@ -251,77 +219,77 @@
   buy or sell any security, and nothing here alleges that anyone broke any law.<br>
   Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a> &middot;
   <a href="https://triggeredshort.com/method.html">Method and corrections</a>
-  <p class="stamp">Built 2026-09-11 &middot; warrantwire index-v1.2</p>
+  <p class="stamp">Version 1.3 &middot; 12 September 2026 &middot; warrantwire index-v1.3</p>
 </footer></div>
 
 <script src="/wire.js"></script>
 <script>
-/* THE FREE LIST. The only thing this page does that no other page does. */
 (function () {
   "use strict";
-  var days = 7, heavy = 0;
+  /* THE SCREW: the same number and the same rate as /counter.html — what the
+     fallers among the warrant-paper companies lost, ticking at the decade's
+     average rate from the moment the page opens */
+  function commas(n) { return Math.floor(Number(n) || 0).toLocaleString("en-US"); }
+  fetch("https://counter.realroofers.workers.dev/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || !d.ok || !d.warrant) return;
+    var years = Math.max(1, d.to_year - d.from_year);
+    var lost = d.warrant.lost_by_fallers, perSec = lost / (years * 31557600), t0 = Date.now();
+    document.getElementById("fell").textContent = commas(d.warrant.fell);
+    document.getElementById("yrs").textContent = d.from_year + "–" + d.to_year;
+    var odo = document.getElementById("odo");
+    function tick() { odo.textContent = commas(lost + perSec * (Date.now() - t0) / 1000); }
+    tick(); if (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(tick, 200);
+  }).catch(function () {});
+  var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
+  document.getElementById("checkme").addEventListener("click", toBox);
+  document.getElementById("door-search").addEventListener("click", toBox);
 
-  document.querySelectorAll(".bar button").forEach(function (b) {
-    b.onclick = function () {
-      if (b.dataset.d) {
-        days = +b.dataset.d;
-        document.querySelectorAll(".bar button[data-d]").forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
-      } else { heavy = heavy ? 0 : 1; b.classList.toggle("on"); }
-      load();
-    };
-  });
-
-  function load() {
-    document.getElementById("rows").innerHTML = '<div class="quiet">Reading&hellip;</div>';
-    fetch(WW.API + "?wire=1&days=" + days + (heavy ? "&heavy=1" : ""))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ok) throw new Error("no data");
-        var rows = d.rows || [];
-        document.getElementById("ct").textContent = rows.length + " filings since " + d.since;
-        var already = d.already_screened || 0;
-        document.getElementById("sell").innerHTML =
-            '<div><b>' + rows.length + '</b>filings carrying warrant terms in this window</div>'
-          + '<div><b>' + already + ' <span>on the docket</span></b>already screened at triggeredshort.com</div>'
-          + '<div><b>' + (rows.length - already) + ' <span>unread</span></b>nobody has looked at these yet</div>'
-          + '<div><b>$12 <span>a company</span></b>the verdict on any one of them</div>';
-        document.getElementById("live").textContent = rows.length ? "Wire is live" : "Wire is quiet";
-
-        /* FIVE. NOT ALL OF THEM. The five most recent are the free part of this
-           site. Everything past five is the thing people pay for. */
-        var free = rows.slice(0, 5), rest = rows.length - free.length;
-        document.getElementById("rows").innerHTML = rows.length
-          ? free.map(WW.row).join("") + (rest > 0 ? WW.gate(rest) : "")
-          : '<div class="quiet">Nothing on the wire in this window. That is the record as it stands.</div>';
-        WW.clips.reveal();
-      })
-      .catch(function () {
-        document.getElementById("rows").innerHTML = '<div class="quiet">The wire is not reachable right now.</div>';
-      });
+  /* ⚠ THE BUTTON CHANGES WHEN THERE IS SOMETHING TO SEE. His ask: if the
+     search finds filings, the button becomes the $12 buy. The wire is asked
+     as they type (a pause of half a second), and the answer is free — a
+     ticker with nothing on it stays "Read mine" and costs nothing. */
+  var qbox = document.getElementById("q"), gobtn = document.getElementById("go"), timer = null, lastQ = "";
+  function look() {
+    var t = qbox.value.trim().toUpperCase();
+    if (!t || t === lastQ) return; lastQ = t;
+    fetch(WW.API + "?wire=1&q=" + encodeURIComponent(t)).then(function (r) { return r.json(); }).then(function (d) {
+      if (qbox.value.trim().toUpperCase() !== t) return;
+      var n = d && d.about && Number(d.about.filings || 0);
+      var note = document.getElementById("qnote");
+      if (n > 0) { gobtn.textContent = n + " filing" + (n === 1 ? "" : "s") + " found — the report, $12"; gobtn.classList.add("found"); note.textContent = ""; }
+      else {
+        gobtn.textContent = "Read mine"; gobtn.classList.remove("found");
+        /* ⚠ NO COMPANY EVER LOOKS CLEAN. His ruling, 12 Sep — GOOG and MRVL
+           just did a massive warrant deal in fuzzy language. Nothing on the
+           wire means the wire has not caught it, and it says so. */
+        note.innerHTML = "Nothing matched for <b>" + WW.esc(t) + "</b> since 2021. <b>That is not a clean bill of health</b> — it means the wire has not caught it yet. Big companies do these deals too, in fuzzier words.";
+      }
+    }).catch(function () {});
   }
-  load();
+  qbox.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(look, 500); if (!qbox.value.trim()) { gobtn.textContent = "Read mine"; gobtn.classList.remove("found"); lastQ = ""; } });
 
-  /* the alert list: write-only, never reads back */
+  /* the proof: three live numbers, nothing else fetched on this page */
+  fetch(WW.API + "?wire=1&days=7").then(function (r) { return r.json(); }).then(function (d) {
+    document.getElementById("p-filings").textContent = (d.rows || []).length.toLocaleString("en-US");
+  }).catch(function () {});
+  fetch("https://grade.realroofers.workers.dev/?letters=1").then(function (r) { return r.json(); }).then(function (d) {
+    var n = ((d.total || {}).drawn || 0).toLocaleString("en-US"), c = ((d.total || {}).companies || 0).toLocaleString("en-US");
+    document.getElementById("p-letters").textContent = n; document.getElementById("p-cos").textContent = c;
+  }).catch(function () {});
+  /* the veiled answer carries the counts free; the list itself is the $80 */
+  fetch("https://concern.realroofers.workers.dev/?today=1&days=365").then(function (r) { return r.json(); }).then(function (d) {
+    if (d && d.companies) document.getElementById("p-concern").textContent = Number(d.companies).toLocaleString("en-US");
+  }).catch(function () {});
+
   document.getElementById("signup").addEventListener("click", function () {
-    var em = document.getElementById("em").value.trim();
-    var tk = document.getElementById("tk").value.trim();
-    if (!em || em.indexOf("@") < 1) {
-      document.getElementById("fine").textContent = "An email address, please — that is the only part we need."; return;
-    }
+    var em = document.getElementById("em").value.trim(), tk = document.getElementById("tk").value.trim();
+    if (!em || em.indexOf("@") < 1) { document.getElementById("fine").textContent = "An email address, please — that is the only part we need."; return; }
     document.getElementById("form").innerHTML = '<p class="ok">On the list. We will write before anything costs anything.</p>';
     document.getElementById("fine").textContent = "Nothing has been charged and no card was asked for.";
     fetch(WW.API + "?alert=1&email=" + encodeURIComponent(em) + "&tickers=" + encodeURIComponent(tk)).catch(function () {});
   });
-
-  /* an old address with ?q= still lands on the right page */
-  var pre = new URLSearchParams(location.search).get("q");
-  if (pre) WW.go(pre);
 })();
 </script>
-<script src="/corner.js"></script>
 <script src="/clock.js"></script>
-<script src="https://adhotbox.com/box.js"></script>
-<script src="https://cart.realroofers.workers.dev/" defer></script>
 </body>
 </html>
