@@ -53,13 +53,39 @@
 
    PUBLIC
      ?people=1&ticker=TOVX        everyone we hold, grouped
+     ?careers=1&ticker=TOVX       WHERE ELSE these people have been, and what
+                                  the record shows happened there
      ?method=1                    where each name comes from, and the limits
    PRIVATE
      ?action=pull&ticker=TOVX     read the Form 4s and record the people
+     ?action=careers&ticker=TOVX  walk each officer's and director's EDGAR
+                                  ownership index and pull the other issuers
      ?action=stats
+
+   ----------------------------------------------------------------------------
+   ⚠ WHERE ELSE — people-1f, 12 Sep 2026. His ask: the report should say who
+   is involved and where they have taken other companies, because a board
+   member who ran Heat Biologics into NightHawk into Scorpius is a fact a
+   holder of Theriva can use, and it is nowhere on the filing.
+
+   THE SOURCE IS EDGAR'S OWN INDEX OF THE PERSON. Every Form 4 filer has a
+   CIK, and the SEC keeps a page per CIK listing every issuer they have ever
+   filed against, with the issuer's current name beside the old one:
+     https://www.sec.gov/cgi-bin/own-disp?action=getowner&CIK=0001381450
+   That is the person's own filing history, not a search and not a guess.
+
+   FOR EACH OTHER ISSUER, THE RECORD IS COUNTED, NEVER CHARACTERISED:
+     the names it has had (submissions JSON, formerNames),
+     whether the SEC lists a ticker and exchange for it today,
+     how many 8-Ks carried Item 3.01 (an exchange notice), 5.03 (charter
+     amendment — where reverse splits live), 3.02 (unregistered sales),
+     how many registration statements and prospectuses it has filed,
+     the share count over time from its own 10-K/10-Q cover (dei), and
+     the accumulated deficit from its own 10-K.
+   Every one of those is the company's own filing. Nothing here says why.
    ========================================================================== */
 
-const BUILD = "people-1e · 2026-09-11 20:45 ET";
+const BUILD = "people-1f · 2026-09-12 · where else these people have been";
 const CONTACT = "research@warrantwire.com";
 
 /* ============================================================================
@@ -197,6 +223,7 @@ export default {
         if (q.get("photos")) return json(await heldPhotos(env), H);
         if (q.get("method")) return json(method(), H);
         if (q.get("people")) return json(await people(env, q.get("ticker"), u.origin), H);
+        if (q.get("careers")) return json(await careers(env, q.get("ticker")), H);
         if (q.get("across")) return json(await across(env, q.get("role")), H);
         if (q.get("firm"))   return json(await oneFirm(env, q.get("firm")), H);
         if (q.get("swept"))  return json(await swept(env), H);
@@ -205,6 +232,7 @@ export default {
       if (!key || key !== env.LOG_KEY) return json({ ok:false, error:"unauthorized" }, H, 401);
 
       if (a === "pull") return json(await pull(env, q.get("ticker"), +(q.get("n") || 25)), H);
+      if (a === "careers") return json(await pullCareers(env, q.get("ticker"), q.get("fresh") === "1"), H);
       if (a === "firms") return json(await scanFirms(env, q.get("ticker"), +(q.get("n") || 12)), H);
       if (a === "sweep") return json(await sweep(env, +(q.get("n") || 5), +(q.get("each") || 8)), H);
       if (a === "photo") return json(await putPhoto(env, q, req, u.origin), H);
@@ -233,6 +261,33 @@ async function setup(env) {
           assertion is being able to show where it was found. */
        last_accession TEXT, last_form TEXT,
        PRIMARY KEY (cik, firm, role))`).run();
+
+  /* ⚠ WHERE ELSE. One row per person per issuer, straight off the SEC's
+     index of that person. current_name is the SEC's own "Current Name" —
+     it is how Heat Biologics is known to be Scorpius without anyone
+     remembering it. */
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS careers (
+       person_cik TEXT NOT NULL, issuer_cik TEXT NOT NULL,
+       person_name TEXT, issuer_name TEXT, current_name TEXT,
+       owner_type TEXT, last_transaction TEXT,
+       pulled TEXT DEFAULT (datetime('now')),
+       PRIMARY KEY (person_cik, issuer_cik))`).run();
+
+  /* the record of an issuer, counted out of its own filings, cached */
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS issuer_record (
+       cik TEXT PRIMARY KEY,
+       name TEXT, former_names TEXT,          /* JSON [{name,from,to}] */
+       ticker TEXT, exchange TEXT,            /* what the SEC lists TODAY; empty means none */
+       sic TEXT, state TEXT,
+       first_filing TEXT, last_filing TEXT,
+       n_8k INTEGER, n_301 INTEGER, n_503 INTEGER, n_302 INTEGER,
+       n_raises INTEGER,                      /* S-1, S-3, 424B, in the window */
+       shares TEXT,                           /* JSON [{end,form,val}] from the 10-K/10-Q cover */
+       shares_first INTEGER, shares_peak INTEGER, shares_trough INTEGER, shares_now INTEGER,
+       deficit INTEGER, deficit_date TEXT,
+       pulled TEXT DEFAULT (datetime('now')))`).run();
 
   await env.OVERHANG.prepare(
     `CREATE TABLE IF NOT EXISTS person_photos (
@@ -418,6 +473,257 @@ function tidyName(n) {
     return (p.slice(1).join(",").trim() + " " + p[0].trim()).replace(/\s+/g, " ").trim();
   }
   return raw;
+}
+
+/* ============================================================
+   WHERE ELSE THESE PEOPLE HAVE BEEN
+   ============================================================ */
+const SEC_H = { "User-Agent": "WarrantWire/1.0 (" + CONTACT + ")" };
+
+/* the SEC's own page for one person: every issuer they have filed against */
+async function edgarOwner(personCik) {
+  const p = String(personCik || "").replace(/\D/g, "").padStart(10, "0");
+  const r = await fetch("https://www.sec.gov/cgi-bin/own-disp?action=getowner&CIK=" + p, { headers: SEC_H });
+  if (!r.ok) return { ok:false, why: "EDGAR " + r.status };
+  const html = await r.text();
+  /* the issuer table: one <tr> per issuer, in this order —
+       issuer name [Current Name: …] | issuer CIK | last transaction | type of owner
+     The name cell is a link to getissuer&CIK=; that link carries the CIK. */
+  const out = [];
+  const rows = html.split(/<tr[^>]*>/i).slice(1);
+  for (const row of rows) {
+    const m = /getissuer&(?:amp;)?CIK=(\d+)/i.exec(row);
+    if (!m) continue;
+    const cells = row.split(/<td[^>]*>/i).slice(1).map(c =>
+      c.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim());
+    if (cells.length < 4) continue;
+    let name = cells[0], current = "";
+    const cn = /^(.*?)\s*Current Name:\s*(.+)$/i.exec(name);
+    if (cn) { name = cn[1].trim(); current = cn[2].trim(); }
+    out.push({ issuer_cik: String(+m[1]), issuer_name: name, current_name: current,
+               last_transaction: cells[2] || "", owner_type: cells[3] || "" });
+  }
+  return { ok:true, issuers: out };
+}
+
+/* the record of one issuer, counted out of its own filings */
+async function issuerRecord(env, cik, fresh) {
+  const c = String(cik || "").replace(/\D/g, "");
+  if (!c) return null;
+  if (!fresh) {
+    const had = await env.OVERHANG.prepare(
+      "SELECT * FROM issuer_record WHERE cik = ? AND pulled > datetime('now','-7 days')").bind(c).first();
+    if (had) return had;
+  }
+  const pad = c.padStart(10, "0");
+  let s;
+  try {
+    const r = await fetch("https://data.sec.gov/submissions/CIK" + pad + ".json", { headers: SEC_H });
+    if (!r.ok) return null;
+    s = await r.json();
+  } catch (e) { return null; }
+
+  const f = (s.filings && s.filings.recent) || {};
+  const forms = f.form || [], dates = f.filingDate || [], items = f.items || [];
+  let n8 = 0, n301 = 0, n503 = 0, n302 = 0, nRaise = 0;
+  for (let i = 0; i < forms.length; i++) {
+    const fm = String(forms[i]);
+    if (/^8-K/.test(fm)) {
+      n8++;
+      const it = String(items[i] || "");
+      if (/\b3\.01\b/.test(it)) n301++;
+      if (/\b5\.03\b/.test(it)) n503++;
+      if (/\b3\.02\b/.test(it)) n302++;
+    }
+    if (/^(S-1|S-3|424B)/.test(fm)) nRaise++;
+  }
+  const former = (s.formerNames || []).map(x => ({
+    name: x.name, from: String(x.from || "").slice(0, 10), to: String(x.to || "").slice(0, 10) }));
+
+  /* the share count off the cover of its own 10-K and 10-Q, and the deficit */
+  let shares = [], deficit = null, deficitDate = "";
+  try {
+    const r = await fetch("https://data.sec.gov/api/xbrl/companyfacts/CIK" + pad + ".json", { headers: SEC_H });
+    if (r.ok) {
+      const j = await r.json();
+      const dei = j.facts && j.facts.dei && j.facts.dei.EntityCommonStockSharesOutstanding;
+      const rows = (dei && dei.units && dei.units.shares) || [];
+      const byEnd = {};
+      for (const x of rows) {
+        if (!/^10-[KQ]/.test(String(x.form || ""))) continue;
+        /* one figure per report date; a filing that restates the same date keeps the later one */
+        byEnd[x.end] = { end: x.end, form: x.form, val: Math.round(+x.val || 0) };
+      }
+      shares = Object.values(byEnd).sort((a, b) => a.end < b.end ? -1 : 1).slice(-24);
+      const gaap = j.facts && j.facts["us-gaap"];
+      const d = gaap && gaap.RetainedEarningsAccumulatedDeficit;
+      const drows = ((d && d.units && d.units.USD) || []).filter(x => x.form === "10-K" && x.fp === "FY");
+      if (drows.length) {
+        drows.sort((a, b) => a.end < b.end ? -1 : 1);
+        const last = drows[drows.length - 1];
+        deficit = Math.round(+last.val || 0); deficitDate = last.end;
+      }
+    }
+  } catch (e) {}
+
+  const vals = shares.map(x => x.val).filter(v => v > 0);
+  const rec = {
+    cik: c, name: s.name || "", former_names: JSON.stringify(former),
+    ticker: (s.tickers || []).join(","), exchange: (s.exchanges || []).filter(Boolean).join(","),
+    sic: s.sicDescription || "", state: s.stateOfIncorporation || "",
+    first_filing: dates.length ? dates[dates.length - 1] : "", last_filing: dates[0] || "",
+    n_8k: n8, n_301: n301, n_503: n503, n_302: n302, n_raises: nRaise,
+    shares: JSON.stringify(shares),
+    shares_first: vals[0] || null, shares_peak: vals.length ? Math.max(...vals) : null,
+    shares_trough: vals.length ? Math.min(...vals) : null, shares_now: vals[vals.length - 1] || null,
+    deficit, deficit_date: deficitDate
+  };
+  await env.OVERHANG.prepare(
+    `INSERT INTO issuer_record (cik, name, former_names, ticker, exchange, sic, state,
+       first_filing, last_filing, n_8k, n_301, n_503, n_302, n_raises, shares,
+       shares_first, shares_peak, shares_trough, shares_now, deficit, deficit_date, pulled)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     ON CONFLICT(cik) DO UPDATE SET
+       name=excluded.name, former_names=excluded.former_names, ticker=excluded.ticker,
+       exchange=excluded.exchange, sic=excluded.sic, state=excluded.state,
+       first_filing=excluded.first_filing, last_filing=excluded.last_filing,
+       n_8k=excluded.n_8k, n_301=excluded.n_301, n_503=excluded.n_503, n_302=excluded.n_302,
+       n_raises=excluded.n_raises, shares=excluded.shares,
+       shares_first=excluded.shares_first, shares_peak=excluded.shares_peak,
+       shares_trough=excluded.shares_trough, shares_now=excluded.shares_now,
+       deficit=excluded.deficit, deficit_date=excluded.deficit_date, pulled=datetime('now')`)
+    .bind(rec.cik, rec.name, rec.former_names, rec.ticker, rec.exchange, rec.sic, rec.state,
+          rec.first_filing, rec.last_filing, rec.n_8k, rec.n_301, rec.n_503, rec.n_302, rec.n_raises,
+          rec.shares, rec.shares_first, rec.shares_peak, rec.shares_trough, rec.shares_now,
+          rec.deficit, rec.deficit_date).run();
+  return rec;
+}
+
+/* PRIVATE: walk each officer's and director's index and record the others */
+async function pullCareers(env, ticker, fresh) {
+  const tk = String(ticker || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  if (!tk) return { ok:false, build: BUILD, error:"a ticker, please" };
+  const co = await env.OVERHANG.prepare(
+    "SELECT cik FROM cik_tickers WHERE UPPER(ticker) = ? LIMIT 1").bind(tk).first();
+  if (!co || !co.cik) return { ok:false, build: BUILD, error:"that ticker is not in the SEC's CIK map here" };
+  const cik = String(co.cik).replace(/\D/g, "");
+
+  const ppl = await env.OVERHANG.prepare(
+    `SELECT person_cik, name FROM insiders
+      WHERE cik = ? AND (is_officer = 1 OR is_director = 1) AND person_cik <> ''`).bind(cik).all();
+  const people = ppl.results || [];
+  if (!people.length) return { ok:false, build: BUILD, error:"no officers or directors on file — run ?action=pull first" };
+
+  const errs = [], issuers = {};
+  let rows = 0;
+  for (const p of people) {
+    const got = await edgarOwner(p.person_cik);
+    if (!got.ok) { errs.push({ person: p.name, why: got.why }); await sleep(250); continue; }
+    for (const x of got.issuers) {
+      await env.OVERHANG.prepare(
+        `INSERT INTO careers (person_cik, issuer_cik, person_name, issuer_name, current_name,
+           owner_type, last_transaction, pulled)
+         VALUES (?,?,?,?,?,?,?,datetime('now'))
+         ON CONFLICT(person_cik, issuer_cik) DO UPDATE SET
+           person_name=excluded.person_name, issuer_name=excluded.issuer_name,
+           current_name=excluded.current_name, owner_type=excluded.owner_type,
+           last_transaction=excluded.last_transaction, pulled=datetime('now')`)
+        .bind(String(+p.person_cik), x.issuer_cik, p.name, x.issuer_name, x.current_name,
+              x.owner_type, x.last_transaction).run();
+      rows++;
+      if (x.issuer_cik !== String(+cik)) issuers[x.issuer_cik] = 1;
+    }
+    await sleep(250);
+  }
+  /* the record of every OTHER issuer these people have been at */
+  let pulled = 0;
+  for (const ic of Object.keys(issuers)) {
+    const r = await issuerRecord(env, ic, fresh);
+    if (r) pulled++;
+    await sleep(250);
+  }
+  return { ok:true, build: BUILD, ticker: tk, cik, people: people.length,
+    career_rows: rows, other_issuers: Object.keys(issuers).length, records_pulled: pulled,
+    could_not_read: errs,
+    note: errs.length ? "Some people could not be read, so this UNDER-REPORTS. Run it again."
+                      : "Every officer's and director's index was read." };
+}
+
+/* PUBLIC: where else, with the record of each place */
+async function careers(env, ticker) {
+  const tk = String(ticker || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  if (!tk) return { ok:false, build: BUILD, error:"a ticker, please" };
+  const co = await env.OVERHANG.prepare(
+    "SELECT cik FROM cik_tickers WHERE UPPER(ticker) = ? LIMIT 1").bind(tk).first();
+  if (!co || !co.cik) return { ok:false, build: BUILD, error:"that ticker is not in the SEC's CIK map here" };
+  const cik = String(+String(co.cik).replace(/\D/g, ""));
+
+  const r = await env.OVERHANG.prepare(
+    `SELECT i.name AS here_name, i.title, i.is_officer, i.is_director, i.last_seen,
+            c.person_cik, c.issuer_cik, c.issuer_name, c.current_name, c.owner_type, c.last_transaction,
+            x.name AS rec_name, x.former_names, x.ticker AS rec_ticker, x.exchange, x.sic,
+            x.first_filing, x.last_filing, x.n_8k, x.n_301, x.n_503, x.n_302, x.n_raises,
+            x.shares, x.shares_first, x.shares_peak, x.shares_trough, x.shares_now,
+            x.deficit, x.deficit_date, x.pulled
+       FROM insiders i
+       JOIN careers c ON CAST(c.person_cik AS INTEGER) = CAST(i.person_cik AS INTEGER)
+       LEFT JOIN issuer_record x ON CAST(x.cik AS INTEGER) = CAST(c.issuer_cik AS INTEGER)
+      WHERE CAST(i.cik AS INTEGER) = CAST(? AS INTEGER)
+        AND (i.is_officer = 1 OR i.is_director = 1)
+        AND CAST(c.issuer_cik AS INTEGER) <> CAST(? AS INTEGER)
+      ORDER BY i.is_officer DESC, i.name, c.last_transaction DESC`).bind(cik, cik).all();
+
+  const by = {};
+  for (const row of (r.results || [])) {
+    const k = row.person_cik;
+    if (!by[k]) by[k] = { name: row.here_name, role_here: row.title || (row.is_officer ? "officer" : "director"),
+                          last_filed_here: row.last_seen, elsewhere: [] };
+    let shares = [];
+    try { shares = JSON.parse(row.shares || "[]"); } catch (e) {}
+    let former = [];
+    try { former = JSON.parse(row.former_names || "[]"); } catch (e) {}
+    const names = [row.issuer_name].concat(former.map(f => f.name)).concat(row.current_name ? [row.current_name] : []);
+    by[k].elsewhere.push({
+      issuer_cik: row.issuer_cik,
+      as_filed: row.issuer_name, now_called: row.current_name || row.rec_name || row.issuer_name,
+      names_it_has_had: [...new Set(names.map(n => String(n || "").trim()).filter(Boolean))],
+      name_changes: former.length,
+      role: row.owner_type, last_transaction: row.last_transaction,
+      sec_lists_today: row.rec_name == null ? null
+        : { ticker: row.rec_ticker || "", exchange: row.exchange || "",
+            note: row.rec_ticker ? "" : "the SEC lists no ticker and no exchange for this company today" },
+      what_it_is: row.sic || "", state: row.state || "",
+      filings: row.rec_name == null ? null : {
+        first: row.first_filing, last: row.last_filing,
+        eight_ks: row.n_8k, exchange_notices_301: row.n_301, charter_amendments_503: row.n_503,
+        unregistered_sales_302: row.n_302, registration_and_prospectus: row.n_raises },
+      shares: row.rec_name == null ? null : {
+        first: row.shares_first, peak: row.shares_peak, trough: row.shares_trough, now: row.shares_now,
+        by_report: shares },
+      deficit: row.deficit == null ? null : { amount: row.deficit, as_of: row.deficit_date },
+      record_pulled: row.pulled || null,
+      record_missing: row.rec_name == null ? "the record for this issuer has not been pulled" : ""
+    });
+  }
+  const list = Object.values(by);
+  return { ok:true, build: BUILD, ticker: tk, cik,
+    people: list,
+    people_with_other_issuers: list.filter(p => p.elsewhere.length).length,
+    source: "Each person's own ownership index at the SEC (own-disp getowner), " +
+            "and each issuer's own submissions and XBRL company facts.",
+    what_it_is:
+      "Where each officer and director has filed as an insider before, and what " +
+      "that company's own filings show: the names it has had, whether the SEC " +
+      "lists a ticker for it today, how many exchange notices and charter " +
+      "amendments it filed, how often it registered stock, and its share count " +
+      "and deficit over time.",
+    not_an_accusation:
+      "A count of what was filed. Nothing here says any person caused any of it, " +
+      "and nothing here says what will happen at this company.",
+    the_limit:
+      "A person with no other issuers on their index may have served elsewhere " +
+      "without filing a Form 4. Absence here is not a clean record; it is an " +
+      "empty index." };
 }
 
 /* ============================================================

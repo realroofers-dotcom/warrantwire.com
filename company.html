@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-11 · warrantwire company-1a · the company page: the verdict, who arranged it, and the people who signed -->
+<!-- BUILT 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +63,29 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .rateform .ratemsg{font-size:13px;color:var(--cool)}
 .worth{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:-4px 0 14px;font-size:14px;color:var(--ink2)}
 .worth .worthmsg{flex:1 1 100%;font-size:13px;color:var(--cool)}
+/* what could happen: what the paper permits, and where these people have been */
+.verdict.could{border-color:var(--hot)}
+.verdict.could .lbl b{color:var(--hot)}
+.could h4{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:18px 0 8px}
+.could h4:first-of-type{margin-top:4px}
+.could ol.permits{margin:0 0 6px;padding:0 0 0 20px;max-width:70ch}
+.could ol.permits li{margin:0 0 9px;font-size:15px;color:var(--ink2);line-height:1.5}
+.could ol.permits li b{color:var(--ink)}
+.could ol.permits li .src{display:block;font:400 11px var(--mono);color:var(--ink3);margin-top:2px}
+.could .gc{border-left:3px solid var(--hot);padding:2px 0 2px 12px;margin:0 0 12px;font-size:15.5px;color:var(--ink);max-width:70ch}
+.could .gc b{color:#ffb3a6}
+.trail{border:1px solid var(--line2);border-radius:8px;padding:12px 14px;margin:0 0 10px}
+.trail .tname{font-size:15px;color:var(--ink);font-weight:600}
+.trail .tname span{font-weight:400;color:var(--ink3);font-size:13px}
+.trail .tiss{margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--line2)}
+.trail .tiss .as{font-size:14.5px;color:var(--ink)} .trail .tiss .as b{color:var(--warm)}
+.trail .tiss .chain{font:400 12px var(--mono);color:var(--ink3);margin:3px 0 6px}
+.trail .tiss .chain i{font-style:normal;color:var(--hot)}
+.trail .tiss ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px}
+.trail .tiss li{font-size:13.5px;color:var(--ink2)} .trail .tiss li b{color:var(--ink);font-weight:600}
+.trail .tiss li.off b{color:var(--hot)}
+.trail .tiss .none{font-size:13px;color:var(--ink3)}
+.could .limit{font-size:12.5px;color:var(--ink3);margin:12px 0 0;max-width:70ch}
 </style>
 </head>
 <body>
@@ -125,7 +148,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
   registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
   nothing here alleges that anyone broke any law.
-  <p class="stamp">Built 2026-09-11 &middot; warrantwire company-1a</p>
+  <p class="stamp">Built 2026-09-12 &middot; warrantwire company-1b</p>
 </footer></div>
 
 <script src="/wire.js"></script>
@@ -222,7 +245,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<p class="vlead locked">' + v.fired.length + ' rule' + (v.fired.length === 1 ? "" : "s") + ' fired on '
       + a.filings + ' filing' + (a.filings === 1 ? "" : "s") + '. The verdict is one sentence long.</p>'
       + '<div class="vlock"><p><b>The verdict, the rules that fired, and every filing &mdash; $12.</b> '
-      + 'One company, every year on record. Any going concern notice on file is in it, highlighted as an urgent warning. One payment, nothing recurring.</p>'
+      + 'One company, every year on record. Any going concern notice on file is in it, highlighted as an urgent warning. '
+      + 'And <b>what could happen</b>: what its warrant paper permits, read against that notice, and where its officers and directors have been before &mdash; which other companies, what those companies were renamed, and what their filings show happened. One payment, nothing recurring.</p>'
       + '<button class="wbuy gold" data-sku="wire_search" data-t="' + esc(T) + '">Buy the verdict &mdash; $12</button></div>'
       + '<p class="vgap">Rules version ' + v.version + '. <a href="/rules.html" style="color:var(--cool)">Read how it is rendered</a> before you buy.</p>'
       + '</section>';
@@ -334,6 +358,134 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           + parties(v.parties || [], "Who arranged it");
       })
       .catch(function () {});
+  }
+
+  /* ---- what could happen ----------------------------------------------------
+     His ask, 12 Sep: the report should say what COULD happen — the warrant
+     actions the paper permits, read against a going concern notice; the
+     secrecy built into the word salad; and who is involved and where they
+     have taken other companies before. ⚠ THREE THINGS, AND EVERY ONE IS A
+     FACT OFF A FILING: a clause the document contains, a grade against a
+     public rule, a count off EDGAR. "Permits" is the document's word for
+     what it allows; nothing here says what WILL happen. The label — his
+     word for what it adds up to — goes in his verdict, under his name. */
+  function n(x) {
+    x = Number(x); if (!isFinite(x) || x === 0) return "";
+    var a = Math.abs(x);
+    return (x < 0 ? "-" : "") + (a >= 1e9 ? (a / 1e9).toFixed(2) + "B" : a >= 1e6 ? (a / 1e6).toFixed(1) + "M" : a >= 1e3 ? Math.round(a / 1e3) + "K" : String(Math.round(a)));
+  }
+  var PERMITS = [
+    /* [labels that switch it on], what it permits, how it reads against a going concern */
+    [["Price reset", "Reduced exercise price"], "The exercise price can be lowered after the fact.",
+     "A later raise at a lower price resets the price on the warrants already out — the document permits the next financing to reprice the last one."],
+    [["Warrant inducement", "Inducement agreement"], "Holders can be paid to exercise early.",
+     "The company may offer existing holders new warrants, or a lower price, to exercise now and put cash in — and the paper permits doing it again."],
+    [["Cashless exercise"], "Warrants can be exercised without cash reaching the company.",
+     "Shares can be issued against warrants with no money coming in — the holder gets stock, the company gets nothing, and the count goes up."],
+    [["Pre-funded warrants"], "Stock that is already paid for is waiting to be issued.",
+     "Pre-funded warrants are shares in all but name, exercisable for a token amount whenever the holder chooses."],
+    [["Ownership blocker"], "The buyer's stake is capped, so the paper is arranged to be sold, not held.",
+     "A 4.99% or 9.99% cap means the holder cannot keep what it bought; it sells down and exercises more — the document is built for that."],
+    [["ATM programme", "ATM program"], "Shares can be sold straight into the market, at whatever the price is.",
+     "An at-the-market programme lets the company sell new shares on any day it chooses, at that day's price, with no floor."],
+    [["Equity line"], "A buyer is committed to take shares on demand, at a discount to the market.",
+     "The company can put shares to the line whenever it needs cash; the price is set off the market at the time, less a discount."],
+    [["Variable rate transaction"], "The number of shares owed is not fixed — it rises as the price falls.",
+     "A variable-rate instrument converts at a percentage of the market price, so a falling price means more shares, not fewer."],
+    [["Floor price"], "There is a floor — and a floor is a number the price can reach.",
+     "The reset stops at a stated floor. That floor is written in the document and is the lowest the paper contemplates."],
+    [["Most favoured nation", "Most favored nation"], "Whatever a later buyer gets, this buyer gets too.",
+     "Better terms in the next deal flow back to this one automatically."]
+  ];
+  function couldHappen(ticker, rows, v, c) {
+    var el = document.getElementById("could");
+    if (!el) return;
+    var present = {};
+    (rows || []).forEach(function (r) { WW.split(r.labels).forEach(function (l) { present[String(l).toLowerCase()] = 1; }); });
+    var permits = PERMITS.filter(function (p) { return p[0].some(function (l) { return present[l.toLowerCase()]; }); });
+    var st = String(c.state_inc || "").toUpperCase();
+    var SPLIT = { NV: "Nevada, where a reverse split can be done by board resolution with no stockholder vote",
+                  DE: "Delaware, where since August 2023 a reverse split needs a majority of votes cast, not of shares outstanding",
+                  TX: "Texas, which adopted the Delaware standard in 2025" };
+
+    Promise.all([
+      fetch(withEmail(CONCERN + "/?company=" + encodeURIComponent(ticker))).then(function (r) { return r.json(); }).catch(function () { return null; }),
+      fetch(GRADE + "/?ticker=" + encodeURIComponent(ticker)).then(function (r) { return r.json(); }).catch(function () { return null; }),
+      fetch(PEOPLE + "/?careers=1&ticker=" + encodeURIComponent(ticker)).then(function (r) { return r.json(); }).catch(function () { return null; })
+    ]).then(function (got) {
+      var gc = got[0], gr = got[1], cr = got[2];
+      var h = '<section class="verdict could"><p class="lbl"><b>What could happen</b><span>what the paper permits, and where these people have been</span><span class="kind">the record, not a forecast</span></p>';
+
+      /* 1. what the paper permits, read against the going concern notice */
+      h += '<h4>What the paper permits</h4>';
+      var gcOn = gc && gc.ok && gc.paid !== false && gc.times;
+      if (gcOn) {
+        var last = (gc.rows || [])[0] || {};
+        h += '<p class="gc"><b>' + esc(ticker) + ' has said there is substantial doubt it can continue</b> — in its ' + esc(last.form || "filing") + ' of ' + esc(last.filed_on || "")
+           + (gc.times > 1 ? ', and ' + (gc.times - 1) + ' time' + (gc.times === 2 ? "" : "s") + ' before that' : '') + '. Read against that notice, its warrant paper permits the following.</p>';
+      } else {
+        h += '<p>No going concern notice is on file for ' + esc(ticker) + '. Its warrant paper permits the following.</p>';
+      }
+      if (permits.length || SPLIT[st]) {
+        h += '<ol class="permits">';
+        permits.forEach(function (p) {
+          var on = p[0].filter(function (l) { return present[l.toLowerCase()]; });
+          h += '<li><b>' + esc(p[1]) + '</b> ' + esc(p[2]) + '<span class="src">In its filings as: ' + esc(on.join(", ")) + '</span></li>';
+        });
+        if (SPLIT[st]) h += '<li><b>A reverse split is available to it.</b> Incorporated in ' + esc(SPLIT[st]) + '. A split dilutes nobody; what matters is the authorized count left standing afterwards, which is where the room for the next financing is created.<span class="src">State of incorporation, from the SEC</span></li>';
+        h += '</ol>';
+        h += '<p class="limit">Each of these is a thing the document allows. None is a thing anyone here says will occur.</p>';
+      } else {
+        h += '<p class="limit">None of the terms the wire watches for is on this company’s filings.</p>';
+      }
+
+      /* 2. the word salad: the grade is the measurement of the secrecy */
+      if (gr && gr.ok && gr.worst_document && gr.worst_document.grade) {
+        var w = gr.worst_document, g = String(w.grade).toUpperCase();
+        h += '<h4>The word salad</h4><p>The terms above sit inside documents that grade <b style="color:' + esc(w.hex || "") + '">' + esc(g) + '</b> at worst against the SEC’s own plain English rule'
+           + ' — ' + esc(w.form || "") + ' of ' + esc(w.filed_on || "") + (w.words ? ', ' + Number(w.words).toLocaleString("en-US") + ' words' : '') + '. '
+           + 'A clause a holder cannot read is a clause a holder cannot price. <a href="/grades.html" style="color:var(--cool)">How it is graded</a>.</p>';
+      }
+
+      /* 3. where these people have been */
+      h += '<h4>Where these people have been</h4>';
+      var ppl = (cr && cr.ok && cr.people) ? cr.people.filter(function (p) { return p.elsewhere && p.elsewhere.length; }) : [];
+      if (!ppl.length) {
+        h += '<p class="limit">' + (cr && cr.ok
+          ? 'No officer or director of ' + esc(ticker) + ' has another issuer on their SEC index' + (cr.people && cr.people.length ? '' : ' — or the index has not been read yet') + '. An empty index is not a clean record; it is an empty index.'
+          : 'The index of these people has not been read yet.') + '</p>';
+      } else {
+        ppl.forEach(function (p) {
+          h += '<div class="trail"><div class="tname">' + esc(p.name) + ' <span>— ' + esc(p.role_here || "") + ' here</span></div>';
+          p.elsewhere.forEach(function (x) {
+            var chain = (x.names_it_has_had || []).filter(function (nm) { return nm && nm.toLowerCase() !== String(x.as_filed || "").toLowerCase(); });
+            h += '<div class="tiss"><div class="as"><b>' + esc(x.as_filed) + '</b>' + (x.now_called && x.now_called.toLowerCase() !== String(x.as_filed).toLowerCase() ? ' — now ' + esc(x.now_called) : '') + (x.role ? ' · ' + esc(x.role) : '') + '</div>';
+            if (x.name_changes) h += '<div class="chain">' + x.name_changes + ' name change' + (x.name_changes === 1 ? '' : 's') + ': ' + esc(chain.join(' → ')) + '</div>';
+            if (x.filings) {
+              var f = x.filings, s = x.shares || {};
+              h += '<ul>';
+              if (x.sec_lists_today && !x.sec_lists_today.ticker) h += '<li class="off"><b>The SEC lists no ticker and no exchange for it today.</b></li>';
+              else if (x.sec_lists_today) h += '<li>Listed today as <b>' + esc(x.sec_lists_today.ticker) + '</b>' + (x.sec_lists_today.exchange ? ' on ' + esc(x.sec_lists_today.exchange) : '') + '</li>';
+              if (f.exchange_notices_301) h += '<li><b>' + f.exchange_notices_301 + '</b> exchange notice' + (f.exchange_notices_301 === 1 ? '' : 's') + ' (8-K Item 3.01)</li>';
+              if (f.charter_amendments_503) h += '<li><b>' + f.charter_amendments_503 + '</b> charter amendment' + (f.charter_amendments_503 === 1 ? '' : 's') + ' (Item 5.03)</li>';
+              if (f.unregistered_sales_302) h += '<li><b>' + f.unregistered_sales_302 + '</b> unregistered sale' + (f.unregistered_sales_302 === 1 ? '' : 's') + ' of stock (Item 3.02)</li>';
+              if (f.registration_and_prospectus) h += '<li><b>' + f.registration_and_prospectus + '</b> registration statements and prospectuses</li>';
+              if (s.first && s.now) h += '<li>Shares on the cover: <b>' + n(s.first) + '</b> → peak <b>' + n(s.peak) + '</b> → low <b>' + n(s.trough) + '</b> → now <b>' + n(s.now) + '</b></li>';
+              if (x.deficit && x.deficit.amount) h += '<li>Accumulated deficit <b>$' + n(Math.abs(x.deficit.amount)) + '</b> at ' + esc(x.deficit.as_of || "") + '</li>';
+              if (f.first) h += '<li>Filing since ' + esc(f.first) + ', last ' + esc(f.last) + '</li>';
+              h += '</ul>';
+            } else {
+              h += '<div class="none">' + esc(x.record_missing || 'record not pulled') + (x.last_transaction ? ' · last filing there ' + esc(x.last_transaction) : '') + '</div>';
+            }
+            h += '</div>';
+          });
+          h += '</div>';
+        });
+        h += '<p class="limit">Every figure is the company’s own filing, counted. A person with no other issuer on their index may have served elsewhere without filing a Form 4 — absence here is an empty index, not a clean record. Nothing here says any person caused any of it, and nothing here says what will happen at ' + esc(ticker) + '. What it adds up to is in the founder’s verdict, under his name.</p>';
+      }
+      h += '</section>';
+      el.innerHTML = h;
+    }).catch(function () {});
   }
 
   /* ---- the people: a face and a name beside a role ------------------------- */
@@ -555,11 +707,13 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + row
         + '<div class="verdicts" id="auto">' + autoBox(v, open, a || {}) + '</div>'
         + (open ? '<div class="verdicts">' + filings(d.rows, tk, c.cik) + '</div>' : '')
+        + (open ? '<div class="verdicts" id="could"></div>' : '')
         + '<div class="verdicts" id="humans"></div>'
         + '<div class="vpeople" id="people"></div>';
 
       document.getElementById("live").textContent = v.none ? "Nothing on the wire" : (open ? "The verdict" : "On the wire");
       if (open && !v.none) deep(tk);
+      if (open && !v.none) couldHappen(tk, d.rows, v, c);
       humans(tk, open);
       people(tk);
       /* ⚠ THE GOING CONCERN WARNING IS PART OF THE PAID REPORT, not the free
