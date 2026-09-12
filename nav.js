@@ -1,4 +1,4 @@
-/* BUILT 2026-09-12 · warrantwire nav.js 1b · on a phone the doors are a grid at the foot of the page, scrolled to
+/* BUILT 2026-09-12 · warrantwire nav.js 1c · the label is always black (three pages use --ink as their paper) · on a phone the doors are a grid at the foot of the page, scrolled to
    ============================================================================
    THE ICON NAV — the nine doors from the home page, on every page, in one
    row under the masthead. His ruling, 12 Sep: navigation should be icon
@@ -32,7 +32,7 @@
     + '.wwnav ul{list-style:none;margin:0 auto;padding:10px 22px;max-width:1100px;display:flex;gap:6px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}'
     + '.wwnav ul::-webkit-scrollbar{display:none}'
     + '.wwnav li{flex:0 0 auto}'
-    + '.wwnav a{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink,#14150f);font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:6px 10px 6px 6px;border-radius:999px;border:1px solid transparent;white-space:nowrap}'
+    + '.wwnav a{display:flex;align-items:center;gap:8px;text-decoration:none;color:#14150f;font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:6px 10px 6px 6px;border-radius:999px;border:1px solid transparent;white-space:nowrap}'
     + '.wwnav a:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#fff)}'
     + '.wwnav a.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,#fff)}'
     + '.wwnav .d{position:relative;width:30px;height:30px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;flex:0 0 30px}'
