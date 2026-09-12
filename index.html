@@ -33,6 +33,14 @@
 <style>
 /* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
 .wrapn{max-width:1100px;margin:0 auto;padding:0 22px}
+/* THE WHITE TRY — his idea, 12 Sep; black first. ?light=1 on the address
+   turns this on so the two can be compared without another build. */
+html.light{--paper:#ffffff;--panel:#f6f5ef;--line:#dcdad0;--line2:#e6e4da;--ink:#14150f;--ink2:#474a3e;--ink3:#7a7d70;--hot:#c0392b;--warm:#9a7a12;--cool:#2f7a5a}
+html.light header.top{background:#fff}
+html.light .door svg{stroke:#14150f}
+html.light .finder input{background:#fff;color:#14150f;border-color:#c9c7bc}
+html.light .alerts input{background:#fff;color:#14150f}
+html.light .edgar .ehd{background:#dfeaf6}
 /* the three seconds */
 .three{padding:44px 0 34px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
 @media(max-width:860px){.three{grid-template-columns:1fr;gap:26px;padding-top:30px}}
@@ -80,6 +88,11 @@
 .door b{display:block;font:700 21px/1.2 var(--serif);margin:0 0 4px}
 .door span{display:block;font-size:13.5px;color:var(--ink2);line-height:1.5}
 .door i{display:inline-block;margin-top:12px;font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#14150f;background:var(--c);font-style:normal;padding:4px 9px;border-radius:999px}
+.cell{display:flex;flex-direction:column;gap:8px}
+.cell .door{flex:1}
+/* the sample, cherry red, under the first door — his ask */
+.sample{display:block;text-align:center;font:700 14px var(--sans);color:#e3242b;text-decoration:none;padding:9px 12px;border:2px solid #e3242b;border-radius:10px;background:rgba(227,36,43,.06)}
+.sample:hover{background:#e3242b;color:#fff}
 .door.lime{--c:#a6f542} .door.amber{--c:#e5b83a} .door.green{--c:#63c48f} .door.blue{--c:#6fa8e0} .door.violet{--c:#b48be6} .door.orange{--c:#f0904a}
 /* the proof */
 .proof{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:26px 0 8px}
@@ -149,11 +162,14 @@
   <section class="doors">
     <h2>What do you want to know?</h2>
     <div class="grid">
-      <a class="door lime" href="#q" id="door-search">
-        <div class="disc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="2"/></svg></div>
-        <b>Is it my stock?</b>
-        <i>$12 a year</i>
-      </a>
+      <div class="cell">
+        <a class="door lime" href="#q" id="door-search">
+          <div class="disc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <b>Is it my stock?</b>
+          <i>$12 a year</i>
+        </a>
+        <a class="sample" href="/company.html?t=TOVX">See a sample report &mdash; free &rarr;</a>
+      </div>
       <a class="door amber" href="/concern.html">
         <div class="disc"><svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18v.5"/></svg></div>
         <b>Is it about to fold?</b>
@@ -226,6 +242,7 @@
 <script>
 (function () {
   "use strict";
+  if (new URLSearchParams(location.search).get("light") === "1") document.documentElement.classList.add("light");
   /* THE SCREW: the same number and the same rate as /counter.html — what the
      fallers among the warrant-paper companies lost, ticking at the decade's
      average rate from the moment the page opens */
