@@ -1,7 +1,9 @@
 /* BUILT 2026-09-12 · park 1b · reconciled against the GoDaddy export of 12 Sep:
-   eleven names not in the registrar account came out, seven names about to
-   become businesses (goodsolar, hikersball, trailshrinks, rooferschool, the
-   jobcreation three) came out, five owned-and-idle names went in: 147 names.
+   eleven names not in the registrar account came out, six names about to
+   become businesses (hikersball, trailshrinks, rooferschool, the jobcreation
+   three) came out, five owned-and-idle names went in: 148 names. GoodSolar
+   stays: the .com gets a site to attract a buyer, and sells as a package with
+   its .ca/.net/.org/.us.
    The same change to the marketplace table is in
    wallstdomains-dotcom/data/reconcile_2026-09-12.sql.
    Earlier: park 1a, 2026-09-11.
@@ -53,6 +55,7 @@ const NAMES = {
   "gogohose.com": "GOGOHOSE.COM",
   "gogoscrew.com": "GOGOSCREW.COM",
   "goodsolar.ca": "GOODSOLAR.CA",
+  "goodsolar.com": "GOODSOLAR.COM",
   "goodsolar.net": "GOODSOLAR.NET",
   "goodsolar.org": "GOODSOLAR.ORG",
   "goodsolar.us": "GOODSOLAR.US",
