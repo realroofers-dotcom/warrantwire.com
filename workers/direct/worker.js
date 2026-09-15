@@ -1,0 +1,96 @@
+/* BUILT 2026-09-15 · direct 1a
+   ============================================================================
+   THE DIRECTIONAL WORKER — the names bought to point at Warrant Wire. Not
+   inventory (that is park), not sites of their own: doors.
+
+   Two kinds of door, chosen per name in the table:
+     page: true   the name means something on its own (stockscrew), so the
+                  visitor gets ONE screen in Warrant Wire's own dress — the
+                  line, and a button — and every other path is a 301 to the
+                  destination. The screen is canonical-to-warrantwire and
+                  noindex, so search engines never see two home pages.
+     page: false  the name is an alias (wrntwire, wrntco): a 301 straight
+                  through, nobody sees an interstitial for a typo.
+
+   `to` is the destination. Today every door opens on warrantwire.com; when
+   8K10Q is ready, a door can be re-aimed by changing one line here and
+   running  .\tools\cf.ps1 deploy direct
+
+   Routing: each zone carries A 192.0.2.1 (a placeholder, never a site) at
+   the apex and www, proxied, and a route  *<name>/*  -> direct. Both can be
+   set while the zone is still PENDING, so the door works the moment the
+   nameservers flip at GoDaddy. tools/direct.ps1 does that, re-runnably.
+   ============================================================================ */
+const TO = "https://warrantwire.com/";
+
+const DOORS = {
+  "stockscrew.com": { page: true, to: TO,
+    line: "Stock <em>screw</em>? It's in your company's filings.",
+    sub: "StockScrew.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
+  "screwedstocks.com": { page: true, to: TO,
+    line: "Screwed by your stock? It's in the filings.",
+    sub: "ScrewedStocks.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
+  "wrntwire.com": { page: false, to: TO },
+  "wrntco.com":   { page: false, to: TO }
+};
+
+function page(host, d) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${host} — a door to Warrant Wire</title>
+<meta name="description" content="${d.sub.replace(/"/g, "&quot;")}">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="${d.to}">
+<style>
+:root{--paper:#fff;--panel:#f6f5ef;--line:#dcdad0;--ink:#14150f;--ink2:#474a3e;--ink3:#7a7d70;--hot:#c0392b;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--sans)}
+main{min-height:100vh;display:grid;place-items:center;padding:40px 22px;box-sizing:border-box}
+.card{max-width:640px}
+.k{display:block;font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 14px}
+h1{font:700 clamp(30px,5vw,46px)/1.08 var(--serif);letter-spacing:-.01em;margin:0 0 16px}
+h1 em{font-style:normal;color:var(--hot)}
+p{margin:0 0 26px;font-size:17px;color:var(--ink2);max-width:52ch}
+a.go{display:inline-block;background:var(--hot);color:#fff;text-decoration:none;font:600 17px var(--sans);padding:14px 26px;border-radius:8px}
+a.go:hover{background:#a9311f}
+.wire{margin:34px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink3)}
+.wire b{font-family:var(--serif);font-weight:700;color:var(--ink)}
+</style>
+</head>
+<body>
+<main><div class="card">
+  <span class="k">${host}</span>
+  <h1>${d.line}</h1>
+  <p>${d.sub}</p>
+  <a class="go" href="${d.to}">Go to Warrant Wire &rarr;</a>
+  <div class="wire"><b>Warrant Wire</b> &middot; warrantwire.com &middot; getting screwed in the market? It's in the filings.</div>
+</div></main>
+</body>
+</html>`;
+}
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const d = DOORS[host];
+    const to = d ? d.to : TO;
+    if (d && d.page && url.pathname === "/" && request.method === "GET") {
+      return new Response(page(host, d), { status: 200, headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+        "X-Door-To": to
+      } });
+    }
+    return new Response(null, { status: 301, headers: {
+      "Location": to,
+      "Cache-Control": "public, max-age=3600",
+      "X-Door-To": to
+    } });
+  }
+};
