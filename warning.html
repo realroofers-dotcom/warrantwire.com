@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-15 · warrantwire warning-1a · THE WARNING: warrants are used for you and against you; the danger is not knowing which. The page the screw names land on. -->
+<!-- BUILT 2026-09-15 · warrantwire warning-1b · THE WARNING: warrants are used for you and against you; the danger is not knowing which. The page the screw names land on. 1b: the box under the headline, the sample report, and all nine doors — his ask: get them the info they need. -->
 <!--
    HIS BRIEF, 15 Sep: "We want you to understand that warrants are being used
    in ways that are bad and good for investors. Follow warrantwire.com and
@@ -38,6 +38,11 @@ html.light .alerts input{background:#fff;color:#14150f}
 .warn h1{font:700 clamp(30px,4.4vw,48px)/1.08 var(--serif);color:var(--ink);margin:0 0 16px;letter-spacing:-.01em;max-width:22ch}
 .warn h1 em{font-style:normal;color:var(--hot)}
 .warn .lede{font-size:18px;max-width:58ch}
+/* the box, right under the headline — his ask, 15 Sep: get them the info */
+.warn .finder{max-width:520px;margin-top:18px}
+.warn .finder input{font-size:17px;padding:14px 16px}
+.warn .finder button{font-size:16px;padding:0 22px;white-space:nowrap}
+.warn .freenote a{color:var(--cool)}
 /* the two columns: for you, against you */
 .sides{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:30px 0 0}
 @media(max-width:760px){.sides{grid-template-columns:1fr}}
@@ -58,18 +63,39 @@ html.light .alerts input{background:#fff;color:#14150f}
 .danger ul{margin:8px 0 14px;padding-left:22px;max-width:62ch;color:var(--ink2);font-size:15.5px;line-height:1.55}
 .danger li{margin:0 0 6px}
 .danger li b{color:var(--ink)}
-/* what to do */
-.act{padding:36px 0 10px}
-.act h2{font:700 clamp(24px,3vw,32px)/1.15 var(--serif);margin:0 0 6px}
-.act .sub{font-size:17px;color:var(--ink2);margin:0 0 6px;max-width:52ch}
-.act .finder{max-width:520px}
-.act .finder input{font-size:17px;padding:14px 16px}
-.act .finder button{font-size:16px;padding:0 22px;white-space:nowrap}
-.act .freenote a{color:var(--cool)}
-.follow{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0}
-.follow a{display:inline-block;text-decoration:none;font:600 14px var(--sans);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:9px 16px;background:var(--panel)}
-.follow a:hover{border-color:var(--ink2)}
-.follow a b{color:var(--hot)}
+/* THE SAMPLE REPORT — a whole one, free, before anyone is asked for anything */
+.samplecard{margin:34px 0 0;border:2px solid #e3242b;border-radius:12px;padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:14px 24px;align-items:center;background:rgba(227,36,43,.05)}
+@media(max-width:700px){.samplecard{grid-template-columns:1fr}}
+.samplecard .k{display:block;font:700 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#e3242b;margin:0 0 6px}
+.samplecard h2{font:700 clamp(19px,2.4vw,26px)/1.2 var(--serif);color:var(--ink);margin:0 0 8px}
+.samplecard p{margin:0;font-size:15px;color:var(--ink2);max-width:60ch;line-height:1.5}
+.samplecard p b{color:var(--ink)}
+.samplecard a.go{display:inline-block;text-decoration:none;font:700 15px var(--sans);color:#fff;background:#e3242b;padding:13px 22px;border-radius:10px;white-space:nowrap}
+.samplecard a.go:hover{filter:brightness(1.08)}
+/* THE NINE DOORS — the same doors as the home page, the same dress */
+.doors{padding:34px 0 10px}
+.doors h2{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.door{--c:var(--hot);display:block;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;background:var(--panel);color:var(--ink);transition:border-color .15s,transform .15s,background .15s}
+.door:hover{border-color:var(--c);transform:translateY(-2px);background:color-mix(in srgb,var(--c) 8%,var(--panel))}
+.door .disc{width:56px;height:56px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;margin:0 0 14px;box-shadow:0 6px 18px color-mix(in srgb,var(--c) 45%,transparent)}
+.door svg{width:30px;height:30px;display:block;stroke:#14150f;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.door b{display:block;font:700 21px/1.2 var(--serif);margin:0 0 4px}
+.door i{display:inline-block;margin-top:12px;font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#14150f;background:var(--c);font-style:normal;padding:4px 9px;border-radius:999px}
+.cell{display:flex;flex-direction:column;gap:8px}
+.cell .door{flex:1}
+.sample{display:block;text-align:center;font:700 14px var(--sans);color:#e3242b;text-decoration:none;padding:9px 12px;border:2px solid #e3242b;border-radius:10px;background:rgba(227,36,43,.06)}
+.sample:hover{background:#e3242b;color:#fff}
+.door.lime{--c:#a6f542} .door.amber{--c:#e5b83a} .door.green{--c:#63c48f} .door.blue{--c:#6fa8e0} .door.violet{--c:#b48be6} .door.orange{--c:#f0904a} .door.teal{--c:#4fd1c5} .door.rose{--c:#f28cb1} .door.sky{--c:#7cc7f5}
+.disc.live{position:relative}
+.disc.live::after{content:"";position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#e3242b;border:2px solid #fff;animation:onair 1.6s ease-in-out infinite}
+@keyframes onair{0%,100%{box-shadow:0 0 0 0 rgba(227,36,43,.6)}60%{box-shadow:0 0 0 7px rgba(227,36,43,0)}}
+/* the companion sites, one line */
+.more{display:flex;flex-wrap:wrap;gap:6px 18px;margin:18px 0 0;font-size:14px}
+.more a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--ink3)}
+.more a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -98,6 +124,12 @@ html.light .alerts input{background:#fff;color:#14150f}
     filed with the SEC as an exhibit. Companies raise money this way every week. Some of those
     contracts are fair. Some are written so that the other side wins whether the company does
     well or badly &mdash; and the shareholder pays either way.</p>
+
+    <div class="finder">
+      <input id="q" type="text" placeholder="YOUR TICKER" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <button id="go" type="button">Check my stock</button>
+    </div>
+    <p class="freenote">Nothing found, nothing paid. <a href="/company.html?t=TOVX">See a whole report free &rarr;</a></p>
 
     <div class="sides">
       <div class="side">
@@ -147,21 +179,79 @@ html.light .alerts input{background:#fff;color:#14150f}
     in plain English, the day it lands.</p>
   </section>
 
-  <!-- ═══ WHAT TO DO — the box and the alert, same as the home page ═══ -->
-  <section class="act">
-    <h2>Find out which one you are holding.</h2>
-    <p class="sub">Type your ticker. If the wire has a warrant filing on your company, the report is $12 a year. If it has none, you pay nothing and you are told so.</p>
-    <div class="finder">
-      <input id="q" type="text" placeholder="YOUR TICKER" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
-      <button id="go" type="button">Check my stock</button>
+  <!-- ═══ THE SAMPLE REPORT — see the whole thing before you are asked for anything ═══ -->
+  <div class="samplecard">
+    <div>
+      <span class="k">A whole report, free</span>
+      <h2>See exactly what you get before you type your own ticker.</h2>
+      <p><b>Theriva Biologics (TOVX)</b> &mdash; the full verdict as a paying reader sees it: every warrant filing,
+      what the paper permits, who is on the other side, the going concern record, and the plain-English
+      reading of the exhibit. Nothing held back, nothing to pay.</p>
     </div>
-    <p class="freenote">Nothing found, nothing paid. <a href="/company.html?t=TOVX">See a report free &rarr;</a></p>
+    <a class="go" href="/company.html?t=TOVX">Open the sample report &rarr;</a>
+  </div>
 
-    <div class="follow">
-      <a href="/wire.html"><b>Follow the wire</b> &mdash; five free reports a day</a>
-      <a href="/patterns.html">The patterns, with the formula for each</a>
-      <a href="/concern.html">Who said they may not continue</a>
-      <a href="/violations.html">Why can&rsquo;t I read the filing?</a>
+  <!-- ═══ THE NINE DOORS — the same as the home page ═══ -->
+  <section class="doors">
+    <h2>What do you want to know?</h2>
+    <div class="grid">
+      <div class="cell">
+        <a class="door lime" href="#q" id="door-search">
+          <div class="disc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <b>Is it my stock?</b>
+          <i>$12 a year</i>
+        </a>
+        <a class="sample" href="/company.html?t=TOVX">See a sample report &mdash; free &rarr;</a>
+      </div>
+      <a class="door rose" href="/player.html">
+        <div class="disc live"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg></div>
+        <b>On air. Listen to Amalia.</b>
+        <i>The broadcast</i>
+      </a>
+      <a class="door amber" href="/concern.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18v.5"/></svg></div>
+        <b>Is it about to fold?</b>
+        <i>$80 a year</i>
+      </a>
+      <a class="door orange" href="/patterns.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M4 12h16" stroke-dasharray="2 2"/></svg></div>
+        <b>Why did I get reverse-split?</b>
+        <i>Free</i>
+      </a>
+      <a class="door violet" href="/company.html?t=TOVX#could">
+        <div class="disc"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M15 6h6M15 10h6M17 14h4"/></svg></div>
+        <b>Who&rsquo;s behind it?</b>
+        <i>In the report</i>
+      </a>
+      <a class="door green" href="/violations.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 11h8M8 14h5" stroke-dasharray="1.5 1.5"/><path d="M15 15l4 4"/></svg></div>
+        <b>Why can&rsquo;t I read the filing?</b>
+        <i>Free</i>
+      </a>
+      <a class="door teal" href="/wire.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 12h8M8 15h5"/><circle cx="18" cy="6" r="3" fill="#14150f" stroke="none"/></svg></div>
+        <b>Today&rsquo;s free reports.</b>
+        <i>Five a day, free</i>
+      </a>
+      <a class="door sky" href="/look.html">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <b>Look at this.</b>
+        <i>A whole record, as filed</i>
+      </a>
+      <a class="door blue" href="#alerts">
+        <div class="disc"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
+        <b>Warn me when it&rsquo;s mine.</b>
+        <i>Free, always</i>
+      </a>
+    </div>
+    <div class="more">
+      <a href="/rules.html">How the verdict is rendered</a>
+      <a href="/prices.html">What it costs</a>
+      <a href="/cost.html">What the raising costs</a>
+      <a href="/readers.html">GIG readers</a>
+      <a href="/counter.html">The screw &mdash; how it is counted</a>
+      <a href="https://8k10q.com">8K10Q &mdash; read any filing</a>
+      <a href="https://triggeredshort.com">TriggeredShort &mdash; the docket</a>
     </div>
   </section>
 
@@ -192,13 +282,17 @@ html.light .alerts input{background:#fff;color:#14150f}
   buy or sell any security, and nothing here alleges that anyone broke any law.<br>
   Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a> &middot;
   <a href="https://triggeredshort.com/method.html">Method and corrections</a>
-  <p class="stamp">Built 2026-09-15 &middot; warrantwire warning-1a</p>
+  <p class="stamp">Built 2026-09-15 &middot; warrantwire warning-1b</p>
 </footer></div>
 
 <script src="/wire.js?v=2a"></script>
 <script>
 (function () {
   "use strict";
+  /* the first door goes to the box, as on the home page */
+  document.getElementById("door-search").addEventListener("click", function (e) {
+    e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus();
+  });
   /* the free alert — same call as the home page */
   document.getElementById("signup").addEventListener("click", function () {
     var em = document.getElementById("em").value.trim(), tk = document.getElementById("tk").value.trim();
