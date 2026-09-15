@@ -12,6 +12,12 @@
      page: false  the name is an alias (wrntwire, wrntco): a 301 straight
                   through, nobody sees an interstitial for a typo.
 
+   HIS CALL, 15 Sep: the traffic belongs AT warrantwire.com - what was built
+   there is the thing; these names are a tool to help people find it, never
+   a site of their own. So every door is page:false today - a 301 passes the
+   visitor and the search-engine credit straight through. The screen stays
+   in the code for the day a name needs one; flip page:true and deploy.
+
    `to` is the destination. Today every door opens on warrantwire.com; when
    8K10Q is ready, a door can be re-aimed by changing one line here and
    running  .\tools\cf.ps1 deploy direct
@@ -24,10 +30,10 @@
 const TO = "https://warrantwire.com/";
 
 const DOORS = {
-  "stockscrew.com": { page: true, to: TO,
+  "stockscrew.com": { page: false, to: TO,
     line: "Stock <em>screw</em>? It's in your company's filings.",
     sub: "StockScrew.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
-  "screwedstocks.com": { page: true, to: TO,
+  "screwedstocks.com": { page: false, to: TO,
     line: "Screwed by your stock? It's in the filings.",
     sub: "ScrewedStocks.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
   "wrntwire.com": { page: false, to: TO },
