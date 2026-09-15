@@ -31,7 +31,9 @@ const TO = "https://warrantwire.com/";
 /* the screw names deliver to THE WARNING, not the home page: a visitor who
    typed "screw" gets the page that says warrants are used for you and against
    you, and the danger is not knowing. Original words, on warrantwire.com. */
-const WARN = "https://warrantwire.com/warning.html";
+/* /warning, not /warning.html: Pages serves clean URLs and 308s the .html
+   away, so the .html form would cost the visitor a second hop */
+const WARN = "https://warrantwire.com/warning";
 
 const DOORS = {
   "stockscrew.com": { page: false, to: WARN,
