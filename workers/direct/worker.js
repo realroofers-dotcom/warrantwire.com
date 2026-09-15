@@ -28,12 +28,16 @@
    nameservers flip at GoDaddy. tools/direct.ps1 does that, re-runnably.
    ============================================================================ */
 const TO = "https://warrantwire.com/";
+/* the screw names deliver to THE WARNING, not the home page: a visitor who
+   typed "screw" gets the page that says warrants are used for you and against
+   you, and the danger is not knowing. Original words, on warrantwire.com. */
+const WARN = "https://warrantwire.com/warning.html";
 
 const DOORS = {
-  "stockscrew.com": { page: false, to: TO,
+  "stockscrew.com": { page: false, to: WARN,
     line: "Stock <em>screw</em>? It's in your company's filings.",
     sub: "StockScrew.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
-  "screwedstocks.com": { page: false, to: TO,
+  "screwedstocks.com": { page: false, to: WARN,
     line: "Screwed by your stock? It's in the filings.",
     sub: "ScrewedStocks.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
   "wrntwire.com": { page: false, to: TO },
