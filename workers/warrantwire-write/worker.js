@@ -670,7 +670,9 @@ const tick = s => String(s || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').sli
 /* three, 18 Sep: the same three as the wire, concern and company.html */
 const OPEN_SAMPLES = ['TOVX', 'MRVL', 'GOOG'];
 /* the pay desk, asked who has bought what. One line to check if it moves. */
-const PAY_DEFAULT = 'https://pay.realroofers.workers.dev';
+/* ⚠ THE CUSTOM DOMAIN, NOT workers.dev — a Worker cannot fetch another on
+   workers.dev (error 1042, found 18 Sep 2026); it can on a custom domain. */
+const PAY_DEFAULT = 'https://pay.warrantwire.com';
 
 const LEVELS = {
   founder:          { label: 'founder',                   publishes: true,  advice: false, sets_price: true },
@@ -901,7 +903,7 @@ label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transfor
       document.getElementById('arules').innerHTML = v.fired.map(function(r){ return '<div><b style="color:var(--warm);font-family:var(--mono)">' + esc(r.id) + '</b> ' + esc(r.text) + '</div>'; }).join('')
         + '<div style="margin-top:6px;color:var(--ink3)">Rules v' + v.version + ' · <a href="/rules.html" target="_blank" style="color:var(--cool)">how it is rendered</a></div>';
     }).catch(function(){ document.getElementById('alead').textContent = 'The wire is not answering.'; });
-    fetch('https://verdict.realroofers.workers.dev/?ticker=' + encodeURIComponent(t)).then(function(r){ return r.ok ? r.json() : null; }).then(function(v){
+    fetch('https://verdict.warrantwire.com/?ticker=' + encodeURIComponent(t)).then(function(r){ return r.ok ? r.json() : null; }).then(function(v){
       if (!v || !v.lines) return;
       document.getElementById('adeep').innerHTML = '<b style="color:var(--ink)">From the record built by hand:</b> ' + (v.verdict ? esc(v.verdict) + ' ' : '')
         + v.lines.map(function(l){ return esc(l.label) + ' — ' + esc(l.value); }).join(' · ')

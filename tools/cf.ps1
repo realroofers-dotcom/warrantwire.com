@@ -8,6 +8,16 @@
     .\tools\cf.ps1 pull verdict         one worker
     .\tools\cf.ps1 deploy verdict       workers/verdict/worker.js -> Cloudflare
     .\tools\cf.ps1 bindings verdict     what the live worker is bound to
+    .\tools\cf.ps1 setvar wire PAY https://pay.warrantwire.com
+                                        change one plain-text variable on the
+                                        live worker, nothing else touched
+
+  ⚠ WORKERS CANNOT CALL EACH OTHER ON workers.dev (Cloudflare error 1042),
+  found 18 Sep 2026: every server-side call between them — the wire asking
+  the pay desk, the verdict asking people for faces — silently failed. Each
+  called worker now has a custom domain on warrantwire.com (pay., people.,
+  verdict., grade., concern., wire., queue.) and the callers' PAY variables
+  point there. A Worker MAY fetch another on a custom domain.
 
   NEEDS two environment variables, set once by Mark, never written in a file:
     CF_API_TOKEN    a token from dash.cloudflare.com -> My Profile -> API Tokens
@@ -25,8 +35,10 @@
   ============================================================================
 #>
 param(
-  [Parameter(Position=0)][ValidateSet("pull","deploy","bindings","list")][string]$Cmd = "list",
-  [Parameter(Position=1)][string]$Name = ""
+  [Parameter(Position=0)][ValidateSet("pull","deploy","bindings","list","setvar")][string]$Cmd = "list",
+  [Parameter(Position=1)][string]$Name = "",
+  [Parameter(Position=2)][string]$VarName = "",
+  [Parameter(Position=3)][string]$VarValue = ""
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -144,8 +156,41 @@ function Deploy-One([string]$n) {
   "deployed $n  ($($code.Length) bytes, $($keep.Count) bindings kept)"
 }
 
+# one plain-text variable on the live worker, through the settings endpoint:
+# every other binding is sent back exactly as it is, secrets are kept by name
+function Set-Var([string]$n, [string]$var, [string]$val) {
+  if (-not $var -or -not $val) { throw "setvar <worker> <NAME> <value>" }
+  $live = (Invoke-RestMethod "$api/scripts/$n/bindings" -Headers $H).result
+  $keep = @(); $found = $false
+  foreach ($b in $live) {
+    switch ($b.type) {
+      "plain_text"    { $t = if ($b.name -eq $var) { $found = $true; $val } else { $b.text }; $keep += @{ type="plain_text"; name=$b.name; text=$t } }
+      "d1"            { $keep += @{ type="d1"; name=$b.name; id=$b.id } }
+      "r2_bucket"     { $keep += @{ type="r2_bucket"; name=$b.name; bucket_name=$b.bucket_name } }
+      "kv_namespace"  { $keep += @{ type="kv_namespace"; name=$b.name; namespace_id=$b.namespace_id } }
+      "service"       { $keep += @{ type="service"; name=$b.name; service=$b.service; environment=$b.environment } }
+      "send_email"    { $e = @{ type="send_email"; name=$b.name }; if ($b.destination_address) { $e.destination_address = $b.destination_address }; if ($b.allowed_destination_addresses) { $e.allowed_destination_addresses = $b.allowed_destination_addresses }; $keep += $e }
+      "queue"         { $keep += @{ type="queue"; name=$b.name; queue_name=$b.queue_name } }
+      "durable_object_namespace" { $keep += @{ type="durable_object_namespace"; name=$b.name; class_name=$b.class_name; script_name=$b.script_name } }
+      "analytics_engine" { $keep += @{ type="analytics_engine"; name=$b.name; dataset=$b.dataset } }
+      "ai"            { $keep += @{ type="ai"; name=$b.name } }
+      "browser"       { $keep += @{ type="browser"; name=$b.name } }
+      "secret_text"   { }
+      default         { throw "setvar on $n refused: live binding '$($b.name)' has type '$($b.type)', which this tool does not know how to carry forward." }
+    }
+  }
+  if (-not $found) { $keep += @{ type="plain_text"; name=$var; text=$val } }
+  $settings = @{ bindings = $keep; keep_bindings = @("secret_text") } | ConvertTo-Json -Depth 5 -Compress
+  $bnd = "----ww" + [guid]::NewGuid().ToString("N"); $nl = "`r`n"
+  $body = "--$bnd$nl" + 'Content-Disposition: form-data; name="settings"' + $nl + "Content-Type: application/json$nl$nl$settings$nl--$bnd--$nl"
+  $r = Invoke-RestMethod -Method Patch "$api/scripts/$n/settings" -Headers $H -ContentType "multipart/form-data; boundary=$bnd" -Body ([Text.Encoding]::UTF8.GetBytes($body))
+  if (-not $r.success) { throw ($r.errors | ConvertTo-Json) }
+  "$n  $var = $val  ($(if ($found) { 'changed' } else { 'added' }), $($keep.Count) bindings sent, secrets kept)"
+}
+
 switch ($Cmd) {
   "list"     { Get-Workers | ForEach-Object { "$($_.id)`t$($_.modified_on)" } }
+  "setvar"   { if (-not $Name) { throw "setvar which worker?" }; Set-Var $Name $VarName $VarValue }
   "pull"     { if ($Name) { Pull-One $Name } else { Get-Workers | ForEach-Object { Pull-One $_.id } } }
   "deploy"   { if (-not $Name) { throw "deploy which worker?" }; Deploy-One $Name }
   "bindings" { (Invoke-RestMethod "$api/scripts/$Name/bindings" -Headers $H).result | Select-Object name, type, id, bucket_name | Format-Table -AutoSize }

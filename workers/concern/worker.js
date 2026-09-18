@@ -404,7 +404,9 @@ function pad10(c) { return String(c).replace(/\D/g, "").padStart(10, "0"); }
    ============================================================ */
 /* ⚠ ONE FUNCTION DECIDES WHO HAS PAID, the same way the wire does: the owner
    key, or an email with a live `concern` entitlement at the pay desk. */
-const PAY_DEFAULT = "https://pay.realroofers.workers.dev";
+/* ⚠ THE CUSTOM DOMAIN, NOT workers.dev — a Worker cannot fetch another on
+   workers.dev (error 1042, found 18 Sep 2026); it can on a custom domain. */
+const PAY_DEFAULT = "https://pay.warrantwire.com";
 async function paidFor(env, q, req, ticker) {
   const key = (req && req.headers.get("X-Auth-Key")) || q.get("key") || "";
   if (key && env.LOG_KEY && key === env.LOG_KEY) return { paid: true, how: "owner key" };

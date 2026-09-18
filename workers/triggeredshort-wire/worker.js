@@ -185,7 +185,7 @@ export default {
         /* Then tell the queue to draft from what was just written. The queue
            has no cron of its own; this is what drives it, and it guarantees
            the scan finishes first. */
-        await fetch("https://triggeredshort-queue.realroofers.workers.dev/?action=draft",
+        await fetch("https://queue.warrantwire.com/?action=draft",
                     { headers: { "X-Auth-Key": env.LOG_KEY } }).catch(()=>{});
       }
 

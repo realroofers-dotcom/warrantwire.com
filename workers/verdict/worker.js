@@ -51,7 +51,10 @@
 const BUILD = "verdict-2b · 2026-09-11 · queries against the live schema";
 
 /* ⚠ WHERE THE FACES LIVE. One line to check if the people worker ever moves. */
-const PEOPLE = "https://people.realroofers.workers.dev";
+/* ⚠ THE CUSTOM DOMAIN, NOT workers.dev — a Worker cannot fetch another on
+   workers.dev (error 1042, found 18 Sep 2026): every face was silently
+   missing. It can on a custom domain. */
+const PEOPLE = "https://people.warrantwire.com";
 
 /* the same id rule the people worker uses, so a name here finds its file
    there: a slug of the name. (A person CIK would be better; the parties table
