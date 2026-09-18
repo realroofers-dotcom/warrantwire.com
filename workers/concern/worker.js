@@ -135,7 +135,8 @@ export default {
         if (q.get("company")) {
           const tk = String(q.get("company") || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
           const gate = await paidFor(env, q, req, tk);
-          if (gate.paid || tk === "TOVX") return json(await oneCompany(env, tk), H);
+          /* the open samples — the same three as the wire: TOVX, MRVL, GOOG (18 Sep) */
+          if (gate.paid || ["TOVX", "MRVL", "GOOG"].indexOf(tk) > -1) return json(await oneCompany(env, tk), H);
           return json({ ok:true, build: BUILD, ticker: tk, paid: false, why: gate.why,
             note: "This company's going concern record is part of its $12 report, highlighted as an urgent warning." }, H);
         }

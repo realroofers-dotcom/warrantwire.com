@@ -1,3 +1,19 @@
+/* BUILT 2026-09-18 · triggeredshort-wire 2c — THE SAMPLES, AND THE SEARCH LOG
+   Supersedes 2b of 2026-09-11.
+
+   2c, his asks of 18 Sep:
+   · MRVL and GOOG join TOVX as open samples — the worked examples anyone can
+     read in full. (GOOG's ticker row was a bad import, "GOOGN"; fixed in the
+     data the same day, so a ticker search now finds Alphabet's seven.)
+   · EVERY SEARCH IS RECORDED — who (the email, if any), where from (the IP,
+     country, region, city Cloudflare saw), what was asked, whether it was
+     paid and how, the page it came from. wire_searches, one row a search,
+     and it builds itself. His rule: all new searches add to the data we
+     already have. The founder reads it with ?action=searches (key).
+   · A paid unlock is PER EMAIL and only per email — nothing here opens a
+     ticker for everyone except the three samples. Unchanged from 2b, said
+     again because he asked.
+
 /* BUILT 2026-09-11 · triggeredshort-wire 2b — THE GATE, AND THE CAP
    Supersedes the 2026-08-27 build.
 
@@ -95,7 +111,7 @@ export default {
 
     try {
       if (q.get("alert"))  return json(await addAlert(env, q), cors);
-      if (q.get("wire"))   return json(await readWire(env, q, request), cors);
+      if (q.get("wire"))   return json(await readWire(env, q, request, ctx), cors);
       if (q.get("filing")) return json(await readFiling(env, q), cors);
       if (q.get("company")) return json(await readCompany(env, q, request), cors);
       if (q.get("rescan"))  return json(await addRescan(env, q), cors);
@@ -112,6 +128,7 @@ export default {
         const from = addDays(to, -days);
         return json(await scan(env, from, to), cors);
       }
+      if (action === "searches") return json(await readSearches(env, q), cors);
       if (action === "tickers") return json(await loadTickers(env), cors);
       if (action === "sic")     return json(await loadSic(env, +(q.get("max")||"150")), cors);
       if (action === "sectors") return json(await readSectors(env, q), cors);
@@ -721,6 +738,69 @@ async function useOne(env, email, ticker) {
   } catch (e) { /* a search never fails because the meter did */ }
 }
 
+/* ⚠ THE SAMPLES, IN ONE PLACE. company.html, concern and warrantwire-write
+   carry the same three; when this list changes, change those. */
+const SAMPLES = ["TOVX", "MRVL", "GOOG"];
+
+/* ------------------------------------------------------------------
+   THE SEARCH LOG — wire_searches. One row per search: who, where from,
+   what, and whether it was paid. His ask, 18 Sep: access to all
+   searches by who and where from. Cloudflare hands the geography in
+   request.cf; the email is whatever the page sent (the buyer's, or
+   nothing). Fire-and-forget: a search never waits on its own log and
+   never fails because of it.
+------------------------------------------------------------------ */
+async function ensureSearchLog(env) {
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS wire_searches (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       at TEXT DEFAULT (datetime('now')),
+       ticker TEXT, asked TEXT, found INTEGER,
+       email TEXT, paid INTEGER, how TEXT,
+       ip TEXT, country TEXT, region TEXT, city TEXT,
+       referer TEXT, ua TEXT)`).run();
+}
+function ctxLog(env, request, s) {
+  try {
+    const h = request && request.headers, cf = (request && request.cf) || {};
+    const email = String((new URL(request.url)).searchParams.get("email") || "").trim().toLowerCase() || null;
+    const row = {
+      ticker: s.ticker || null, asked: String(s.asked || "").slice(0, 80), found: s.found || 0,
+      email: email, paid: s.gate && s.gate.paid ? 1 : 0, how: (s.gate && s.gate.how) || (s.gate && s.gate.why) || null,
+      ip: (h && h.get("CF-Connecting-IP")) || null, country: cf.country || null,
+      region: cf.region || null, city: cf.city || null,
+      referer: String((h && h.get("Referer")) || "").slice(0, 200) || null,
+      ua: String((h && h.get("User-Agent")) || "").slice(0, 200) || null
+    };
+    const p = (async () => {
+      await ensureSearchLog(env);
+      await env.OVERHANG.prepare(
+        `INSERT INTO wire_searches (ticker, asked, found, email, paid, how, ip, country, region, city, referer, ua)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(row.ticker, row.asked, row.found, row.email, row.paid, row.how, row.ip, row.country, row.region, row.city, row.referer, row.ua).run();
+    })();
+    if (s.ctx && s.ctx.waitUntil) s.ctx.waitUntil(p.catch(() => {})); else p.catch(() => {});
+  } catch (e) { /* the log never breaks the search */ }
+}
+/* the founder's view: ?action=searches[&n=200][&ticker=][&email=][&days=30] */
+async function readSearches(env, q) {
+  await ensureSearchLog(env);
+  const n = Math.min(parseInt(q.get("n") || "200", 10), 2000);
+  const days = Math.min(parseInt(q.get("days") || "30", 10), 3650);
+  const tk = String(q.get("ticker") || "").toUpperCase(), em = String(q.get("email") || "").toLowerCase();
+  const where = ["at >= datetime('now', ?)"], args = ["-" + days + " days"];
+  if (tk) { where.push("ticker = ?"); args.push(tk); }
+  if (em) { where.push("email = ?"); args.push(em); }
+  const W = "WHERE " + where.join(" AND ");
+  const rows = (await env.OVERHANG.prepare(`SELECT * FROM wire_searches ${W} ORDER BY id DESC LIMIT ?`).bind(...args, n).all()).results || [];
+  const by = async (col) => (await env.OVERHANG.prepare(`SELECT ${col} k, COUNT(*) n FROM wire_searches ${W} GROUP BY ${col} ORDER BY n DESC LIMIT 40`).bind(...args).all()).results || [];
+  return { ok: true, build: "triggeredshort-wire 2c · 2026-09-18", days, filter: { ticker: tk || null, email: em || null },
+    total: (await env.OVERHANG.prepare(`SELECT COUNT(*) n, SUM(paid) paid, COUNT(DISTINCT email) emails, COUNT(DISTINCT ip) ips FROM wire_searches ${W}`).bind(...args).first()),
+    by_ticker: await by("ticker"), by_country: await by("country"), by_email: await by("email"),
+    by_day: (await env.OVERHANG.prepare(`SELECT date(at) k, COUNT(*) n FROM wire_searches ${W} GROUP BY date(at) ORDER BY k DESC LIMIT 60`).bind(...args).all()).results || [],
+    rows };
+}
+
 async function paidFor(env, q, request) {
   const key = (request && request.headers.get("X-Auth-Key")) || q.get("key") || "";
   if (key && env.LOG_KEY && key === env.LOG_KEY)
@@ -768,10 +848,10 @@ function veil(rows) {
   return (rows || []).map(f => ({ labels: f.labels || "", heavy: f.heavy || 0 }));
 }
 
-async function readWire(env, q, request) {
+async function readWire(env, q, request, ctx) {
   /* the site's search box calls ?wire=1&q=TICKER and reads .about and .rows */
   const asked = (q.get("q") || "").trim();
-  if (asked) return wireSearch(env, asked, q, request);
+  if (asked) return wireSearch(env, asked, q, request, ctx);
   const days  = Math.min(parseInt(q.get("days") || "14", 10), 180);
   const heavy = q.get("heavy") === "1";
   const from  = addDays(today(), -days);
@@ -1084,6 +1164,74 @@ async function fetchProfile(env, cik) {
 }
 
 /* ------------------------------------------------------------------
+   EVERYTHING THE COMPANY HAS FILED  —  the count since 2001 and the
+   latest filings, from the SEC's submissions file. His rule, 18 Sep:
+   NO SEARCH FOR A REAL COMPANY COMES UP EMPTY. Warrant Wire serves
+   the warrants; 8K10Q reads everything else; but the wire SAYS how
+   many filings there are, so "no warrant language" never reads as
+   "nothing". Fetched once, kept in edgar_counts, refreshed after a
+   week — his rule: store it, save the bandwidth, and every search
+   adds to what we hold.
+------------------------------------------------------------------ */
+const EDGAR_SINCE = "2001-01-01";
+const READABLE = /^(8-K|10-Q|10-K|S-1|S-3|S-4|S-8|F-1|F-3|F-4|424B|DEF 14A|DEFA14A|PRE 14A|6-K|20-F|40-F|SC 13D|SC TO|SC 14D|10-12|N-2|POS AM)/;
+async function edgarCounts(env, cik) {
+  if (!cik) return null;
+  const c = String(Number(cik));
+  try {
+    await env.OVERHANG.prepare(
+      `CREATE TABLE IF NOT EXISTS edgar_counts (cik TEXT PRIMARY KEY, since TEXT, total INTEGER,
+         forms TEXT, first_on TEXT, latest_on TEXT, latest_form TEXT, recent TEXT,
+         fetched_at TEXT DEFAULT (datetime('now')))`).run();
+    const had = await env.OVERHANG.prepare(
+      `SELECT * FROM edgar_counts WHERE cik = ? AND fetched_at > datetime('now', '-7 days')`).bind(c).first();
+    if (had) return { since: had.since, total: had.total, forms: JSON.parse(had.forms || "{}"),
+                      first: had.first_on, latest: had.latest_on, latest_form: had.latest_form,
+                      recent: JSON.parse(had.recent || "[]"), fetched: had.fetched_at };
+  } catch (e) {}
+  try {
+    const padded = c.padStart(10, "0");
+    const H = { "User-Agent": CONTACT, "Accept": "application/json" };
+    const res = await fetch("https://data.sec.gov/submissions/CIK" + padded + ".json", { headers: H });
+    if (!res.ok) return null;
+    const d = await res.json();
+    const forms = {}; let total = 0, first = null, latest = null, latestForm = null; const recent = [];
+    const take = (form, date, acc, doc) => {
+      if (!date || date < EDGAR_SINCE) return;
+      total++; forms[form] = (forms[form] || 0) + 1;
+      if (!first || date < first) first = date;
+      if (!latest || date > latest) { latest = date; latestForm = form; }
+      /* the list offered for reading is the filings worth reading — not the
+         Form 4 trade slips and Section 16 paper that make up most of a big
+         company's count. The count above still includes everything. */
+      if (recent.length < 24 && acc && READABLE.test(form)) recent.push({ form, filed_on: date, accession: acc,
+        url: doc ? "https://www.sec.gov/Archives/edgar/data/" + c + "/" + acc.replace(/-/g, "") + "/" + doc : null });
+    };
+    const r = (d.filings && d.filings.recent) || {};
+    for (let i = 0; i < (r.form || []).length; i++) take(r.form[i], r.filingDate[i], r.accessionNumber[i], (r.primaryDocument || [])[i]);
+    /* the older filings live in separate files; only the ones that reach past 2001 are worth opening */
+    for (const f of ((d.filings && d.filings.files) || [])) {
+      if (!f.name || (f.filingTo && f.filingTo < EDGAR_SINCE)) continue;
+      try {
+        const r2 = await (await fetch("https://data.sec.gov/submissions/" + f.name, { headers: H })).json();
+        for (let i = 0; i < (r2.form || []).length; i++) take(r2.form[i], r2.filingDate[i], null, null);
+      } catch (e) {}
+    }
+    const out = { since: EDGAR_SINCE, total, forms, first, latest, latest_form: latestForm, recent };
+    try {
+      await env.OVERHANG.prepare(
+        `INSERT INTO edgar_counts (cik, since, total, forms, first_on, latest_on, latest_form, recent, fetched_at)
+         VALUES (?,?,?,?,?,?,?,?,datetime('now'))
+         ON CONFLICT(cik) DO UPDATE SET since=excluded.since, total=excluded.total, forms=excluded.forms,
+           first_on=excluded.first_on, latest_on=excluded.latest_on, latest_form=excluded.latest_form,
+           recent=excluded.recent, fetched_at=datetime('now')`)
+        .bind(c, EDGAR_SINCE, total, JSON.stringify(forms), first, latest, latestForm, JSON.stringify(recent)).run();
+    } catch (e) {}
+    return out;
+  } catch (e) { return null; }
+}
+
+/* ------------------------------------------------------------------
    WHO THIS COMPANY IS  —  the facts, from the SEC's own files.
    Name and exchange from the CIK map; SIC, sector and state of
    incorporation from cik_sic. Nothing here is our opinion.
@@ -1142,7 +1290,7 @@ async function companyCard(env, tk, cikHint) {
    Returns .about (the free answer: how many, how heavy, how far back)
    and .rows (the filings themselves).
 ------------------------------------------------------------------ */
-async function wireSearch(env, asked, q, request) {
+async function wireSearch(env, asked, q, request, ctx) {
   const tk = asked.toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
   let rows = [];
   try {
@@ -1187,6 +1335,9 @@ async function wireSearch(env, asked, q, request) {
 
   const company = await companyCard(env, tk, rows.length ? rows[0].cik : "");
   const pendingWeeks = await walkPending(env);
+  /* everything the company has filed since 2001 — so a real company never
+     comes up empty, and a company with warrant paper is seen in proportion */
+  const edgar = company && company.cik ? await edgarCounts(env, company.cik) : null;
 
   /* ⚠ THE GATE, ASKED AFTER THE ANSWER IS BUILT AND BEFORE IT IS SENT. The
      counts, the company and the terms are free; the documents are not.
@@ -1194,8 +1345,11 @@ async function wireSearch(env, asked, q, request) {
      on the home page, the company he has read every filing of — the full
      report, filings included, is free to anyone so the product can be
      checked before it is bought. */
-  const SAMPLES = ["TOVX"];
+  /* ⚠ THREE SAMPLES, 18 Sep: TOVX, MRVL (the Aug 2026 warrant paper) and
+     GOOG (the other side of it, and its own seven). Nothing else is open. */
   const gate = SAMPLES.indexOf(tk) > -1 ? { paid: true, how: "the sample" } : await paidFor(env, q, request);
+  /* the search, recorded — never in the buyer's way: it cannot throw */
+  if (request) ctxLog(env, request, { ticker: tk, asked: asked, found: rows.length, gate: gate, ctx: ctx });
 
   /* ⚠ THE CAP, CHECKED BEFORE ANYTHING IS SERVED AND COUNTED ONLY IF IT IS.
      A refusal costs the buyer nothing, which matters: somebody who hits his
@@ -1274,7 +1428,17 @@ async function wireSearch(env, asked, q, request) {
       latest: rows[0].filed_on,
       forms: forms,
       on_docket: docket ? true : false
-    } : null,
+    } : (company ? {
+      /* ⚠ A REAL COMPANY WITH NO WARRANT LANGUAGE IS STILL AN ANSWER. */
+      ticker: tk, company: company.name || "", exchange: company.exchange || "",
+      business: company.business || "", filings: 0, heavy: 0, first: null, latest: null,
+      forms: [], on_docket: false
+    } : null),
+    /* the whole record on EDGAR since 2001: the count, the forms, the latest
+       filings — and each of those can be read at 8K10Q, bought here */
+    edgar: edgar ? { since: edgar.since, filings: edgar.total, forms: edgar.forms,
+      first: edgar.first, latest: edgar.latest, latest_form: edgar.latest_form,
+      recent: edgar.recent, read_at: "8k10q", read_sku: "wire_read", read_cents: 2000 } : null,
     /* ⚠ UNPAID, EVERY ROW LOSES ITS ACCESSION, ITS DATE AND ITS FORM. It
        keeps its marks, which is what the page reads to say WHICH TERMS are
        in this company's paper — the free answer — without saying which

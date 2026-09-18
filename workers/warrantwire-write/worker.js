@@ -667,7 +667,8 @@ const tick = s => String(s || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').sli
 
 /* companies the founder has opened in full — the sample. Everything on the
    TOVX page is free to read, human verdicts included. */
-const OPEN_SAMPLES = ['TOVX'];
+/* three, 18 Sep: the same three as the wire, concern and company.html */
+const OPEN_SAMPLES = ['TOVX', 'MRVL', 'GOOG'];
 /* the pay desk, asked who has bought what. One line to check if it moves. */
 const PAY_DEFAULT = 'https://pay.realroofers.workers.dev';
 

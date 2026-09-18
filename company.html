@@ -18,6 +18,21 @@
 .samplemark{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
   color:var(--cool);border:1px solid var(--cool);border-radius:3px;padding:3px 8px;margin:0 0 12px}
 time{font:400 11.5px var(--mono);color:var(--ink3)}
+/* one reader: the mark on a paid report */
+.onereader{margin:10px 0 0;font:400 12px var(--mono);color:var(--ink3);letter-spacing:.02em}
+.onereader b{color:var(--ink2);font-weight:600}
+.onereader a{color:var(--ink3)}
+/* everything on file — the EDGAR record and the 8K10Q read */
+.verdict.edgar .eforms{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 12px;font:13px var(--mono);color:var(--ink2)}
+.verdict.edgar .eforms b{color:var(--ink)}
+.elist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line2)}
+.elist li{display:grid;grid-template-columns:110px 100px 60px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line2);font-size:13.5px}
+.elist .ef{font:600 12.5px var(--mono);color:var(--ink)}
+.elist .ed{font:400 12px var(--mono);color:var(--ink3)}
+.elist .el{font:600 12px var(--sans);color:var(--cool);text-decoration:none}
+.elist .readk8{justify-self:end;font:600 12.5px var(--sans);background:transparent;border:1px solid var(--line);color:var(--ink);padding:6px 11px;border-radius:6px;cursor:pointer}
+.elist .readk8:hover{border-color:var(--ink2);background:var(--panel)}
+@media(max-width:560px){.elist li{grid-template-columns:1fr 1fr;gap:6px 10px}.elist .readk8{grid-column:1/-1;justify-self:start}}
 /* Rule 421: the plain-English grade */
 .r421{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0 0;background:var(--panel)}
 .r421.bad{border-color:var(--hot);background:#fbeeec}
@@ -166,7 +181,9 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   /* ⚠ THE SAMPLE IS THE FULL VERDICT, UNLOCKED. His call: the home page gives
      a sample. TOVX is the company he has read every filing of, so it is the
      one anybody can check. */
-  var SAMPLE = { TOVX: 1 };
+  /* three, 18 Sep: TOVX, MRVL (the Aug 2026 warrant paper) and GOOG. The same
+     three are in the wire, the write worker and concern. */
+  var SAMPLE = { TOVX: 1, MRVL: 1, GOOG: 1 };
 
   var T = (new URLSearchParams(location.search).get("t") || "").trim().toUpperCase();
   var page = document.getElementById("page");
@@ -224,12 +241,39 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<p class="ver">Rendered under <a href="/rules.html">rules version ' + v.version + '</a>, in force from ' + esc(v.date) + '. Computed ' + when(new Date().toISOString()) + '</p>'
       + '</div>';
   }
+  /* ⚠ NO SEARCH FOR A REAL COMPANY COMES UP EMPTY. His rule, 18 Sep: we were
+     losing people because a company with no warrant paper looked like
+     "nothing". Warrant Wire serves the warrants; 8K10Q reads everything
+     else; and the wire SAYS how much everything else is — the count since
+     2001, the latest filings, and a $20 read of any of them, bought here. */
+  function edgarLine(e, wireN) {
+    if (!e || !e.filings) return "";
+    return '<p class="found">' + Number(e.filings).toLocaleString("en-US") + ' filings on EDGAR since ' + esc(String(e.since || "2001").slice(0, 4))
+      + (e.latest ? ', the latest a ' + (/^\d/.test(e.latest_form || "") ? 'Form ' : '') + esc(e.latest_form || "filing") + ' on ' + esc(e.latest) : '') + '. '
+      + (wireN ? '<b>' + wireN + ' of them carr' + (wireN === 1 ? 'ies' : 'y') + ' warrant language.</b>' : '<b>None of them carries the warrant language the wire watches for.</b>') + '</p>';
+  }
+  function edgarBox(e, tk) {
+    if (!e || !e.filings) return "";
+    var forms = Object.keys(e.forms || {}).sort(function (x, y) { return e.forms[y] - e.forms[x]; }).slice(0, 6)
+      .map(function (f) { return '<span>' + esc(f) + ' <b>' + e.forms[f] + '</b></span>'; }).join("");
+    var rows = (e.recent || []).slice(0, 12).map(function (r) {
+      return '<li><span class="ef">' + esc(r.form) + '</span><span class="ed">' + esc(r.filed_on) + '</span>'
+        + (r.url ? '<a class="el" href="' + esc(r.url) + '" target="_blank" rel="noopener">EDGAR</a>' : '<span></span>')
+        + '<button class="wbuy readk8" data-sku="wire_read" data-t="' + esc(tk) + '" data-acc="' + esc(r.accession) + '">Read it at 8K10Q &middot; $20</button></li>';
+    }).join("");
+    return '<section class="verdict edgar" id="edgar"><p class="lbl"><b>Everything on file</b><span>since ' + esc(String(e.since || "2001").slice(0, 4)) + ', from the SEC</span><span class="kind">read at 8K10Q</span></p>'
+      + '<p class="vlead"><b>' + Number(e.filings).toLocaleString("en-US") + ' filings.</b> Warrant Wire reads the warrant paper. <a href="https://8k10q.com">8K10Q</a>, the sister site, reads any filing in plain English &mdash; every section, not only the warrants &mdash; for $20. Pick one below; you pay here and read it there.</p>'
+      + '<div class="eforms">' + forms + '</div>'
+      + '<ol class="elist">' + rows + '</ol>'
+      + '<p class="fine">The latest ' + Math.min(12, (e.recent || []).length) + ' of ' + Number(e.filings).toLocaleString("en-US") + '. Kept here so the SEC is asked once, not on every search.</p>'
+      + '</section>';
+  }
   function autoBox(v, open, a) {
     var lbl = '<p class="lbl"><b>The automatic verdict</b><span>rendered by the rules</span><span class="kind">warrants only</span></p>';
     if (v.none) {
       return '<section class="verdict auto">' + lbl
-        + '<p class="clean"><b>Nothing on the wire.</b> ' + esc(v.fired[0].text) + '</p>'
-        + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone.</p>'
+        + '<p class="clean"><b>No warrant language on the wire.</b> ' + esc(v.fired[0].text) + '</p>'
+        + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone. Everything the company <i>has</i> filed is below, and any of it can be read.</p>'
         + '</section>';
     }
     if (open) {
@@ -715,23 +759,35 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + '<div><p class="co">' + esc(c.name || a.company || T) + '</p>'
         + (c.business || c.sector ? '<p class="ind">' + esc(c.business || c.sector) + '</p>' : '')
         + '<div class="marks">' + WW.marks((d.rows || []).reduce(function (acc, r) { return acc.concat(WW.split(r.labels)); }, []), 8) + '</div>'
-        + '<p class="found">' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') + ' on the wire'
-        + (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '') + (a.first ? ', ' + esc(a.first) + ' to ' + esc(a.latest) : '') + '.</p>'
+        + (a.filings ? '<p class="found">' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') + ' on the wire'
+        + (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '') + (a.first ? ', ' + esc(a.first) + ' to ' + esc(a.latest) : '') + '.</p>' : '')
+        + edgarLine(d.edgar, a.filings)
         + '</div><div class="go">'
-        + (open ? '<a class="verdict" href="#auto">The verdict is below &darr;</a>' : '<button class="wbuy readbtn" data-sku="wire_search" data-t="' + esc(tk) + '">The verdict &middot; $12</button>')
+        + (a.filings
+            ? (open ? '<a class="verdict" href="#auto">The verdict is below &darr;</a>' : '<button class="wbuy readbtn" data-sku="wire_search" data-t="' + esc(tk) + '">The verdict &middot; $12</button>')
+            : '<a class="verdict" href="#edgar">Read a filing at 8K10Q &darr;</a>')
         + '</div></div></div>' : "";
+      /* ⚠ ONE READER. A paid report carries the address it was bought for, in
+         print, so a copy that travels says whose it was. His rule, 18 Sep:
+         sharing a report is not allowed. The sample carries no mark. */
+      var mark = (open && !SAMPLE[tk] && EMAIL)
+        ? '<p class="onereader">Prepared for <b>' + esc(EMAIL) + '</b> &middot; one reader, not for redistribution &middot; <a href="/terms.html#sharing">terms</a></p>' : '';
 
       page.innerHTML = who(c, a, SAMPLE[tk])
+        + mark
         + '<div id="concern"></div>'
         + '<div id="grade421"></div>'
         + row
         + '<div class="verdicts" id="auto">' + autoBox(v, open, a || {}) + '</div>'
+        + (v.none || !a || !a.filings ? '<div class="verdicts">' + edgarBox(d.edgar, tk) + '</div>' : '')
         + (open ? '<div class="verdicts">' + filings(d.rows, tk, c.cik) + '</div>' : '')
         + (open ? '<div class="verdicts" id="could"></div>' : '')
         + '<div class="verdicts" id="humans"></div>'
         + '<div class="vpeople" id="people"></div>';
 
-      document.getElementById("live").textContent = v.none ? "Nothing on the wire" : (open ? "The verdict" : "On the wire");
+      document.getElementById("live").textContent = v.none ? (d.edgar && d.edgar.filings ? Number(d.edgar.filings).toLocaleString("en-US") + " filings, no warrant paper" : "Nothing on the wire") : (open ? "The verdict" : "On the wire");
+      /* companies with warrant paper get the EDGAR record too, after the verdict */
+      if (!v.none && a && a.filings && d.edgar) { var eb = document.createElement("div"); eb.className = "verdicts"; eb.innerHTML = edgarBox(d.edgar, tk); document.getElementById("humans").parentNode.insertBefore(eb, document.getElementById("humans")); }
       if (open && !v.none) deep(tk);
       if (open && !v.none) couldHappen(tk, d.rows, v, c);
       humans(tk, open);
