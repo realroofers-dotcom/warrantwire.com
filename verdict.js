@@ -19,7 +19,11 @@
 (function () {
   "use strict";
 
-  var VERSION = 1, DATE = "2026-09-11";
+  /* version 2, 18 Sep 2026: W9, the no-press-release clause. His ask: some deal
+     papers say in so many words that neither party will announce the deal.
+     That is the clearest sign in the paper itself that it was built to be
+     missed, and the wire reports it. */
+  var VERSION = 2, DATE = "2026-09-18";
 
   var HEAVY = ["Price reset","Cashless exercise","Warrant inducement","Inducement agreement",
                "Reduced exercise price","Variable rate transaction","Equity line"];
@@ -78,10 +82,11 @@
       rest.push("The heavier terms — resets, inducements, cashless exercise — are in " + heavyN + " of the " + n);
     }
 
-    /* per-row counts for W3–W6 */
-    var cut = 0, induce = 0, stackMax = 0, sellNotHold = false;
+    /* per-row counts for W3–W6, and W9 */
+    var cut = 0, induce = 0, stackMax = 0, sellNotHold = false, quiet = 0;
     rows.forEach(function (r) {
       var L = labelsOf(r);
+      if (has(L, ["No press release clause"])) quiet++;
       if (has(L, ["Reduced exercise price", "Price reset"])) cut++;
       if (has(L, ["Warrant inducement", "Inducement agreement"])) induce++;
       var s = 0, seen = {};
@@ -121,6 +126,13 @@
       fired.push({ id: "W6", name: "Arranged to sell, not hold",
         text: "The buyer's stake is capped and the stock is already paid for — the paper is arranged to be sold, not held." });
       rest.push("At least one deal capped the buyer's stake and pre-paid the stock — paper arranged to be sold, not held");
+    }
+
+    /* W9 — no press release: the parties agreed the deal would not be announced. Once is enough. */
+    if (quiet >= 1) {
+      fired.push({ id: "W9", name: "No press release",
+        text: "The deal papers say no press release" + (quiet > 1 ? " — in " + quiet + " filings" : "") + ": the parties agreed the deal would not be announced. A financing the company agreed not to talk about is one the shareholder has to find in the exhibit." });
+      subject.unshift("agreed in writing that a financing would not be announced" + (quiet > 1 ? " — " + quiet + " times" : ""));
     }
 
     /* W7 — how recent */
