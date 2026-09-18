@@ -1,0 +1,377 @@
+<!-- BUILT 2026-09-18 · warrantwire method-1a · THE METHOD OF EVALUATION: every measurement on the site, the mathematics behind each, every source, and how the pieces become what the page says. His ask, 18 Sep. -->
+<!--
+   ⚠ THIS PAGE IS A DESCRIPTION OF CODE THAT RUNS (grade-1n, triggeredshort-
+   wire 2c, verdict.js version 2). It gives the FORM of every calculation and
+   every source. HIS RULE, 18 Sep: the secret sauce stays secret — the lines,
+   the weights, the word lists and the band cut-offs of the reading engine are
+   NOT on this page. The verdict rules' thresholds are on /rules.html by his
+   earlier design and are repeated here. If this page and the code disagree,
+   the code is wrong. Nothing is described that is not computed.
+-->
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The method of evaluation — Warrant Wire</title>
+<meta name="description" content="How Warrant Wire evaluates a filing: the watched language, the verdict rules, the Rule 421 plain-English grade, the reading engine (comprehensibility, cognitive load, media trigger) — with the mathematics of each decision and every published source.">
+<link rel="canonical" href="https://warrantwire.com/method.html">
+<meta name="robots" content="index, follow">
+<meta property="og:site_name" content="Warrant Wire">
+<meta property="og:title" content="The method of evaluation — Warrant Wire">
+<meta property="og:description" content="Every measurement on the site, the mathematics behind it, and every source. Reproducible by anyone.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://warrantwire.com/method.html">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css?v=2a">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+html.light{--paper:#ffffff;--panel:#f6f5ef;--line:#dcdad0;--line2:#e6e4da;--ink:#14150f;--ink2:#474a3e;--ink3:#7a7d70;--hot:#c0392b;--warm:#9a7a12;--cool:#2f7a5a}
+html.light header.top{background:#fff}
+.wrapn{max-width:900px;margin:0 auto;padding:0 22px}
+.top-note{padding:36px 0 26px;border-bottom:1px solid var(--line)}
+.top-note h1{font:700 clamp(30px,4.4vw,44px)/1.1 var(--serif);margin:0 0 12px;letter-spacing:-.01em;max-width:24ch}
+.top-note .lede{font-size:17.5px;max-width:62ch}
+.toc{display:flex;flex-wrap:wrap;gap:6px 16px;margin:16px 0 0;font-size:14px}
+.toc a{color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--ink3)}
+.toc a:hover{color:var(--ink)}
+section.m{padding:34px 0;border-bottom:1px solid var(--line2)}
+section.m h2{font:700 clamp(23px,3vw,30px)/1.15 var(--serif);margin:0 0 6px}
+section.m h3{font:700 18px/1.3 var(--serif);margin:22px 0 8px}
+section.m p{font-size:15.5px;color:var(--ink2);max-width:66ch;margin:0 0 12px;line-height:1.6}
+section.m p b{color:var(--ink)}
+.k{display:block;font:700 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+/* the mathematics: monospace blocks, plain characters, no library */
+.math{font:14px/1.7 var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:10px 0 14px;overflow-x:auto;color:var(--ink);white-space:pre}
+.math i{color:var(--ink3);font-style:normal}
+.math b{color:var(--hot);font-weight:600}
+var{font-style:italic;font-family:var(--serif)}
+/* tables */
+.tblwrap{overflow-x:auto;margin:8px 0 14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:8px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px 8px;border-bottom:1px solid var(--line2);vertical-align:top;color:var(--ink2)}
+td b{color:var(--ink)} td code{font:12.5px var(--mono);color:var(--ink)}
+td.n{text-align:right;font-family:var(--mono);white-space:nowrap}
+/* the decision table */
+.dec td:first-child{font:600 12.5px var(--mono);color:var(--ink);white-space:nowrap}
+/* sources */
+.src{list-style:none;margin:0;padding:0;max-width:70ch}
+.src li{padding:7px 0;border-bottom:1px solid var(--line2);font-size:14px;color:var(--ink2);line-height:1.5}
+.src li b{color:var(--ink);font-weight:600}
+.src li .used{display:block;font:400 12px var(--mono);color:var(--ink3);margin-top:2px}
+.limit{border-left:3px solid var(--warm);background:var(--panel);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0 0;font-size:14.5px;color:var(--ink2)}
+.limit b{color:var(--warm);font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>We read the filings. All of them.</small></a>
+  <span class="live"><span class="dot" aria-hidden="true" style="background:var(--cool);box-shadow:0 0 0 3px rgba(47,122,90,.16)"></span><span id="live">The method</span></span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/method.html" aria-current="page">The method</a>
+  <a href="/rules.html">The verdict rules</a>
+  <a href="/grades.html">The grade</a>
+</nav></div>
+
+<main><div class="wrapn">
+
+<div class="top-note">
+  <span class="k">The method of evaluation &middot; version 2 &middot; 18 September 2026</span>
+  <h1>Every number on this site, how it is computed, and where it comes from.</h1>
+  <p class="lede">Warrant Wire measures documents. It does not judge companies. Each measurement below is
+  computed by code that runs the same way on every filer, with a published source behind each idea. This
+  page gives the form of every calculation &mdash; what is measured, how the parts combine, and where each
+  idea comes from. The lines, weights and word lists themselves are the house&rsquo;s and are not published.
+  <b>Where this page and the code disagree, the code is wrong.</b></p>
+  <div class="toc">
+    <a href="#what">What is evaluated</a><a href="#wire">1 · The wire</a><a href="#verdict">2 · The verdict</a>
+    <a href="#grade">3 · The plain-English grade</a><a href="#reading">4 · The reading engine</a>
+    <a href="#decision">5 · How the page decides</a><a href="#sources">Sources</a><a href="#limits">Limits</a>
+  </div>
+</div>
+
+<!-- ═══ 0 ═══ -->
+<section class="m" id="what">
+  <h2>What is evaluated, and what is not</h2>
+  <p>Four things are measured, in this order, and each feeds the next: whether a filing carries the
+  <b>language of a warrant financing</b> (the wire); what the pattern of those filings shows (the
+  <b>verdict</b>); how the document is written against the SEC&rsquo;s own plain-English rule (the
+  <b>grade</b>); and what the writing does to a reader &mdash; how hard it is to comprehend, how much of a
+  reader it spends before the clause that matters, and how much of it is written to be quoted (the
+  <b>reading engine</b>).</p>
+  <p>Nothing here is a finding that a company or a person did anything wrong. Raising money with warrants
+  is lawful; writing badly is not an offence the site can find; the grade is a measurement against a
+  standard, and the reading measures are estimates of the demand a text makes on a general reader. The
+  one conclusion the site draws is about the reader, not the security: <b>do not buy what you cannot
+  understand.</b></p>
+</section>
+
+<!-- ═══ 1 ═══ -->
+<section class="m" id="wire">
+  <span class="k">1 &middot; The wire</span>
+  <h2>Is this filing a warrant financing?</h2>
+  <p>Every filing the SEC publishes in the forms we watch (8-K, S-1, S-3, 424B5, 424B3, 10-Q, 10-K, DEF 14A)
+  is searched for a list of phrases the house maintains. A phrase carries a <b>label</b> (what it means)
+  and one of three <b>weights</b>: a heavier term, an ordinary mark of a financing, or a qualifier &mdash; a
+  phrase that matters only when warrant language is also present.</p>
+  <div class="math">A filing <var>f</var> is <b>on the wire</b>  iff  ∃ phrase <var>p</var> in <var>f</var> with weight(<var>p</var>) &gt; 0
+heavy(<var>f</var>) = |{ <var>p</var> in <var>f</var> : <var>p</var> is a heavier term }|
+marks(<var>f</var>) = |{ <var>p</var> in <var>f</var> : weight(<var>p</var>) &gt; 0 }|</div>
+  <p>The labels a reader sees on the wire: Price reset · Reduced exercise price · Warrant inducement ·
+  Inducement agreement · Cashless exercise · Variable rate transaction · Equity line · Pre-funded warrants ·
+  ATM programme · Ownership blocker · Floor price · Most favored nation · Participation right · Placement
+  agent · Registered direct · and, from 18 September 2026, <b>No press release clause</b>, the qualifier.
+  Which phrases produce each label, and their weights, are not published.</p>
+  <p>A match is not a finding. The words are ordinary and lawful, and many of the deals are unremarkable.
+  It means the document is worth reading. The qualifier appears in ordinary merger and proxy paper, which
+  is why it carries no weight of its own: a filing carrying only it is not on the wire.</p>
+</section>
+
+<!-- ═══ 2 ═══ -->
+<section class="m" id="verdict">
+  <span class="k">2 &middot; The verdict &middot; rules version 2</span>
+  <h2>What does the pattern of filings show?</h2>
+  <p>The automatic verdict runs on what the wire holds for one company: <var>n</var> filings, <var>h</var> of
+  them heavy, dated from <var>first</var> to <var>latest</var>, each carrying its labels. Every rule is written
+  out in plain English on <a href="/rules.html">the rules page</a>, which is the authority; this is the
+  mathematics of each. A rule that cannot run for want of a figure is reported as missing, never skipped.</p>
+  <div class="math"><i>W0  nothing on the wire</i>       <var>n</var> = 0                → no verdict; not a clean bill of health
+<i>W1  how often</i>                 <var>r</var> = <var>n</var> / max(1, days(<var>first</var>, <var>latest</var>) / 365.25)
+                              <var>r</var> &lt; 1.5 → "occasionally"   1.5 ≤ <var>r</var> ≤ 4 → "repeatedly"   <var>r</var> &gt; 4 → "serially"
+<i>W2  the heavier terms</i>         <var>h</var> / <var>n</var> ≥ 0.5
+<i>W3  the price was cut</i>         |{ <var>f</var> : "Reduced exercise price" ∨ "Price reset" ∈ labels(<var>f</var>) }| ≥ 2
+<i>W4  paid to convert early</i>     <var>i</var> = |{ <var>f</var> : "Warrant inducement" ∨ "Inducement agreement" ∈ labels(<var>f</var>) }| ≥ 1;  <var>i</var> ≥ 3 → "a habit"
+<i>W5  the stack</i>                 max over <var>f</var> of |labels(<var>f</var>) ∩ STACK| ≥ 3,
+                              STACK = {Pre-funded, ATM, Variable rate, Equity line, Price reset}
+<i>W6  arranged to sell, not hold</i>  ∃ <var>f</var> : "Pre-funded warrants" ∈ labels(<var>f</var>) ∧ "Ownership blocker" ∈ labels(<var>f</var>)
+<i>W7  how recent</i>                days(<var>latest</var>, today) ≤ 90
+<i>W8  where it is incorporated</i>  state ∈ {NV, DE, TX}          <i>each with what its law permits on a reverse split</i>
+<i>W9  no press release</i>          |{ <var>f</var> : "No press release clause" ∈ labels(<var>f</var>) }| ≥ 1       <i>once is enough</i></div>
+  <p>The verdict sentence is assembled from the rules that fired, the company&rsquo;s name in front of the
+  parts that take one (W1, W3, W4, W9), the rest as sentences after it. It computes; it does not conclude.
+  Part two of the verdict (dilution, splits, overhang, repricing, spend, the parties) runs against the
+  hand-built record where one exists and is merged on the page.</p>
+</section>
+
+<!-- ═══ 3 ═══ -->
+<section class="m" id="grade">
+  <span class="k">3 &middot; The plain-English grade &middot; 17 CFR 230.421</span>
+  <h2>How is the document written, against the rule the filer was bound by?</h2>
+  <p>Every filing is measured on nine parameters. Each traces to a line of the rule: 421(a) &mdash;
+  information shall not be set forth so as to <i>obscure</i>; 421(b) &mdash; clear, concise and
+  understandable, short sentences, no legalese, no repetition; 421(d) &mdash; the front sections in plain
+  English: short sentences, everyday words, the active voice, no legal jargon, no multiple negatives.
+  Each parameter has a <i>good line</i> and a <i>bad line</i> &mdash; the rule gives the direction, the
+  lines give one standard applied identically to every filer &mdash; and a weight. The lines and weights
+  are the house&rsquo;s.</p>
+  <div class="math">for each parameter <var>p</var> with measured value <var>v<sub>p</sub></var>, good line <var>g<sub>p</sub></var>, bad line <var>b<sub>p</sub></var>, weight <var>w<sub>p</sub></var>:
+
+  score<sub><var>p</var></sub> = clamp<sub>[0,100]</sub> ( 100 · ( 1 − (<var>v<sub>p</sub></var> − <var>g<sub>p</sub></var>) / (<var>b<sub>p</sub></var> − <var>g<sub>p</sub></var>) ) )          <i>100 at the good line, 0 at the bad line</i>
+
+  <b>S</b> = Σ<sub><var>p</var></sub> <var>w<sub>p</sub></var> · score<sub><var>p</var></sub>  /  Σ<sub><var>p</var></sub> <var>w<sub>p</sub></var>                                          <i>the grade score, 0–100</i>
+
+  worst = argmin<sub><var>p</var></sub> score<sub><var>p</var></sub>            <i>reported beside S: one catastrophic parameter cannot hide behind eight good ones</i></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Parameter</th><th>Rule</th><th>Measures</th></tr></thead>
+    <tbody>
+      <tr><td><b>Sentence length</b></td><td>421(b)(1), (d)(2)</td><td>average words per sentence</td></tr>
+      <tr><td><b>Long sentences</b></td><td>421(b)(1)</td><td>share of sentences past the house&rsquo;s length line</td></tr>
+      <tr><td><b>Legalese</b></td><td>421(d)(2)</td><td>legalese markers per 1,000 words</td></tr>
+      <tr><td><b>Cross-references</b></td><td>421(a)</td><td>cross-references per 1,000 words</td></tr>
+      <tr><td><b>Exhibit depth</b></td><td>421(a)</td><td>pushes to another document per 1,000 words &mdash; how many documents a reader must hold at once</td></tr>
+      <tr><td><b>Defined terms</b></td><td>421(a), (d)(2)</td><td>uses of capitalised defined terms per 1,000 words &mdash; uses, not definitions</td></tr>
+      <tr><td><b>Passive voice</b></td><td>421(d)(2)</td><td>share of sentences in the passive</td></tr>
+      <tr><td><b>Multiple negatives</b></td><td>421(d)(2)</td><td>share of sentences carrying two or more negatives</td></tr>
+      <tr><td><b>Repetition</b></td><td>421(b)</td><td>share of substantive sentences appearing more than once</td></tr>
+    </tbody>
+  </table></div>
+  <h3>The bands</h3>
+  <div class="math"><b>S</b> ≥ 90 → <b>A</b>   "You can read this once and know what you are buying."
+<b>S</b> ≥ 80 → <b>B</b>   "You can read this, but you will work for it."
+<b>S</b> ≥ 70 → <b>C</b>   "You will need to read this twice."
+<b>S</b> ≥ 60 → <b>D</b>   "You will have to dig for the parts that matter."
+<b>S</b> ≥ 45 → <b>F</b>   "RED LIGHT CAUTION. This one might kill your day."
+<b>S</b> &lt; 45 → <b>WORD SALAD</b>   "This cannot be read."</div>
+  <p>A company&rsquo;s grade is not an average. A holder is exposed to the one document that decides what
+  happens to his shares, so the headline is the <b>worst document graded</b>, with prospectuses (which
+  421(d) reaches) and exhibits (which it does not) reported separately. Which file was graded, and its
+  word count, travel with every grade so a number can be checked afterwards. Documents under 120 words
+  are not graded; a document short for its form is graded and flagged.</p>
+</section>
+
+<!-- ═══ 4 ═══ -->
+<section class="m" id="reading">
+  <span class="k">4 &middot; The reading engine &middot; added 18 September 2026</span>
+  <h2>What does the writing do to a reader?</h2>
+  <p>Three measures, computed on the same text as the grade. Each rests on published work, named beside it.
+  Each is an <b>estimate of the demand the text makes on a general reader</b> &mdash; not a measurement of
+  any actual reader, not a clinical instrument, and not a finding about the company.</p>
+
+  <h3>4a &middot; Comprehensibility &mdash; the published formulas</h3>
+  <p>With <var>W</var> words, <var>S</var> sentences, <var>Y</var> syllables and <var>P</var> polysyllabic words
+  (three syllables or more):</p>
+  <div class="math">Flesch Reading Ease   (Flesch 1948)                  FRE = 206.835 − 1.015·(<var>W</var>/<var>S</var>) − 84.6·(<var>Y</var>/<var>W</var>)
+Flesch–Kincaid Grade  (Kincaid et al. 1975)          FK  = 0.39·(<var>W</var>/<var>S</var>) + 11.8·(<var>Y</var>/<var>W</var>) − 15.59
+Gunning Fog           (Gunning 1952)                 Fog = 0.4·( <var>W</var>/<var>S</var> + 100·<var>P</var>/<var>W</var> )
+SMOG                  (McLaughlin 1969)              SMOG = 1.043·√( <var>P</var> · 30/<var>S</var> ) + 3.1291
+
+grade level  <b>G</b> = ( FK + Fog + SMOG ) / 3        years of schooling = round(<b>G</b>)
+FRE ≥ 60 plain · ≥ 50 fairly difficult · ≥ 30 difficult (college) · ≥ 10 very confusing (graduate) · &lt; 10 unreadable</div>
+  <p><b>The caveat the finance literature supplies, printed on every answer:</b> Loughran &amp; McDonald (2014)
+  show that Fog over-counts long financial words that are not hard &mdash; <i>corporation</i>,
+  <i>liabilities</i> &mdash; on SEC filings; Li (2008) nonetheless finds Fog and length predict worse
+  outcomes for readers of annual reports. So the level is reported as an estimate from four formulas,
+  with the caveat, and never as a measurement of a person.</p>
+
+  <h3>4b &middot; Cognitive load &mdash; how much of the reader the document spends, and where</h3>
+  <p>Comprehension is capacity-limited (Just &amp; Carpenter 1992); every open clause, every carried term
+  and every unresolved reference costs working memory (Gibson 1998), whose span is about seven items
+  (Miller 1956); the reader&rsquo;s model of the text degrades as propositions per sentence rise (Kintsch
+  1998); and load that comes from how material is presented rather than what it says is extraneous
+  (Sweller 1988). Seven components are measured, each scored from a plain line to a bad line, and the
+  heaviest weight is on <b>the depth to the material clause</b> &mdash; how far into the document, by words,
+  the first term that changes what the shareholder owns appears. A clause at 88% depth arrives after the
+  reader&rsquo;s attention is spent. That is the capture.</p>
+  <div class="math">for each component <var>c</var> with value <var>v<sub>c</sub></var>, plain line <var>g<sub>c</sub></var>, bad line <var>b<sub>c</sub></var>, weight <var>w<sub>c</sub></var>:
+
+  load<sub><var>c</var></sub> = clamp<sub>[0,100]</sub> ( 100 · (<var>v<sub>c</sub></var> − <var>g<sub>c</sub></var>) / (<var>b<sub>c</sub></var> − <var>g<sub>c</sub></var>) )          <i>0 at the plain line, 100 at the bad line</i>
+
+  <b>L</b> = Σ<sub><var>c</var></sub> <var>w<sub>c</sub></var> · load<sub><var>c</var></sub>  /  Σ<sub><var>c</var></sub> <var>w<sub>c</sub></var>                <i>a component that cannot be measured is left out of both sums</i>
+
+  capture ∈ { low, moderate, high, severe }  by rising bands of <b>L</b>;  <var>w</var><sub>depth</sub> is the largest weight</div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Component</th><th>Measures</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td><b>Nested clauses per sentence</b></td><td>the embedding a sentence holds open &mdash; punctuation and subordinating clauses per sentence</td><td>Just &amp; Carpenter 1992; Gibson 1998</td></tr>
+      <tr><td><b>Terms carried per sentence</b></td><td>defined terms per sentence &mdash; what the reader must keep in mind</td><td>Miller 1956</td></tr>
+      <tr><td><b>Deeply nested share</b></td><td>share of sentences past the house&rsquo;s embedding line</td><td>Kintsch 1998</td></tr>
+      <tr><td><b>Words in long sentences</b></td><td>share of all words inside very long sentences</td><td>Just &amp; Carpenter 1992</td></tr>
+      <tr><td><b>Cross-references per 1,000 words</b></td><td>jumps to another section or document &mdash; each a context switch</td><td>Sweller 1988</td></tr>
+      <tr><td><b>Negations per 1,000 words</b></td><td>negative constructions; multiple negatives are named in the rule</td><td>Rule 421(d)(2)</td></tr>
+      <tr><td><b>Depth to the material clause</b></td><td>the share of the document a reader must get through before the first term that changes what the shareholder owns</td><td>Sweller 1988; the wire&rsquo;s own list</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>4c &middot; The media trigger &mdash; how much of the paper is written to be quoted</h3>
+  <p>A story written on deadline lifts the line that is already loaded. The measure counts loaded language
+  by the finance-specific sentiment lists of Loughran &amp; McDonald (2011) &mdash; positive, negative,
+  uncertainty, strong modal &mdash; plus a list of hype words; then finds <b>the quotables</b>: sentences of
+  six to twenty-eight words carrying a loaded word, which is exactly what gets pulled. Tone in company
+  releases moves readers (Henry 2008); media tone moves markets (Tetlock 2007); vivid language moves
+  investor judgement (Hales, Kuang &amp; Venkataraman 2011). Word-list subsets are used; the full lists run
+  to thousands of words.</p>
+  <div class="math">densities per 1,000 words:   pos, neg, hype, unc, strong
+<var>D</var> = pos + neg + hype                                          <i>loaded density</i>
+<var>Q</var> = |quotable sentences| / <var>S</var>                                 <i>quotable share</i>
+
+<b>M</b> = α · clamp<sub>[0,100]</sub>( 100·(<var>D</var> − <var>d</var><sub>0</sub>)/(<var>d</var><sub>1</sub> − <var>d</var><sub>0</sub>) )  +  (1 − α) · clamp<sub>[0,100]</sub>( 100·(<var>Q</var> − <var>q</var><sub>0</sub>)/(<var>q</var><sub>1</sub> − <var>q</var><sub>0</sub>) )
+
+leans:  (pos + hype) &gt; κ·neg → "up" ;  neg &gt; κ·(pos + hype) → "down" ;  else "mixed"
+band ∈ { flat, low, notable, high }  by rising bands of <b>M</b>
+
+<i>α, the lines d and q, κ, the quotable length window and the word lists are the house's.</i></div>
+  <p>The quotable lines themselves are kept with the grade, with the direction each leans, so a report can
+  show what a story would lift.</p>
+</section>
+
+<!-- ═══ 5 ═══ -->
+<section class="m" id="decision">
+  <span class="k">5 &middot; How the page decides what to say</span>
+  <h2>The decision, as a function.</h2>
+  <p>Everything a company page says is a function of four inputs: the wire&rsquo;s answer for the ticker,
+  the verdict computed from it, the grade profile, and the reading measures. There is no hidden step.
+  For a company <var>T</var>:</p>
+  <div class="math">wire(<var>T</var>)    = { <var>n</var>, <var>h</var>, first, latest, labels per filing, EDGAR count since 2001, latest readable filings }
+verdict(<var>T</var>) = rules W0…W9 applied to wire(<var>T</var>)                              <i>section 2</i>
+grade(<var>T</var>)   = { worst document: S, band; per-form averages }                  <i>section 3</i>
+reading(<var>T</var>) = { G, L, capture, M, leans } on each graded document; company means; the heaviest and the most quotable   <i>section 4</i>
+
+page(<var>T</var>) is then decided by these tests, in this order:</div>
+  <div class="tblwrap"><table class="dec">
+    <thead><tr><th>Test</th><th>Condition</th><th>What the page does</th></tr></thead>
+    <tbody>
+      <tr><td>real company?</td><td>the ticker or name resolves to a CIK</td><td>If not: "type a ticker or a company name." Otherwise the page never comes up empty: it shows the EDGAR count since 2001 and the latest readable filings, each with a $20 read at 8K10Q.</td></tr>
+      <tr><td>on the wire?</td><td><var>n</var> = 0</td><td>W0: "No warrant language on the wire" &mdash; and the EDGAR record beneath it. Not a clean bill of health.</td></tr>
+      <tr><td>open?</td><td><var>T</var> ∈ {TOVX, MRVL, GOOG} ∨ the reader&rsquo;s email holds an entitlement for <var>T</var></td><td>Everything is shown. Otherwise: the counts, the company, the terms and the number of rules fired are free; which document, which date, and the verdict sentence are the report.</td></tr>
+      <tr><td>the verdict</td><td>rules fired ≠ ∅</td><td>The sentence, the rules in order, the version and date they were rendered under.</td></tr>
+      <tr><td>the caution</td><td>grade.worst.S &lt; 45 (WORD SALAD) ∨ &lt; 60 (F)</td><td>"Do not buy what you cannot understand." About the reader, not the security.</td></tr>
+      <tr><td>on the list</td><td>grade.worst.band ∈ {F, WORD SALAD}</td><td>"On the list" of suspected Rule 421 violations; the letter to the SEC is drawn for this company.</td></tr>
+      <tr><td>the reading lines</td><td>reading measured on ≥ 1 document</td><td>Three lines under the grade: years of schooling (G); cognitive load (L) with the capture band and where the material clause sits; media trigger (M) with the lean.</td></tr>
+      <tr><td>going concern</td><td>open ∧ the record holds a going-concern paragraph</td><td>The urgent warning at the top of the report: who said it, when, and what the shareholders put in.</td></tr>
+    </tbody>
+  </table></div>
+  <p>No step weighs one section against another to produce a single number for the company. That is
+  deliberate: a company is not a score. The verdict says what the record shows; the grade says how it was
+  written; the reading engine says what that does to you; the going concern record says what the auditor
+  said. The reader puts them together. The site does not.</p>
+</section>
+
+<!-- ═══ SOURCES ═══ -->
+<section class="m" id="sources">
+  <span class="k">Sources</span>
+  <h2>Every source, and what it is used for.</h2>
+  <ul class="src">
+    <li><b>17 CFR 230.421</b> — Securities Act Rule 421: presentation of information in prospectuses; (a) not obscure, (b) clear, concise, understandable, (d) plain English in the front sections.<span class="used">the grade — every parameter traces to a paragraph</span></li>
+    <li><b>SEC Release 33-7497</b> (28 January 1998) — Plain English Disclosure, the adopting release; and <b>A Plain English Handbook</b> (SEC Office of Investor Education, 1998).<span class="used">the grade — the 20–25 word working target; the principles named in 421(d)(2)</span></li>
+    <li><b>Flesch, R.</b> (1948). A new readability yardstick. <i>Journal of Applied Psychology</i> 32(3), 221–233.<span class="used">4a — Flesch Reading Ease</span></li>
+    <li><b>Kincaid, J. P., Fishburne, R. P., Rogers, R. L. &amp; Chissom, B. S.</b> (1975). Derivation of new readability formulas for Navy enlisted personnel. Naval Technical Training Command, Research Branch Report 8-75.<span class="used">4a — Flesch–Kincaid Grade Level</span></li>
+    <li><b>Gunning, R.</b> (1952). <i>The Technique of Clear Writing</i>. McGraw-Hill.<span class="used">4a — the Fog index</span></li>
+    <li><b>McLaughlin, G. H.</b> (1969). SMOG grading — a new readability formula. <i>Journal of Reading</i> 12(8), 639–646.<span class="used">4a — SMOG</span></li>
+    <li><b>Li, F.</b> (2008). Annual report readability, current earnings, and earnings persistence. <i>Journal of Accounting and Economics</i> 45(2–3), 221–247.<span class="used">4a — that Fog and length on filings predict worse reader outcomes</span></li>
+    <li><b>Loughran, T. &amp; McDonald, B.</b> (2014). Measuring readability in financial disclosures. <i>Journal of Finance</i> 69(4), 1643–1671.<span class="used">4a — the caveat: Fog over-counts long financial words that are not hard</span></li>
+    <li><b>Sweller, J.</b> (1988). Cognitive load during problem solving: effects on learning. <i>Cognitive Science</i> 12(2), 257–285.<span class="used">4b — cognitive load theory; extraneous load from presentation; the cross-reference and depth components</span></li>
+    <li><b>Just, M. A. &amp; Carpenter, P. A.</b> (1992). A capacity theory of comprehension: individual differences in working memory. <i>Psychological Review</i> 99(1), 122–149.<span class="used">4b — comprehension is capacity-limited; embedding and length components</span></li>
+    <li><b>Gibson, E.</b> (1998). Linguistic complexity: locality of syntactic dependencies. <i>Cognition</i> 68(1), 1–76.<span class="used">4b — the cost of holding an unresolved dependency across intervening words</span></li>
+    <li><b>Miller, G. A.</b> (1956). The magical number seven, plus or minus two. <i>Psychological Review</i> 63(2), 81–97.<span class="used">4b — the span; the terms-carried component</span></li>
+    <li><b>Kintsch, W.</b> (1998). <i>Comprehension: A Paradigm for Cognition</i>. Cambridge University Press.<span class="used">4b — the reader&rsquo;s situation model degrades as propositions per sentence rise</span></li>
+    <li><b>Loughran, T. &amp; McDonald, B.</b> (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks. <i>Journal of Finance</i> 66(1), 35–65.<span class="used">4c — the financial sentiment word lists (subsets used)</span></li>
+    <li><b>Henry, E.</b> (2008). Are investors influenced by how earnings press releases are written? <i>Journal of Business Communication</i> 45(4), 363–407.<span class="used">4c — tone in company releases and its effect on readers</span></li>
+    <li><b>Tetlock, P. C.</b> (2007). Giving content to investor sentiment: the role of media in the stock market. <i>Journal of Finance</i> 62(3), 1139–1168.<span class="used">4c — media tone and the market</span></li>
+    <li><b>Hales, J., Kuang, X. &amp; Venkataraman, S.</b> (2011). Who believes the hype? An experimental examination of how language affects investor judgments. <i>Journal of Accounting Research</i> 49(1), 223–255.<span class="used">4c — vivid language and investor judgement</span></li>
+    <li><b>SEC EDGAR</b> — full-text search (efts.sec.gov), the submissions API (data.sec.gov), the company tickers file, and the filings themselves.<span class="used">1 — the wire; the EDGAR count since 2001; every document graded</span></li>
+    <li><b>Nevada Revised Statutes §78.207; Delaware General Corporation Law §242(d) as amended August 2023; Texas Business Organizations Code as amended 2025.</b><span class="used">2 — W8, what each state permits on a reverse split</span></li>
+  </ul>
+</section>
+
+<!-- ═══ LIMITS ═══ -->
+<section class="m" id="limits">
+  <span class="k">Limits and corrections</span>
+  <h2>What this method cannot do.</h2>
+  <p>It cannot read intent. It measures words, counts and positions, applied identically to every filer;
+  it does not know why a document was written the way it was. It cannot find a violation: the grade is a
+  measurement against 421, and whether a rule was broken is the SEC&rsquo;s to decide. The reading measures
+  estimate demand on a general reader from published formulas; they do not measure any actual person, and
+  the formulas are known to over-count long financial words. The wire watches a fixed list of phrases; a
+  financing described in words not on the list is not on the wire, and the list grows only by a dated
+  change here.</p>
+  <div class="limit"><b>Corrections</b>Every line, weight and band behind this page is a judgement, applied
+  identically to every filer. A challenge to any measurement, with the document and the number, is
+  answered at research@warrantwire.com; a change to the method is dated here and on the rules page
+  before it runs. The lines, weights and word lists are the house&rsquo;s and are not published.</div>
+</section>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/method.html" aria-current="page">The method</a><a href="/rules.html">The verdict rules</a><a href="/grades.html">The grade</a><a href="/patterns.html">The patterns</a>
+    <a href="/warning.html">The warning</a><a href="/violations.html">File Salad</a><a href="/prices.html">What it costs</a><a href="/about.html">Who runs the wire</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>&ldquo;It&rsquo;s never as it seems.&rdquo; &mdash; Mark Nejmeh</em><br><br>
+  Warrant Wire reads the full text of SEC filings, exhibits included, and records those that carry
+  warrant financing language. Nothing here is investment advice, nothing here is a recommendation to
+  buy or sell any security, and nothing here alleges that anyone broke any law.<br>
+  Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a>
+  <p class="stamp">Built 2026-09-18 &middot; warrantwire method-1a &middot; describes grade-1n, wire 2c, rules version 2</p>
+</footer></div>
+
+<script src="/clock.js"></script>
+<script src="/nav.js?v=1c" defer></script>
+</body>
+</html>

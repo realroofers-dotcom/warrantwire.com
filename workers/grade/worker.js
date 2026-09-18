@@ -76,7 +76,243 @@
      ?action=batch&n=10            grade the next few ungraded filings
    ========================================================================== */
 
-const BUILD = "grade-1m · 2026-09-12 · the letters are counted";
+const BUILD = "grade-1n · 2026-09-18 · the reading engine: comprehensibility and cognitive load";
+
+/* ============================================================
+   THE READING ENGINE — two measures on every graded document,
+   beside the Rule 421 grade. His ask, 18 Sep 2026: a linguistic
+   evaluation based on published studies, and the cognitive
+   stress the document puts on a reader — the "capture" of the
+   reader's attention before the clause that matters.
+
+   ⚠ EVERY NUMBER HERE HAS A PAPER BEHIND IT, named in the answer.
+   Nothing is a house formula dressed up as science.
+
+   1. COMPREHENSIBILITY — the published readability formulas:
+      · Flesch Reading Ease          Flesch, R. (1948) J. Applied Psychology 32(3)
+      · Flesch–Kincaid Grade Level   Kincaid, Fishburne, Rogers & Chissom (1975),
+                                     Naval Technical Training Command RBR-8-75
+      · Gunning Fog Index            Gunning, R. (1952) The Technique of Clear Writing
+      · SMOG                         McLaughlin, G. H. (1969) J. of Reading 12(8)
+      With the caveat the finance literature supplies: Loughran & McDonald
+      (2014, J. Finance 69(4)) show Fog is a weak measure on SEC filings
+      because long financial words ("corporation", "liabilities") are not
+      hard words; Li (2008, J. Accounting & Economics 45) still finds Fog
+      and length predict worse reader outcomes. So the grade level is
+      reported as an ESTIMATE, from four formulas, with the caveat printed.
+
+   2. COGNITIVE LOAD — how much of the reader's working memory the
+      document spends, and where it spends it:
+      · Sweller, J. (1988) Cognitive Science 12 — cognitive load theory;
+        extraneous load from how material is presented
+      · Just & Carpenter (1992) Psychological Review 99 — comprehension is
+        capacity-limited; embedding and distance consume it
+      · Gibson, E. (1998) Cognition 68 — dependency locality: the cost of
+        holding an unresolved reference across intervening words
+      · Miller, G. (1956) Psychological Review 63 — the span of working
+        memory, about seven items
+      · Kintsch, W. (1998) Comprehension — the reader's situation model
+        degrades as propositions per sentence rise
+      Measured: nested clauses per sentence (commas and subordinators as the
+      proxy for embedding), terms the reader must carry per sentence, cross-
+      references (each one a jump), multiple negatives, the share of words
+      inside very long sentences, and THE DEPTH TO THE MATERIAL CLAUSE — how
+      far into the document, by words, the first term that changes what the
+      shareholder owns appears. A clause at 88% depth arrives after the
+      reader's attention is spent. That is the capture.
+
+   ⚠ WHAT IT IS NOT. An estimate of the demand the text makes on a general
+   reader. Not a measurement of any actual reader, not a clinical instrument,
+   and not a finding about the company. Said on every answer.
+   ============================================================ */
+const MATERIAL = ["exercise price shall be reduced", "reduced exercise price", "warrant inducement",
+  "inducement agreement", "cashless exercise", "cashless basis", "pre-funded warrant", "beneficial ownership limitation",
+  "most favored nation", "variable rate transaction", "equity line", "floor price", "reset price", "adjustment to exercise price",
+  "shall be adjusted", "dilutive issuance", "full ratchet", "ratchet"];
+const SUBORDINATORS = /\b(which|that|whereas|provided that|provided, however|notwithstanding|subject to|except that|except as|unless|until|whereby|pursuant to|in the event|to the extent|if and only if|so long as)\b/gi;
+
+/* ------------------------------------------------------------
+   3. THE MEDIA TRIGGER — the emotional structure a story lifts.
+   His observation, 18 Sep: media often distorts a story on a
+   company because the writer is under deadline — and what gets
+   lifted is the line that is already loaded. So: how much of the
+   document is written to be quoted, and in which direction.
+     · Loughran & McDonald (2011) J. Finance 66(1) — the financial
+       sentiment word lists: positive, negative, uncertainty,
+       litigious, strong and weak modal. Subsets are used here;
+       the full lists are thousands of words.
+     · Henry, E. (2008) J. Business Communication 45(4) — tone in
+       earnings press releases and its effect on readers
+     · Tetlock, P. (2007) J. Finance 62(3) — media pessimism and
+       the market
+     · Hales, Kuang & Venkataraman (2011) J. Accounting Research —
+       vivid, emotionally charged language and investor judgement
+   Measured: hype density, alarm density, certainty (strong modal),
+   uncertainty hedging, and THE QUOTABLES — short sentences that
+   carry a loaded word, which is exactly what a deadline story
+   pulls. The index says how much of the text is bait; the
+   direction says which way the story leans if it bites.
+   ------------------------------------------------------------ */
+const LM_POS = ["achieve","achieved","advantage","attractive","beneficial","benefit","best","better","breakthrough","collaborate","compelling","confident","creative","delight","despite","easily","effective","efficient","enable","encouraging","enhance","enjoy","excellent","exceptional","exciting","favorable","gain","gains","good","great","greater","greatest","highest","honor","ideal","improve","improved","improvement","innovative","leading","opportunities","opportunity","optimistic","outperform","pleased","positive","premier","profitable","progress","prominent","proud","rebound","record","reward","satisfaction","solid","strength","strong","stronger","strongest","succeed","success","successful","superior","surpass","tremendous","transformative","unmatched","valuable","win","winner"];
+const LM_NEG = ["adverse","adversely","against","alarming","allege","alleged","bankruptcy","breach","claims","closure","collapse","concern","concerns","critical","damage","damages","danger","decline","declined","default","deficiency","delinquent","deteriorate","difficult","dilution","dilutive","discontinued","distress","doubt","downturn","failed","failure","fine","fraud","harm","hurt","illegal","impairment","inability","inadequate","indictment","insolvency","investigation","lawsuit","litigation","loss","losses","material adverse","misconduct","misleading","negative","penalty","plunge","poor","problem","restatement","risk","risks","serious","severe","shortfall","substantial doubt","suffer","suspension","terminate","termination","threat","unable","uncertain","violation","warning","weak","worse","worst","write-down","writedown"];
+const LM_UNCERTAIN = ["may","might","could","possible","possibly","perhaps","uncertain","uncertainty","approximately","assume","believe","depend","depends","estimate","estimated","expect","expected","anticipate","anticipated","intend","predict","projected","seems","sometimes","somewhat","suggest","tentative","unclear","unknown","variable"];
+const LM_STRONG = ["always","best","clearly","definitely","highest","must","never","strongly","unambiguously","uncompromising","undisputed","undoubtedly","unequivocal","unparalleled","will","without doubt"];
+const HYPE = ["first-of-its-kind","first of its kind","game-changing","game changer","groundbreaking","landmark","milestone","paradigm","revolutionary","unprecedented","world-class","world class","disruptive","next-generation","next generation","cutting-edge","cutting edge","state-of-the-art","blockbuster","historic","massive","significant","significantly","strategic","transformational","poised","robust","accelerate","unlock","leverage","synergies"];
+
+function mediaOf(text, sents, words) {
+  const lower = text.toLowerCase();
+  const W = words || 1, S = sents.length || 1;
+  const per1k = list => countPhrases(lower, list.map(x => " " + x.toLowerCase())) / W * 1000;
+  const pos = per1k(LM_POS), neg = per1k(LM_NEG), unc = per1k(LM_UNCERTAIN), strong = per1k(LM_STRONG), hype = per1k(HYPE);
+  /* the quotables: short sentences carrying a loaded word — what a
+     deadline story lifts. Kept, so the report can show them. */
+  const loaded = LM_POS.concat(LM_NEG, HYPE).map(x => x.toLowerCase());
+  const quotables = [];
+  for (const s of sents) {
+    const n = s.split(/\s+/).length;
+    if (n > 28 || n < 6) continue;
+    const l = " " + s.toLowerCase() + " ";
+    const hit = loaded.filter(w => l.indexOf(" " + w) > -1 || l.indexOf(w + " ") > -1);
+    if (!hit.length) continue;
+    const posN = hit.filter(w => LM_POS.indexOf(w) > -1 || HYPE.indexOf(w) > -1).length;
+    const negN = hit.filter(w => LM_NEG.indexOf(w) > -1).length;
+    quotables.push({ sentence: s.length > 240 ? s.slice(0, 237) + "…" : s, words: n, leans: posN > negN ? "up" : negN > posN ? "down" : "both", loaded: hit.slice(0, 4) });
+    if (quotables.length >= 12) break;
+  }
+  const quotableShare = quotables.length / S;
+  /* the index: loaded density and quotability, 0–100 */
+  const density = pos + neg + hype;                /* per 1k words */
+  const idx = Math.max(0, Math.min(100, 100 * (density - 4) / (40 - 4))) * 0.6
+            + Math.max(0, Math.min(100, 100 * (quotableShare - 0.01) / (0.15 - 0.01))) * 0.4;
+  const index = +idx.toFixed(1);
+  const lean = (pos + hype) > neg * 1.3 ? "up" : neg > (pos + hype) * 1.3 ? "down" : "mixed";
+  const band = index >= 70 ? "high" : index >= 45 ? "notable" : index >= 20 ? "low" : "flat";
+  return {
+    index, band, leans: lean,
+    says: { high: "Written to be quoted. A story on deadline will lift the loaded lines and lean " + lean + ".",
+            notable: "Enough loaded, short lines for a story to lean " + lean + " without reading further.",
+            low: "Some loaded language; a story would have to work for it.",
+            flat: "Dry. Little here a headline can use." }[band],
+    per_1k_words: { positive: +pos.toFixed(2), negative: +neg.toFixed(2), hype: +hype.toFixed(2), uncertainty: +unc.toFixed(2), strong_modal: +strong.toFixed(2) },
+    quotables: { count: quotables.length, share_of_sentences: +quotableShare.toFixed(3), lines: quotables },
+    cites: ["Loughran & McDonald 2011", "Henry 2008", "Tetlock 2007", "Hales, Kuang & Venkataraman 2011"],
+    what_it_is_not: "A count of loaded and quotable language, and the direction it leans. Not a prediction of coverage and not a view on the company."
+  };
+}
+
+function syllables(word) {
+  const w = String(word || "").toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  let s = (w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "").match(/[aeiouy]{1,2}/g) || []).length;
+  return Math.max(1, s);
+}
+
+function readingOf(text, sents, words) {
+  const toks = text.split(/\s+/).filter(t => /[a-zA-Z]/.test(t));
+  const W = toks.length || 1, S = sents.length || 1;
+  let syl = 0, poly = 0;
+  for (const t of toks) { const n = syllables(t); syl += n; if (n >= 3) poly++; }
+  const wps = W / S, spw = syl / W;
+  const flesch   = 206.835 - 1.015 * wps - 84.6 * spw;
+  const fk       = 0.39 * wps + 11.8 * spw - 15.59;
+  const fog      = 0.4 * (wps + 100 * poly / W);
+  const smog     = 1.043 * Math.sqrt(poly * 30 / S) + 3.1291;
+  const gradeEst = (fk + fog + smog) / 3;
+  const easeBand = flesch >= 60 ? "plain — most adults" : flesch >= 50 ? "fairly difficult — high school" :
+                   flesch >= 30 ? "difficult — college" : flesch >= 10 ? "very confusing — graduate" : "unreadable — specialist only";
+
+  /* cognitive load, per sentence */
+  let nest = 0, nestedHeavy = 0, carry = 0, wordsInLong = 0, longest = 0;
+  for (const s of sents) {
+    const n = s.split(/\s+/).length;
+    if (n > longest) longest = n;
+    if (n > 45) wordsInLong += n;
+    const commas = (s.match(/,|;|—|\(/g) || []).length;
+    const subs = (s.match(SUBORDINATORS) || []).length;
+    const depth = commas + subs;
+    nest += depth;
+    if (depth >= 6) nestedHeavy++;
+    /* the capitalised mid-sentence terms the reader carries in this sentence */
+    const tk = s.split(/\s+/); let c = 0;
+    for (let i = 1; i < tk.length; i++) { const w = tk[i].replace(/[^A-Za-z]/g, ""); if (w.length > 1 && /^[A-Z][a-z]+$/.test(w)) c++; }
+    carry += c;
+  }
+  const nestPer = nest / S, carryPer = carry / S, heavyShare = nestedHeavy / S, longShare = wordsInLong / W;
+  const xref = (text.match(/\b(as defined in|set forth in|pursuant to section|subject to section|in accordance with section|see section|as described (?:in|under)|refer(?:red)? to (?:in|as))\b/gi) || []).length / W * 1000;
+  const negs = (text.match(/\b(not|no|nor|never|neither|without|unless|except|fail(?:s|ed|ure)? to|nothing)\b/gi) || []).length / W * 1000;
+
+  /* THE DEPTH TO THE MATERIAL CLAUSE */
+  const lower = text.toLowerCase();
+  let firstAt = -1, firstTerm = null;
+  for (const m of MATERIAL) { const i = lower.indexOf(m); if (i > -1 && (firstAt < 0 || i < firstAt)) { firstAt = i; firstTerm = m; } }
+  const depthShare = firstAt < 0 ? null : lower.slice(0, firstAt).split(/\s+/).length / W;
+
+  /* each component scored 0–100 against a plain line and a bad line, then
+     weighted; the depth is the heaviest single weight because it is the
+     capture itself */
+  const comp = [
+    { key: "nested_clauses_per_sentence", value: +nestPer.toFixed(2),   good: 2,    bad: 8,    weight: 2,
+      says: "commas, dashes, parentheses and subordinating clauses per sentence — the embedding a reader must hold open (Just & Carpenter 1992; Gibson 1998)" },
+    { key: "terms_carried_per_sentence",  value: +carryPer.toFixed(2),  good: 1,    bad: 6,    weight: 2,
+      says: "defined terms per sentence the reader must keep in mind — the span is about seven (Miller 1956)" },
+    { key: "deeply_nested_share",         value: +heavyShare.toFixed(3), good: 0.05, bad: 0.4,  weight: 1.5,
+      says: "share of sentences with six or more embeddings" },
+    { key: "words_in_long_sentences",     value: +longShare.toFixed(3),  good: 0.1,  bad: 0.6,  weight: 1.5,
+      says: "share of all words that sit inside sentences over 45 words" },
+    { key: "cross_references_per_1k",     value: +xref.toFixed(2),      good: 1,    bad: 12,   weight: 1.5,
+      says: "jumps to another section or document per thousand words — each one a context switch (Sweller 1988)" },
+    { key: "negations_per_1k",            value: +negs.toFixed(2),      good: 8,    bad: 35,   weight: 1,
+      says: "negative constructions per thousand words; multiple negatives are named in Rule 421(d)" },
+    { key: "depth_to_material_clause",    value: depthShare == null ? null : +depthShare.toFixed(3), good: 0.1, bad: 0.9, weight: 3,
+      says: "how far into the document, by words, the first term that changes what the shareholder owns appears" }
+  ];
+  let total = 0, wsum = 0;
+  const parts = {};
+  for (const c of comp) {
+    if (c.value == null) { parts[c.key] = { value: null, load: null, says: c.says }; continue; }
+    let sc = 100 * (c.value - c.good) / (c.bad - c.good);
+    sc = Math.max(0, Math.min(100, sc));
+    /* value and load only — the weights and lines are the house's */
+    parts[c.key] = { value: c.value, load: +sc.toFixed(1), says: c.says };
+    total += sc * c.weight; wsum += c.weight;
+  }
+  const load = wsum ? +(total / wsum).toFixed(1) : null;
+  const capture = load == null ? null : load >= 75 ? "severe" : load >= 55 ? "high" : load >= 35 ? "moderate" : "low";
+  const captureSays = {
+    severe:   "The document spends the reader's attention long before the clause that matters. A general reader will not reach it with the capacity to understand it.",
+    high:     "Most readers will be carrying more than they can hold by the time the material clause arrives.",
+    moderate: "Demanding, but a careful reader who knows the terms can follow it.",
+    low:      "Readable. The material clause is reachable with attention to spare."
+  }[capture] || null;
+
+  let media = null;
+  try { media = mediaOf(text, sents, W); } catch (e) { media = null; }
+
+  return {
+    media,
+    comprehensibility: {
+      flesch_reading_ease: +flesch.toFixed(1), flesch_says: easeBand,
+      flesch_kincaid_grade: +fk.toFixed(1), gunning_fog: +fog.toFixed(1), smog: +smog.toFixed(1),
+      grade_level: +gradeEst.toFixed(1),
+      years_of_schooling: Math.round(gradeEst),
+      says: "A reader needs about " + Math.round(gradeEst) + " years of schooling to follow this at first reading" +
+            (gradeEst >= 16 ? " — a graduate degree." : gradeEst >= 13 ? " — college." : gradeEst >= 9 ? " — high school." : "."),
+      words_per_sentence: +wps.toFixed(1), syllables_per_word: +spw.toFixed(2), polysyllable_share: +(poly / W).toFixed(3),
+      caveat: "Fog and Flesch over-count long financial words that are not hard (Loughran & McDonald 2014); the level is an estimate from four formulas, not a measurement of any reader.",
+      cites: ["Flesch 1948", "Kincaid et al. 1975", "Gunning 1952", "McLaughlin 1969", "Li 2008", "Loughran & McDonald 2014"]
+    },
+    cognitive: {
+      load: load, capture: capture, says: captureSays,
+      material_clause: firstAt < 0 ? null : { term: firstTerm, at_word: lower.slice(0, firstAt).split(/\s+/).length, of: W,
+        depth: depthShare == null ? null : Math.round(depthShare * 100) + "% of the way in" },
+      longest_sentence_words: longest,
+      parts,
+      cites: ["Sweller 1988", "Just & Carpenter 1992", "Gibson 1998", "Miller 1956", "Kintsch 1998"],
+      what_it_is_not: "An estimate of the demand the text makes on a general reader. Not a measurement of any actual reader, not a clinical instrument, and not a finding about the company."
+    }
+  };
+}
 const UA = "JobCreation.us Warrant Wire research (research@warrantwire.com)";
 
 /* ============================================================
@@ -464,11 +700,19 @@ async function letterCounts(env, ticker) {
       "Nothing about any writer is kept." };
 }
 
+/* ⚠ THE SECRET SAUCE STAYS SECRET. His rule, 18 Sep 2026. The method is
+   described — what is measured, which line of the rule each parameter
+   traces to, how the parts combine — but the good and bad lines, the
+   weights and the word lists are the house's and leave this worker in no
+   answer. The full method page is /method.html on the site. */
+const describe = p => ({ key: p.key, rule: p.rule, says: p.says, measures: p.measures });
 function method() {
   return { ok:true, build: BUILD,
     what_this_is:
       "Every filing measured against the SEC's own plain English rule, the " +
-      "same way, and the method printed so anyone can check it.",
+      "same way. What is measured and how the parts combine is described " +
+      "here and at https://warrantwire.com/method.html; the lines, weights " +
+      "and word lists are the house's and are not published.",
     the_rule: {
       "230.421(a)": "must not be set forth in such fashion as to obscure any " +
                     "of the required information",
@@ -480,16 +724,16 @@ function method() {
                     "no legal jargon, no multiple negatives",
       release: "Securities Act Release 33-7497, 28 January 1998"
     },
-    parameters: PARAMS,
-    bands: BANDS.map(b => Object.assign({}, b, { mark: markFor(b) })),
+    parameters: PARAMS.map(describe),
+    how_they_combine: "Each parameter scores 0 to 100 between its good line and its bad line; " +
+      "the grade is the weighted mean; the worst single parameter is reported beside it.",
+    bands: BANDS.map(b => ({ grade: b.grade, light: b.light, hex: b.hex, says: b.says, mark: markFor(b) })),
     cautions: CAUTIONS,
     what_the_caution_is:
       "A statement about the READER, not about the security. 'Do not buy what " +
       "you cannot understand' names no price and no direction and follows " +
       "from a measurement anyone can reproduce. WHY a document is written " +
       "this way is not measured here and is never asserted.",
-    words_counted: { legalese: LEGALESE, cross_references: XREF,
-                     negatives: NEGATIVES, pushes_to_another_document: PUSHES },
     the_limit:
       "⚠ A GRADE IS A MEASUREMENT, NEVER A FINDING THAT A RULE WAS BROKEN. " +
       "421(d)'s hard requirement covers the cover page, summary and risk " +
@@ -633,8 +877,9 @@ function gradeText(raw, about) {
     if (p.bad > p.good) sc = 100 * (1 - (v - p.good) / (p.bad - p.good));
     else                sc = 100 * (1 - (p.good - v) / (p.good - p.bad));
     sc = Math.max(0, Math.min(100, sc));
-    marks[p.key] = { value: v, score: +sc.toFixed(1), weight: p.weight,
-                     rule: p.rule, measures: p.measures };
+    /* the value and its score, the rule and what it measures — not the weight
+       and not the lines (his rule, 18 Sep) */
+    marks[p.key] = { value: v, score: +sc.toFixed(1), rule: p.rule, measures: p.measures };
     total += sc * p.weight; weightSum += p.weight;
     if (sc < worstOne.score) worstOne = { key: p.key, score: +sc.toFixed(1) };
   }
@@ -644,9 +889,14 @@ function gradeText(raw, about) {
 
   const flag = cautionFor(score);
 
+  /* the reading engine, on the same text */
+  let reading = null;
+  try { reading = readingOf(text, sents, words); } catch (e) { reading = null; }
+
   return { ok:true, build: BUILD,
     about: about || undefined,
     grade: band.grade, score, says: band.says,
+    reading,
     /* ⚠ A COLOUR A PAGE CAN USE WITHOUT PARSING THE SENTENCE. Set on the
        bands themselves so the words and the colour can never disagree. */
     light: band.light, hex: band.hex, mark: band.mark,
@@ -691,18 +941,38 @@ async function gradeOne(env, accession) {
     floor_for_form: doc.short_for_form ? doc.floor : undefined });
   if (!g.ok) return g;
 
+  await readingColumn(env);
   await env.OVERHANG.prepare(
     `INSERT INTO filing_grades (accession, ticker, company, form, filed_on,
-       score, grade, words, sentences, detail)
-     VALUES (?,?,?,?,?,?,?,?,?,?)
+       score, grade, words, sentences, detail, reading)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(accession) DO UPDATE SET score=excluded.score,
        grade=excluded.grade, words=excluded.words, sentences=excluded.sentences,
-       detail=excluded.detail, graded=datetime('now')`)
+       detail=excluded.detail, reading=excluded.reading, graded=datetime('now')`)
     .bind(accession, f.ticker || null, f.company || null, f.form || null,
           f.filed_on || null, g.score, g.grade, g.words, g.sentences,
-          JSON.stringify(g.marks)).run();
+          JSON.stringify(g.marks), g.reading ? JSON.stringify(g.reading) : null).run();
 
   return g;
+}
+
+/* the reading column, added to the table that was there before it; once */
+let READING_COL = false;
+async function readingColumn(env) {
+  if (READING_COL) return;
+  try { await env.OVERHANG.prepare("ALTER TABLE filing_grades ADD COLUMN reading TEXT").run(); } catch (e) { /* already there */ }
+  READING_COL = true;
+}
+/* the short form of a stored reading, for a list */
+function readingBrief(r) {
+  if (!r) return null;
+  try {
+    const j = typeof r === "string" ? JSON.parse(r) : r;
+    return { grade_level: j.comprehensibility && j.comprehensibility.grade_level, flesch: j.comprehensibility && j.comprehensibility.flesch_reading_ease,
+             load: j.cognitive && j.cognitive.load, capture: j.cognitive && j.cognitive.capture,
+             depth: j.cognitive && j.cognitive.material_clause ? j.cognitive.material_clause.depth : null,
+             media: j.media ? { index: j.media.index, band: j.media.band, leans: j.media.leans, quotables: j.media.quotables && j.media.quotables.count } : null };
+  } catch (e) { return null; }
 }
 
 /* ⚠ THE EXHIBIT FIRST, THEN THE FILING. Same rule as the read agent: the 8-K
@@ -829,7 +1099,9 @@ async function stored(env, accession) {
         "About the document and the reader. Not a view on the company, the " +
         "business or the price." } : null,
     words: r.words, sentences: r.sentences,
-    marks: JSON.parse(r.detail || "{}"), graded: r.graded, method: "/?method=1" };
+    marks: JSON.parse(r.detail || "{}"),
+    reading: r.reading ? JSON.parse(r.reading) : null,
+    graded: r.graded, method: "/?method=1" };
 }
 
 async function worst(env, n) {
@@ -893,12 +1165,14 @@ async function profile(env, ticker) {
   const tk = String(ticker || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
   if (!tk) return { ok:false, build: BUILD, error:"a ticker, please" };
 
+  await readingColumn(env);
   const rows = ((await env.OVERHANG.prepare(
-    `SELECT accession, form, filed_on, grade, score, words
+    `SELECT accession, form, filed_on, grade, score, words, reading
        FROM filing_grades WHERE UPPER(ticker) = ?
       ORDER BY filed_on DESC, score`).bind(tk).all()).results || [])
     .map(x => Object.assign({}, x, { light: bandFor(x.score).light,
-                                    hex: bandFor(x.score).hex }));
+                                    hex: bandFor(x.score).hex,
+                                    reading: readingBrief(x.reading) }));
 
   if (!rows.length) return { ok:true, build: BUILD, ticker: tk, graded: 0,
     note:"Nothing graded for that company yet." };
@@ -910,6 +1184,25 @@ async function profile(env, ticker) {
   const worst = rows.slice().sort((a, b) => a.score - b.score)[0];
   const wf = cautionFor(worst.score);
 
+  /* the reading engine, for the company: the hardest document to read and
+     the heaviest to hold, and the averages across what was graded */
+  const withR = rows.filter(x => x.reading && x.reading.load != null);
+  const heaviest = withR.slice().sort((a, b) => b.reading.load - a.reading.load)[0] || null;
+  const hardest  = withR.slice().sort((a, b) => b.reading.grade_level - a.reading.grade_level)[0] || null;
+  const mean = (a, f) => a.length ? +(a.reduce((n, x) => n + f(x), 0) / a.length).toFixed(1) : null;
+  const withM = withR.filter(x => x.reading.media && x.reading.media.index != null);
+  const mostQuotable = withM.slice().sort((a, b) => b.reading.media.index - a.reading.media.index)[0] || null;
+  const reading = withR.length ? {
+    measured: withR.length,
+    grade_level: mean(withR, x => x.reading.grade_level),
+    load: mean(withR, x => x.reading.load),
+    media: withM.length ? { index: mean(withM, x => x.reading.media.index),
+      most_quotable: mostQuotable ? { accession: mostQuotable.accession, form: mostQuotable.form, filed_on: mostQuotable.filed_on, index: mostQuotable.reading.media.index, band: mostQuotable.reading.media.band, leans: mostQuotable.reading.media.leans } : null } : null,
+    hardest_to_read: hardest ? { accession: hardest.accession, form: hardest.form, filed_on: hardest.filed_on, grade_level: hardest.reading.grade_level, flesch: hardest.reading.flesch } : null,
+    heaviest_to_hold: heaviest ? { accession: heaviest.accession, form: heaviest.form, filed_on: heaviest.filed_on, load: heaviest.reading.load, capture: heaviest.reading.capture, depth: heaviest.reading.depth } : null,
+    what_it_is: "Comprehensibility from the published readability formulas (Flesch 1948; Kincaid et al. 1975; Gunning 1952; McLaughlin 1969) and the cognitive load the text puts on a general reader (Sweller 1988; Just & Carpenter 1992; Gibson 1998; Miller 1956). Estimates, not measurements of any reader, and not a finding about the company."
+  } : null;
+
   /* ⚠ THE HEADLINE IS THE WORST DOCUMENT, NOT THE AVERAGE. A holder is not
      exposed to the average of what a company filed. He is exposed to the one
      that decides what happens to his shares, and that is usually the worst
@@ -919,7 +1212,9 @@ async function profile(env, ticker) {
     worst_document: { accession: worst.accession, form: worst.form,
       filed_on: worst.filed_on, grade: worst.grade, score: worst.score,
       says: bandFor(worst.score).says, light: bandFor(worst.score).light,
-      hex: bandFor(worst.score).hex, mark: bandFor(worst.score).mark },
+      hex: bandFor(worst.score).hex, mark: bandFor(worst.score).mark,
+      reading: worst.reading || null },
+    reading,
     caution: wf ? { level: wf.level, says: wf.caution, because: wf.because,
       and_what_it_is_not: wf.and_what_it_is_not ||
         "About the document and the reader. Not a view on the company, the " +

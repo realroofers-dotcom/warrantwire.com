@@ -44,6 +44,17 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .r421 .gl .says{font-size:14px;color:var(--ink2)}
 .r421 p{margin:0;font-size:13.5px;color:var(--ink2);max-width:70ch}
 .r421 p b{color:var(--ink)} .r421 a{color:var(--cool)} .r421.bad p b a{color:var(--hot)}
+/* the reading engine — three lines under the grade */
+.r421 .reading{margin:12px 0 0;border-top:1px solid var(--line);padding-top:10px;display:grid;gap:8px}
+.r421 .reading .rl{display:grid;grid-template-columns:118px 92px 1fr;gap:10px;align-items:baseline}
+@media(max-width:600px){.r421 .reading .rl{grid-template-columns:1fr;gap:2px}}
+.r421 .reading .k{margin:0;font-size:10px}
+.r421 .reading b{font:700 20px/1 var(--mono);color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
+.r421 .reading b i{font:600 11px var(--mono);color:var(--ink3);font-style:normal}
+.r421 .reading .rl.hot b{color:var(--hot)}
+.r421 .reading span:last-child{font-size:13px;color:var(--ink2);line-height:1.5}
+.r421 .reading span:last-child b{font:inherit;font-weight:700;color:var(--ink);white-space:normal}
+.r421 .reading .fine{font-size:12px;color:var(--ink3);margin:2px 0 0}
 .r421 .lettertoggle{margin:12px 0 0;border-top:1px solid rgba(198,90,74,.35);padding-top:10px}
 .r421 .lettertoggle summary{cursor:pointer;font-size:14.5px;color:var(--ink2);list-style:none}
 .r421 .lettertoggle summary b{color:var(--hot);font-size:15.5px}
@@ -353,6 +364,29 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      against a public rule, and the method is published. */
   var GRADE_ORDER = { "A": 5, "B": 4, "C": 3, "D": 2, "F": 1, "WORD SALAD": 0 };
   var nameOnPage = "", cikOnPage = "";
+  /* ⚠ THE READING ENGINE — three measures beside the grade, his ask 18 Sep:
+     how hard the paper is to read (the published formulas), how much of the
+     reader it spends before the clause that matters (cognitive load, the
+     capture), and how much of it is written to be quoted (the media
+     trigger). Every number cites its paper on /grades.html#reading. */
+  function readingBox(d) {
+    var R = d.reading, w = d.worst_document && d.worst_document.reading;
+    if (!R && !w) return "";
+    var lvl = R && R.grade_level != null ? R.grade_level : (w && w.grade_level);
+    var load = R && R.load != null ? R.load : (w && w.load);
+    var cap = (R && R.heaviest_to_hold && R.heaviest_to_hold.capture) || (w && w.capture) || "";
+    var depth = (R && R.heaviest_to_hold && R.heaviest_to_hold.depth) || (w && w.depth) || "";
+    var m = (R && R.media) || (w && w.media) || null;
+    var yrs = lvl != null ? Math.round(lvl) : null;
+    var school = yrs == null ? "" : yrs >= 16 ? "a graduate degree" : yrs >= 13 ? "college" : yrs >= 9 ? "high school" : "grade school";
+    var loadWord = load == null ? "" : load >= 75 ? "severe" : load >= 55 ? "high" : load >= 35 ? "moderate" : "low";
+    return '<div class="reading">'
+      + (lvl != null ? '<div class="rl"><span class="k">Reading level</span><b>' + yrs + ' years</b><span>of schooling to follow it at first reading &mdash; ' + school + '. Grade level ' + esc(String(lvl)) + (R && R.hardest_to_read ? '; hardest: the ' + esc(R.hardest_to_read.form) + ' of ' + esc(R.hardest_to_read.filed_on) : '') + '.</span></div>' : '')
+      + (load != null ? '<div class="rl' + (load >= 55 ? ' hot' : '') + '"><span class="k">Cognitive load</span><b>' + esc(String(Math.round(load))) + '<i>/100</i></b><span>' + esc(loadWord) + (cap ? ' &mdash; capture ' + esc(cap) : '') + '. ' + (depth ? 'The clause that changes what you own sits <b>' + esc(depth) + '</b>' + (R && R.heaviest_to_hold ? ' in the ' + esc(R.heaviest_to_hold.form) + ' of ' + esc(R.heaviest_to_hold.filed_on) : '') + ' &mdash; after most readers&rsquo; attention is spent.' : 'How much of a reader&rsquo;s working memory the paper spends before it says what it does.') + '</span></div>' : '')
+      + (m && m.index != null ? '<div class="rl"><span class="k">Media trigger</span><b>' + esc(String(Math.round(m.index))) + '<i>/100</i></b><span>' + esc(m.band || (m.index >= 70 ? "high" : m.index >= 45 ? "notable" : m.index >= 20 ? "low" : "flat")) + (m.leans || (m.most_quotable && m.most_quotable.leans) ? ', leans <b>' + esc(m.leans || m.most_quotable.leans) + '</b>' : '') + ' &mdash; how much of the paper is written to be quoted, and which way a story on deadline would lean if it lifted the loaded lines' + (m.most_quotable ? ' (most quotable: the ' + esc(m.most_quotable.form) + ' of ' + esc(m.most_quotable.filed_on) + ')' : '') + '.</span></div>' : '')
+      + '<p class="fine">Estimates of the demand the text makes on a general reader, from published formulas and studies &mdash; not a measurement of any reader and not a view on the company. <a href="/method.html#reading">How it is measured, with the papers &rarr;</a></p>'
+      + '</div>';
+  }
   function grade421(ticker) {
     var el = document.getElementById("grade421");
     if (!el) return;
@@ -373,6 +407,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           + 'Every filing is marked against the SEC&rsquo;s own plain English rule, 17 CFR 230.421 &mdash; the cover, summary and risk factors must be clear, concise and understandable. '
           + (bad ? '<b>Based on the rules of the SEC and a review of the clarity by a program built to evaluate it, this company is in violation of Rule 421</b> and is on <a href="/violations.html">the list</a>. ' : '')
           + '<a href="/grades.html">How it is graded &rarr;</a></p>'
+          + readingBox(d)
           + (bad ? '<details class="lettertoggle" open><summary><b>&#9993; Write to the SEC about ' + esc(ticker) + '</b> &mdash; the letter is drawn for this company; print it and send it by certified mail</summary><div id="letter421"></div></details>' : '')
           + '</div>';
         if (bad && window.WWLetter) {

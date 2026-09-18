@@ -19,7 +19,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Company grades — every filing against the SEC's own plain English rule | Warrant Wire</title>
-<meta name="description" content="Warrant filings graded against 17 CFR 230.421, the SEC's own plain English rule. The method is published in full.">
+<meta name="description" content="Warrant filings graded against 17 CFR 230.421, the SEC's own plain English rule, the same way for every filer.">
 <link rel="canonical" href="https://warrantwire.com/grades.html">
 <style>
 :root{
@@ -113,8 +113,8 @@ html,body{overflow-x:clip}
   <p class="lede">Warrant filings measured against the SEC's own plain English
     rule &mdash; <span class="rule">17 CFR 230.421</span>. Not a readability
     formula out of a schoolbook: every parameter traces to a line the
-    Commission wrote, and the method is published in full so anyone can run the
-    same measurement and get the same number.</p>
+    Commission wrote, the same measurement is applied to every filer, and the
+    form of the method is on <a href="/method.html">the method page</a>.</p>
 
   <div class="counts" id="counts">
     <div><div class="n">&mdash;</div><div class="l">LOADING</div></div>
@@ -155,7 +155,9 @@ html,body{overflow-x:clip}
 
   <h2>How it is measured</h2>
   <p class="note">Nine parameters, each tied to the part of the rule it comes
-    from. Thresholds, weights and the exact word lists are all published.</p>
+    from. What is measured and how the parts combine is on
+    <a href="/method.html#grade">the method page</a>; the lines, weights and word
+    lists are the house&rsquo;s and are not published.</p>
   <div id="params"><div class="quiet">Loading&hellip;</div></div>
 
   <footer>
@@ -222,18 +224,18 @@ html,body{overflow-x:clip}
     });
     box("key", h);
 
-    var p = '<table><thead><tr><th>What is measured</th><th>The rule</th>' +
-            '<th style="text-align:right">Weight</th></tr></thead><tbody>';
+    /* his rule, 18 Sep: the secret sauce stays secret — what is measured and
+       which line of the rule it traces to, nothing more */
+    var p = '<table><thead><tr><th>What is measured</th><th>The rule</th></tr></thead><tbody>';
     (m.parameters || []).forEach(function(x){
       p += '<tr><td>' + esc(x.measures) + '</td>' +
-           '<td class="f">' + esc(x.rule) + '</td>' +
-           '<td class="n">' + esc(x.weight) + '</td></tr>';
+           '<td class="f">' + esc(x.rule) + '</td></tr>';
     });
     box("params", p + '</tbody></table>' +
-      '<p class="note" style="margin-top:14px">The thresholds, the weights and ' +
-      'the exact words counted are published in full at ' +
-      '<a href="' + GRADE + '/?method=1" target="_blank" rel="noopener">the ' +
-      'method</a>. A grade nobody can reproduce is an opinion wearing a letter.</p>');
+      '<p class="note" style="margin-top:14px">Each parameter scores between a good line and a bad line, ' +
+      'the grade is the weighted mean, and the worst single parameter is reported beside it. ' +
+      'The form of every calculation, with every source, is on <a href="/method.html">the method page</a>. ' +
+      'The lines, weights and word lists are the house&rsquo;s.</p>');
 
     /* the table waits for the bands, so a colour is never guessed */
     loadWorst();
