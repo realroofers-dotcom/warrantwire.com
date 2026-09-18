@@ -43,7 +43,15 @@ const DOORS = {
     line: "Screwed by your stock? It's in the filings.",
     sub: "ScrewedStocks.com is a door to Warrant Wire. Type your ticker there and we read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it." },
   "wrntwire.com": { page: false, to: TO },
-  "wrntco.com":   { page: false, to: TO }
+  "wrntco.com":   { page: false, to: TO },
+  /* THE MARKETPLACE NAMES — his call, 18 Sep: Nujobi and Gigapoo are TWO
+     SEPARATE BRANDS with different looks, both to be built. Until either has
+     a site they open on the gig readers page, which is the market as it
+     stands. When a brand's site is live, take its line OUT of here and give
+     the zone real records — a brand is not a door. Out of park's for-sale
+     table. */
+  "nujobi.com":  { page: false, to: "https://warrantwire.com/readers" },
+  "gigapoo.com": { page: false, to: "https://warrantwire.com/readers" }
 };
 
 function page(host, d) {

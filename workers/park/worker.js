@@ -1,4 +1,8 @@
-/* BUILT 2026-09-12 · park 1b · reconciled against the GoDaddy export of 12 Sep:
+/* BUILT 2026-09-18 · park 1c · nujobi.com and gigapoo.com came OUT — his call,
+   18 Sep: Nujobi is the marketplace brand, gigapoo its door; both are doors in
+   the direct worker now, not names for sale. The same change to the
+   marketplace table is in wallstdomains-dotcom/data/reconcile_2026-09-18.sql.
+   Earlier: park 1b, 2026-09-12 · reconciled against the GoDaddy export of 12 Sep:
    eleven names not in the registrar account came out, six names about to
    become businesses (hikersball, trailshrinks, rooferschool, the jobcreation
    three) came out, five owned-and-idle names went in: 148 names. GoodSolar
@@ -51,7 +55,6 @@ const NAMES = {
   "freakshoe.com": "FREAKSHOE.COM",
   "gas2water.com": "gas2water.com",
   "getitupamerica.com": "getitupamerica.com",
-  "gigapoo.com": "gigapoo.com",
   "gogohose.com": "GOGOHOSE.COM",
   "gogoscrew.com": "GOGOSCREW.COM",
   "goodsolar.ca": "GOODSOLAR.CA",
@@ -119,7 +122,6 @@ const NAMES = {
   "nujabi.com": "NUJABI.COM",
   "nujabis.com": "NUJABIS.COM",
   "nujaby.com": "NUJABY.COM",
-  "nujobi.com": "NUJOBI.COM",
   "nycfraudaudit.com": "NYCFRAUDAUDIT.COM",
   "nycroofrepairs.com": "NYCROOFREPAIRS.COM",
   "p2logic.com": "P2LOGIC.COM",
