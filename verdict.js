@@ -1,4 +1,4 @@
-/* BUILT 2026-09-11 · warrantwire verdict.js · RULES VERSION 1
+/* BUILT 2026-09-19 · warrantwire verdict.js · RULES VERSION 3 (v2 18 Sep: W9; v3 19 Sep: W10)
    ============================================================================
    THE AUTOMATIC VERDICT, PART ONE. Runs on what the wire knows about every
    company. Every rule here is written out in plain English on /rules.html
@@ -23,7 +23,11 @@
      papers say in so many words that neither party will announce the deal.
      That is the clearest sign in the paper itself that it was built to be
      missed, and the wire reports it. */
-  var VERSION = 2, DATE = "2026-09-18";
+  /* version 3, 19 Sep 2026: W10, merger or sale of the company. His ask: a
+     near-term merger says the company is being sold or liquidated, and that
+     is a necessary disclosure. It fires from the wire's signals, on the wire
+     or not — it is the one rule that runs even when W0 says nothing is. */
+  var VERSION = 3, DATE = "2026-09-19";
 
   var HEAVY = ["Price reset","Cashless exercise","Warrant inducement","Inducement agreement",
                "Reduced exercise price","Variable rate transaction","Equity line"];
@@ -55,12 +59,30 @@
     var name = c.name || a.company || (c.ticker || a.ticker || "").toUpperCase();
     var n = Number(a.filings || rows.length || 0);
 
+    /* W10 — merger or sale of the company on the table. From the signals, which
+       the wire reports for every company; runs before W0 because it matters
+       most for a company that has nothing else on the wire. */
+    var sig = (d.signals && d.signals.merger) || [];
+    var w10 = null;
+    if (sig.length) {
+      var latest = sig[0], allSaid = sig.map(function (x) { return String(x.said || ""); }).join(",");
+      var said = String(latest.said || "").split(",").map(function (w) { return "“" + w.trim() + "”"; }).join(", ");
+      var when = latest.filed_on ? " on " + latest.filed_on : "";
+      /* the gravest word wins: liquidation over a CVR over a review over a merger */
+      var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right — the shareholders get what is left, if anything" : /strategic/i.test(allSaid) ? "a strategic review — the company is looking for a buyer" : "a merger or sale";
+      w10 = { id: "W10", name: "Merger or sale of the company",
+        text: "The company's own " + (latest.form || "filing") + when + " carries the language of " + kind +
+          " (" + said + (sig.length > 1 ? ", in " + sig.length + " filings" : "") + "). For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders’ stake." };
+      fired.push(w10);
+    }
+
     /* W0 — nothing on the wire: no verdict, and not a clean bill of health */
     if (!n) {
       fired.push({ id: "W0", name: "Nothing on the wire",
         text: "No filing from this company has matched the language of a warrant financing since 2021." });
-      return { version: VERSION, date: DATE, fired: fired, sentence: null, missing: missing, none: true };
+      return { version: VERSION, date: DATE, fired: fired, sentence: w10 ? name + " has a merger, sale or wind-down on the table. Nothing on the wire." : null, missing: missing, none: true, merger: !!w10 };
     }
+    if (w10) subject.unshift("has a merger, sale or wind-down on the table" + (sig[0].filed_on ? " as of " + sig[0].filed_on : ""));
 
     /* W1 — how often: filings per year over the period on record */
     var span = daysBetween(a.first, a.latest);
@@ -158,7 +180,7 @@
     if (subject.length) parts.push(name + " " + subject.join("; ") + ".");
     rest.forEach(function (t) { parts.push(cap(t) + "."); });
 
-    return { version: VERSION, date: DATE, fired: fired, sentence: parts.join(" ") || null, missing: missing, none: false };
+    return { version: VERSION, date: DATE, fired: fired, sentence: parts.join(" ") || null, missing: missing, none: false, merger: !!w10 };
   }
 
   window.WWVerdict = { version: VERSION, date: DATE, render: render };

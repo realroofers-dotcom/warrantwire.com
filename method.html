@@ -82,7 +82,7 @@ td.n{text-align:right;font-family:var(--mono);white-space:nowrap}
 <main><div class="wrapn">
 
 <div class="top-note">
-  <span class="k">The method of evaluation &middot; version 2 &middot; 18 September 2026</span>
+  <span class="k">The method of evaluation &middot; version 3 &middot; 19 September 2026</span>
   <h1>Every number on this site, how it is computed, and where it comes from.</h1>
   <p class="lede">Warrant Wire measures documents. It does not judge companies. Each measurement below is
   computed by code that runs the same way on every filer, with a published source behind each idea. This
@@ -126,8 +126,11 @@ marks(<var>f</var>) = |{ <var>p</var> in <var>f</var> : weight(<var>p</var>) &gt
   <p>The labels a reader sees on the wire: Price reset · Reduced exercise price · Warrant inducement ·
   Inducement agreement · Cashless exercise · Variable rate transaction · Equity line · Pre-funded warrants ·
   ATM programme · Ownership blocker · Floor price · Most favored nation · Participation right · Placement
-  agent · Registered direct · and, from 18 September 2026, <b>No press release clause</b>, the qualifier.
-  Which phrases produce each label, and their weights, are not published.</p>
+  agent · Registered direct · and two that weigh nothing on the wire but are reported on every company:
+  <b>No press release clause</b> (18 September 2026) and <b>Merger or sale of the company</b> (19
+  September 2026 &mdash; merger, reverse merger, business combination, strategic review, liquidation,
+  dissolution, wind-down, contingent value rights). Which phrases produce each label, and their weights,
+  are not published.</p>
   <p>A match is not a finding. The words are ordinary and lawful, and many of the deals are unremarkable.
   It means the document is worth reading. The qualifier appears in ordinary merger and proxy paper, which
   is why it carries no weight of its own: a filing carrying only it is not on the wire.</p>
@@ -135,7 +138,7 @@ marks(<var>f</var>) = |{ <var>p</var> in <var>f</var> : weight(<var>p</var>) &gt
 
 <!-- ═══ 2 ═══ -->
 <section class="m" id="verdict">
-  <span class="k">2 &middot; The verdict &middot; rules version 2</span>
+  <span class="k">2 &middot; The verdict &middot; rules version 3</span>
   <h2>What does the pattern of filings show?</h2>
   <p>The automatic verdict runs on what the wire holds for one company: <var>n</var> filings, <var>h</var> of
   them heavy, dated from <var>first</var> to <var>latest</var>, each carrying its labels. Every rule is written
@@ -152,7 +155,10 @@ marks(<var>f</var>) = |{ <var>p</var> in <var>f</var> : weight(<var>p</var>) &gt
 <i>W6  arranged to sell, not hold</i>  ∃ <var>f</var> : "Pre-funded warrants" ∈ labels(<var>f</var>) ∧ "Ownership blocker" ∈ labels(<var>f</var>)
 <i>W7  how recent</i>                days(<var>latest</var>, today) ≤ 90
 <i>W8  where it is incorporated</i>  state ∈ {NV, DE, TX}          <i>each with what its law permits on a reverse split</i>
-<i>W9  no press release</i>          |{ <var>f</var> : "No press release clause" ∈ labels(<var>f</var>) }| ≥ 1       <i>once is enough</i></div>
+<i>W9  no press release</i>          |{ <var>f</var> : "No press release clause" ∈ labels(<var>f</var>) }| ≥ 1       <i>once is enough</i>
+<i>W10 merger or sale</i>            |signals(<var>T</var>)| ≥ 1,  signals = the company's filings carrying merger / sale / strategic review /
+                              liquidation / CVR language — watched on every company, on the wire or not;
+                              runs BEFORE W0, so it fires for a company with nothing else on the wire</div>
   <p>The verdict sentence is assembled from the rules that fired, the company&rsquo;s name in front of the
   parts that take one (W1, W3, W4, W9), the rest as sentences after it. It computes; it does not conclude.
   Part two of the verdict (dilution, splits, overhang, repricing, spend, the parties) runs against the
@@ -297,6 +303,7 @@ page(<var>T</var>) is then decided by these tests, in this order:</div>
     <thead><tr><th>Test</th><th>Condition</th><th>What the page does</th></tr></thead>
     <tbody>
       <tr><td>real company?</td><td>the ticker or name resolves to a CIK</td><td>If not: "type a ticker or a company name." Otherwise the page never comes up empty: it shows the EDGAR count since 2001 and the latest readable filings, each with a $20 read at 8K10Q.</td></tr>
+      <tr><td>merger or sale?</td><td>|signals(<var>T</var>)| ≥ 1</td><td>The warning at the top of the page, free, for every company: the form, the date, the words. W10 fires in the verdict. Which document it is sits in the report.</td></tr>
       <tr><td>on the wire?</td><td><var>n</var> = 0</td><td>W0: "No warrant language on the wire" &mdash; and the EDGAR record beneath it. Not a clean bill of health.</td></tr>
       <tr><td>open?</td><td><var>T</var> ∈ {TOVX, MRVL, GOOG} ∨ the reader&rsquo;s email holds an entitlement for <var>T</var></td><td>Everything is shown. Otherwise: the counts, the company, the terms and the number of rules fired are free; which document, which date, and the verdict sentence are the report.</td></tr>
       <tr><td>the verdict</td><td>rules fired ≠ ∅</td><td>The sentence, the rules in order, the version and date they were rendered under.</td></tr>
@@ -368,7 +375,7 @@ page(<var>T</var>) is then decided by these tests, in this order:</div>
   warrant financing language. Nothing here is investment advice, nothing here is a recommendation to
   buy or sell any security, and nothing here alleges that anyone broke any law.<br>
   Published by the Foundation for Job Creation &middot; <a href="/about.html">About</a>
-  <p class="stamp">Built 2026-09-18 &middot; warrantwire method-1a &middot; describes grade-1n, wire 2c, rules version 2</p>
+  <p class="stamp">Built 2026-09-19 &middot; warrantwire method-1b &middot; describes grade-1n, wire 2d, rules version 3</p>
 </footer></div>
 
 <script src="/clock.js"></script>

@@ -33,6 +33,17 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .elist .readk8{justify-self:end;font:600 12.5px var(--sans);background:transparent;border:1px solid var(--line);color:var(--ink);padding:6px 11px;border-radius:6px;cursor:pointer}
 .elist .readk8:hover{border-color:var(--ink2);background:var(--panel)}
 @media(max-width:560px){.elist li{grid-template-columns:1fr 1fr;gap:6px 10px}.elist .readk8{grid-column:1/-1;justify-self:start}}
+/* the merger warning — red, at the top, free */
+.merger{border:2px solid var(--hot);border-radius:10px;padding:14px 18px;margin:14px 0 0;background:#fbeeec}
+.merger .k{display:block;font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 8px}
+.merger p{margin:0 0 8px;font-size:14.5px;color:var(--ink2);max-width:72ch;line-height:1.55}
+.merger p b{color:var(--ink)}
+.merger .elist.sig li{grid-template-columns:90px 100px 1fr 80px}
+.merger .elist .es{font-size:13px;color:var(--ink2);font-style:italic}
+.merger .elist .el.quiet{color:var(--ink3);font-weight:400}
+.merger .fine{font-size:12px;color:var(--ink3);margin:6px 0 0}
+.merger .fine a{color:var(--hot)}
+@media(max-width:600px){.merger .elist.sig li{grid-template-columns:1fr 1fr}.merger .elist .es{grid-column:1/-1}}
 /* Rule 421: the plain-English grade */
 .r421{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0 0;background:var(--panel)}
 .r421.bad{border-color:var(--hot);background:#fbeeec}
@@ -279,11 +290,40 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<p class="fine">The latest ' + Math.min(12, (e.recent || []).length) + ' of ' + Number(e.filings).toLocaleString("en-US") + '. Kept here so the SEC is asked once, not on every search.</p>'
       + '</section>';
   }
+  /* ⚠ THE MERGER WARNING — his ask, 19 Sep: a near-term merger, a strategic
+     review, a plan of liquidation, a CVR — the company is being sold or wound
+     down, and that is a necessary disclosure. Free, at the top, for every
+     company. Which document it is sits in the report. */
+  function mergerBox(d, open) {
+    var s = d.signals && d.signals.merger;
+    if (!s || !s.length) return "";
+    var latest = s[0], allSaid = s.map(function (x) { return String(x.said || ""); }).join(",");
+    /* the gravest word wins: liquidation over a CVR over a review over a merger */
+    var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right &mdash; the shareholders get what is left, if anything" : /strategic/i.test(allSaid) ? "a strategic review &mdash; the company is looking for a buyer" : "a merger or sale of the company";
+    /* one row per form + day + words; seven supplements filed the same day are one line */
+    var seen = {}, grouped = [];
+    s.forEach(function (x) { var k = (x.form || "") + "|" + (x.filed_on || "") + "|" + (x.said || ""); if (seen[k]) { seen[k].n++; return; } seen[k] = { x: x, n: 1 }; grouped.push(seen[k]); });
+    var rows = grouped.slice(0, 6).map(function (g) {
+      var x = g.x, words = String(x.said || "").split(",").map(function (w) { return "&ldquo;" + esc(w.trim()) + "&rdquo;"; }).join(", ");
+      return '<li><span class="ef">' + esc(x.form || "") + (g.n > 1 ? ' &times;' + g.n : '') + '</span><span class="ed">' + esc(x.filed_on || "") + '</span><span class="es">' + words + '</span>'
+        + (x.url ? '<a class="el" href="' + esc(x.url) + '" target="_blank" rel="noopener">EDGAR</a>' : (open ? '' : '<span class="el quiet">in the report</span>')) + '</li>';
+    }).join("");
+    return '<div class="merger"><span class="k">&#9888; Merger, sale or wind-down on the table</span>'
+      + '<p><b>The company&rsquo;s own ' + esc(latest.form || "filing") + (latest.filed_on ? ' of ' + esc(latest.filed_on) : '') + ' carries the language of ' + kind + '.</b> '
+      + 'For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders&rsquo; stake. '
+      + (s.length > 1 ? s.length + ' filings carry it. ' : '') + 'Read it before anything else.</p>'
+      + '<ol class="elist sig">' + rows + '</ol>'
+      + '<p class="fine">Watched language: agreement and plan of merger, reverse merger, business combination, strategic alternatives, plan of liquidation or dissolution, wind-down, contingent value rights. A match is the company&rsquo;s own words; what they mean for you is in the document. <a href="/rules.html#W10">Rule W10 &rarr;</a></p>'
+      + '</div>';
+  }
   function autoBox(v, open, a) {
     var lbl = '<p class="lbl"><b>The automatic verdict</b><span>rendered by the rules</span><span class="kind">warrants only</span></p>';
     if (v.none) {
+      var w0 = v.fired.filter(function (r) { return r.id === "W0"; })[0] || v.fired[0];
+      var w10 = v.fired.filter(function (r) { return r.id === "W10"; })[0];
       return '<section class="verdict auto">' + lbl
-        + '<p class="clean"><b>No warrant language on the wire.</b> ' + esc(v.fired[0].text) + '</p>'
+        + (w10 ? '<p class="vlead"><b>W10 &mdash; ' + esc(w10.name) + '.</b> ' + esc(w10.text) + '</p>' : '')
+        + '<p class="clean"><b>No warrant language on the wire.</b> ' + esc(w0.text) + '</p>'
         + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone. Everything the company <i>has</i> filed is below, and any of it can be read.</p>'
         + '</section>';
     }
@@ -810,6 +850,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
       page.innerHTML = who(c, a, SAMPLE[tk])
         + mark
+        + mergerBox(d, open)
         + '<div id="concern"></div>'
         + '<div id="grade421"></div>'
         + row

@@ -1,3 +1,12 @@
+/* BUILT 2026-09-19 · triggeredshort-wire 2d — THE SIGNALS
+   Supersedes 2c of 2026-09-18. His ask, 19 Sep: a near-term merger is not
+   disclosed and it should be, because it says the company is being sold or
+   liquidated. Twelve phrases (agreement and plan of merger, reverse merger,
+   strategic alternatives, plan of liquidation, contingent value right…) are
+   now watched at weight 0 — a signal, not a warrant filing — and every
+   company answer carries `signals.merger`, on the wire or not. The verdict
+   raises it as W10; the page shows it as a warning at the top, free.
+
 /* BUILT 2026-09-18 · triggeredshort-wire 2c — THE SAMPLES, AND THE SEARCH LOG
    Supersedes 2b of 2026-09-11.
 
@@ -1232,6 +1241,26 @@ async function edgarCounts(env, cik) {
 }
 
 /* ------------------------------------------------------------------
+   THE SIGNALS  —  merger, sale, strategic review, liquidation, CVR.
+   Read straight from wire_hits (not the view, which carries only
+   warrant filings), newest first, one row per filing.
+------------------------------------------------------------------ */
+const SIGNAL_LABEL = "Merger or sale of the company";
+async function signalsFor(env, tk, cik) {
+  try {
+    /* by ticker, and by CIK too — a hit whose ticker was never filled in
+       (a filer missing from the SEC's ticker map) still belongs to the company */
+    const c = cik ? String(Number(cik)) : "";
+    const r = await env.OVERHANG.prepare(
+      `SELECT accession, MAX(form) form, MAX(filed_on) filed_on, MAX(doc_url) doc_url, MAX(label) label,
+              GROUP_CONCAT(DISTINCT phrase) phrase
+         FROM wire_hits WHERE label = ? AND (UPPER(ticker) = ? OR (? <> '' AND CAST(cik AS INTEGER) = CAST(? AS INTEGER)))
+        GROUP BY accession ORDER BY filed_on DESC LIMIT 12`).bind(SIGNAL_LABEL, tk, c, c || "0").all();
+    return r.results || [];
+  } catch (e) { return []; }
+}
+
+/* ------------------------------------------------------------------
    WHO THIS COMPANY IS  —  the facts, from the SEC's own files.
    Name and exchange from the CIK map; SIC, sector and state of
    incorporation from cik_sic. Nothing here is our opinion.
@@ -1338,6 +1367,13 @@ async function wireSearch(env, asked, q, request, ctx) {
   /* everything the company has filed since 2001 — so a real company never
      comes up empty, and a company with warrant paper is seen in proportion */
   const edgar = company && company.cik ? await edgarCounts(env, company.cik) : null;
+  /* ⚠ THE SIGNALS — his ask, 19 Sep 2026: a near-term merger, a strategic
+     alternatives review, a plan of liquidation, a CVR — these say the company
+     is being sold or wound down, and a shareholder must be told. They are
+     watched like the warrant phrases but weigh nothing on the wire: a merger
+     8-K is not a warrant financing. They are reported here for every company,
+     on the wire or not, and the page and the verdict raise them. */
+  const signals = await signalsFor(env, tk, company && company.cik);
 
   /* ⚠ THE GATE, ASKED AFTER THE ANSWER IS BUILT AND BEFORE IT IS SENT. The
      counts, the company and the terms are free; the documents are not.
@@ -1434,6 +1470,14 @@ async function wireSearch(env, asked, q, request, ctx) {
       business: company.business || "", filings: 0, heavy: 0, first: null, latest: null,
       forms: [], on_docket: false
     } : null),
+    /* the signals: a merger or sale of the company on the table. Free — the
+       fact, the form and the date. Which document is the report. */
+    signals: signals.length ? {
+      merger: signals.map(s => ({ label: s.label, said: s.phrase, form: s.form, filed_on: s.filed_on,
+        accession: gate.paid ? s.accession : undefined, url: gate.paid ? s.doc_url : undefined })),
+      note: "The company's own filing carries the language of a merger, a sale, a strategic review or a wind-down. " +
+            "For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders' stake."
+    } : null,
     /* the whole record on EDGAR since 2001: the count, the forms, the latest
        filings — and each of those can be read at 8K10Q, bought here */
     edgar: edgar ? { since: edgar.since, filings: edgar.total, forms: edgar.forms,
