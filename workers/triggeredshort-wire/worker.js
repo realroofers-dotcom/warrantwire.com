@@ -137,6 +137,17 @@ export default {
         const from = addDays(to, -days);
         return json(await scan(env, from, to), cors);
       }
+      /* ⚠ THE SIGNALS, BACK IN TIME — his ask, 19 Sep: a reverse merger "in the
+         works" is in a proxy from June, not in the last thirty days. One label,
+         one explicit window, so the merger language can be walked back across
+         the years without re-scanning the warrant phrases.
+           ?action=signals&label=Merger%20or%20sale%20of%20the%20company&from=2026-06-01&to=2026-06-30 */
+      if (action === "signals") {
+        const label = q.get("label") || "Merger or sale of the company";
+        const from = q.get("from"), to = q.get("to") || today();
+        if (!from || !/^\d{4}-\d{2}-\d{2}$/.test(from)) return json({ ok:false, error:"from=YYYY-MM-DD, please" }, cors, 400);
+        return json(await scan(env, from, to, label), cors);
+      }
       if (action === "searches") return json(await readSearches(env, q), cors);
       if (action === "tickers") return json(await loadTickers(env), cors);
       if (action === "sic")     return json(await loadSic(env, +(q.get("max")||"150")), cors);
@@ -554,10 +565,12 @@ async function loadTickers(env) {
 
 /* ============================================================ */
 
-async function scan(env, from, to) {
-  const ph = await env.OVERHANG.prepare(
-    "SELECT id, phrase, label, weight FROM wire_phrases WHERE active=1 ORDER BY weight DESC, id"
-  ).all();
+async function scan(env, from, to, onlyLabel) {
+  const ph = onlyLabel
+    ? await env.OVERHANG.prepare(
+        "SELECT id, phrase, label, weight FROM wire_phrases WHERE active=1 AND label = ? ORDER BY weight DESC, id").bind(onlyLabel).all()
+    : await env.OVERHANG.prepare(
+        "SELECT id, phrase, label, weight FROM wire_phrases WHERE active=1 ORDER BY weight DESC, id").all();
   const phrases = ph.results || [];
 
   let calls = 0, added = 0;

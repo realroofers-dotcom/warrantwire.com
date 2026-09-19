@@ -299,7 +299,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     if (!s || !s.length) return "";
     var latest = s[0], allSaid = s.map(function (x) { return String(x.said || ""); }).join(",");
     /* the gravest word wins: liquidation over a CVR over a review over a merger */
-    var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right &mdash; the shareholders get what is left, if anything" : /strategic/i.test(allSaid) ? "a strategic review &mdash; the company is looking for a buyer" : "a merger or sale of the company";
+    var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right &mdash; the shareholders get what is left, if anything" : /reverse merger/i.test(allSaid) ? "a reverse merger &mdash; the company is to be folded into another, and its shareholders diluted into it" : /strategic/i.test(allSaid) ? "a strategic review &mdash; the company is looking for a buyer" : "a merger or sale of the company";
     /* one row per form + day + words; seven supplements filed the same day are one line */
     var seen = {}, grouped = [];
     s.forEach(function (x) { var k = (x.form || "") + "|" + (x.filed_on || "") + "|" + (x.said || ""); if (seen[k]) { seen[k].n++; return; } seen[k] = { x: x, n: 1 }; grouped.push(seen[k]); });

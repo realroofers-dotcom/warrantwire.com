@@ -69,7 +69,7 @@
       var said = String(latest.said || "").split(",").map(function (w) { return "“" + w.trim() + "”"; }).join(", ");
       var when = latest.filed_on ? " on " + latest.filed_on : "";
       /* the gravest word wins: liquidation over a CVR over a review over a merger */
-      var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right — the shareholders get what is left, if anything" : /strategic/i.test(allSaid) ? "a strategic review — the company is looking for a buyer" : "a merger or sale";
+      var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right — the shareholders get what is left, if anything" : /reverse merger/i.test(allSaid) ? "a reverse merger — the company is to be folded into another, and its shareholders diluted into it" : /strategic/i.test(allSaid) ? "a strategic review — the company is looking for a buyer" : "a merger or sale";
       w10 = { id: "W10", name: "Merger or sale of the company",
         text: "The company's own " + (latest.form || "filing") + when + " carries the language of " + kind +
           " (" + said + (sig.length > 1 ? ", in " + sig.length + " filings" : "") + "). For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders’ stake." };
