@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
+<!-- BUILT 2026-09-20 · warrantwire company-1g (1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,6 +35,11 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 @media(max-width:560px){.elist li{grid-template-columns:1fr 1fr;gap:6px 10px}.elist .readk8{grid-column:1/-1;justify-self:start}}
 /* the merger warning — red, at the top, free */
 .merger{border:2px solid var(--hot);border-radius:10px;padding:14px 18px;margin:14px 0 0;background:#fbeeec}
+.stop{border:3px solid var(--hot);border-radius:12px;padding:16px 20px;margin:14px 0 0;background:var(--hot);color:#fff}
+.stop .k{display:block;font:800 12px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.stop p{color:#fff;margin:0 0 8px;max-width:none}.stop b{color:#fff}.stop a{color:#fff}
+.stop ol{margin:6px 0 10px;padding:0 0 0 20px;font-size:15px}.stop li{margin:0 0 3px}
+.stop .go{display:inline-block;background:#fff;color:var(--hot);font:700 15px var(--sans);padding:10px 18px;border-radius:8px;text-decoration:none;border:0;cursor:pointer}
 .merger .k{display:block;font:700 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin:0 0 8px}
 .merger p{margin:0 0 8px;font-size:14.5px;color:var(--ink2);max-width:72ch;line-height:1.55}
 .merger p b{color:var(--ink)}
@@ -185,7 +190,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
   registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
   nothing here alleges that anyone broke any law.
-  <p class="stamp">Built 2026-09-12 &middot; warrantwire company-1b</p>
+  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1g &middot; rules version 4</p>
 </footer></div>
 
 <script src="/wire.js?v=2a"></script>
@@ -294,6 +299,45 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      review, a plan of liquidation, a CVR — the company is being sold or wound
      down, and that is a necessary disclosure. Free, at the top, for every
      company. Which document it is sits in the report. */
+  /* ⚠ STOP — THE NAME CHANGE. His rule, 20 Sep 2026: "any company that changes
+     its name must be identified as a high risk … flag these on searches: the
+     user should stop, get this report." WGRX/MEDS the example — public two
+     years and already renamed. EDGAR's own list of former names, with dates,
+     and the first filing on record, so a young company that has already
+     changed its name is called out as such. Free, at the very top. */
+  function stopBox(d, open, tk) {
+    var r = d.signals && d.signals.renamed;
+    if (!r || !r.former || !r.former.length) return "";
+    var first = d.edgar && d.edgar.first ? String(d.edgar.first).slice(0, 10) : null;
+    var years = first ? (Date.now() - Date.parse(first)) / 31557600000 : null;
+    var young = years != null && years < 3;
+    var rows = r.former.map(function (f) { return '<li><b>' + esc(f.name) + '</b>' + (f.from || f.to ? ' &mdash; ' + (f.from ? esc(String(f.from).slice(0, 10)) : '?') + ' to ' + (f.to ? esc(String(f.to).slice(0, 10)) : '?') : '') + '</li>'; }).join("");
+    return '<div class="stop" id="stop"><span class="k">&#9632; Stop &mdash; this company changed its name</span>'
+      + '<p><b>' + esc(r.now || tk) + ' has filed with the SEC under ' + (r.former.length === 1 ? 'another name' : r.former.length + ' other names') + '.</b>'
+      + (young ? ' It has been on EDGAR only since ' + esc(first) + ' &mdash; public about ' + (years < 1 ? 'a year' : Math.round(years) + ' years') + ' &mdash; and has already changed its name.' : (first ? ' On EDGAR since ' + esc(first) + '.' : ''))
+      + ' A name change is high risk on this wire, without exception: the filings, the warrant paper and the shareholders who held it stay on EDGAR under the old name, and the new name starts clean. Search the old name' + (r.former.length === 1 ? '' : 's') + ' too.</p>'
+      + '<ol>' + rows + '</ol>'
+      + '<p><b>Get this report before you do anything else.</b> ' + (open ? '<a class="go" href="#auto">The verdict is below &darr;</a>' : '<button class="wbuy go" data-sku="wire_search" data-t="' + esc(tk) + '">The report &middot; $12</button>') + ' <a href="/rules.html#W11" style="margin-left:10px">Rule W11 &rarr;</a></p>'
+      + '</div>';
+  }
+  /* the reverse split — the third tell-tale, in the merger's dress */
+  function splitBox(d, open) {
+    var s = d.signals && d.signals.splits;
+    if (!s || !s.length) return "";
+    var seen = {}, grouped = [];
+    s.forEach(function (x) { var k = (x.form || "") + "|" + (x.filed_on || "") + "|" + (x.said || ""); if (seen[k]) { seen[k].n++; return; } seen[k] = { x: x, n: 1 }; grouped.push(seen[k]); });
+    var rows = grouped.slice(0, 6).map(function (g) {
+      var x = g.x, words = String(x.said || "").split(",").map(function (w) { return "&ldquo;" + esc(w.trim()) + "&rdquo;"; }).join(", ");
+      return '<li><span class="ef">' + esc(x.form || "") + (g.n > 1 ? ' &times;' + g.n : '') + '</span><span class="ed">' + esc(x.filed_on || "") + '</span><span class="es">' + words + '</span>'
+        + (x.url ? '<a class="el" href="' + esc(x.url) + '" target="_blank" rel="noopener">EDGAR</a>' : (open ? '' : '<span class="el quiet">in the report</span>')) + '</li>';
+    }).join("");
+    return '<div class="merger"><span class="k">&#9888; Reverse split &mdash; high risk</span>'
+      + '<p><b>The company&rsquo;s own ' + esc(s[0].form || "filing") + (s[0].filed_on ? ' of ' + esc(s[0].filed_on) : '') + ' carries the language of a reverse split.</b> '
+      + 'A reverse split changes nothing about the company and everything about the count: the same business, fewer shares, the price marked up to match &mdash; until the next round of paper takes it back down. It is the financier&rsquo;s reset button, and each one scrapes the shareholders&rsquo; value down a notch.' + (s.length > 1 ? ' ' + s.length + ' filings carry it.' : '') + '</p>'
+      + '<ol class="elist sig">' + rows + '</ol>'
+      + '<p class="fine">Reverse splits, name changes and warrant paper are the three tell-tales. <a href="/rules.html#W12">Rule W12 &rarr;</a></p>'
+      + '</div>';
+  }
   function mergerBox(d, open) {
     var s = d.signals && d.signals.merger;
     if (!s || !s.length) return "";
@@ -321,7 +365,11 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     if (v.none) {
       var w0 = v.fired.filter(function (r) { return r.id === "W0"; })[0] || v.fired[0];
       var w10 = v.fired.filter(function (r) { return r.id === "W10"; })[0];
+      var w11 = v.fired.filter(function (r) { return r.id === "W11"; })[0];
+      var w12 = v.fired.filter(function (r) { return r.id === "W12"; })[0];
       return '<section class="verdict auto">' + lbl
+        + (w11 ? '<p class="vlead"><b>W11 &mdash; ' + esc(w11.name) + '.</b> ' + esc(w11.text) + '</p>' : '')
+        + (w12 ? '<p class="vlead"><b>W12 &mdash; ' + esc(w12.name) + '.</b> ' + esc(w12.text) + '</p>' : '')
         + (w10 ? '<p class="vlead"><b>W10 &mdash; ' + esc(w10.name) + '.</b> ' + esc(w10.text) + '</p>' : '')
         + '<p class="clean"><b>No warrant language on the wire.</b> ' + esc(w0.text) + '</p>'
         + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone. Everything the company <i>has</i> filed is below, and any of it can be read.</p>'
@@ -850,6 +898,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
       page.innerHTML = who(c, a, SAMPLE[tk])
         + mark
+        + stopBox(d, open, tk)
+        + splitBox(d, open)
         + mergerBox(d, open)
         + '<div id="concern"></div>'
         + '<div id="grade421"></div>'

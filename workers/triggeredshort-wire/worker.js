@@ -816,7 +816,7 @@ async function readSearches(env, q) {
   const W = "WHERE " + where.join(" AND ");
   const rows = (await env.OVERHANG.prepare(`SELECT * FROM wire_searches ${W} ORDER BY id DESC LIMIT ?`).bind(...args, n).all()).results || [];
   const by = async (col) => (await env.OVERHANG.prepare(`SELECT ${col} k, COUNT(*) n FROM wire_searches ${W} GROUP BY ${col} ORDER BY n DESC LIMIT 40`).bind(...args).all()).results || [];
-  return { ok: true, build: "triggeredshort-wire 2c · 2026-09-18", days, filter: { ticker: tk || null, email: em || null },
+  return { ok: true, build: "triggeredshort-wire 2f · 2026-09-20", days, filter: { ticker: tk || null, email: em || null },
     total: (await env.OVERHANG.prepare(`SELECT COUNT(*) n, SUM(paid) paid, COUNT(DISTINCT email) emails, COUNT(DISTINCT ip) ips FROM wire_searches ${W}`).bind(...args).first()),
     by_ticker: await by("ticker"), by_country: await by("country"), by_email: await by("email"),
     by_day: (await env.OVERHANG.prepare(`SELECT date(at) k, COUNT(*) n FROM wire_searches ${W} GROUP BY date(at) ORDER BY k DESC LIMIT 60`).bind(...args).all()).results || [],
@@ -1205,11 +1205,14 @@ async function edgarCounts(env, cik) {
       `CREATE TABLE IF NOT EXISTS edgar_counts (cik TEXT PRIMARY KEY, since TEXT, total INTEGER,
          forms TEXT, first_on TEXT, latest_on TEXT, latest_form TEXT, recent TEXT,
          fetched_at TEXT DEFAULT (datetime('now')))`).run();
+    /* 2f: the company's names — current and former, with dates — ride in the
+       same row. A cached row from before 2f has no names; fetch again. */
+    try { await env.OVERHANG.prepare("ALTER TABLE edgar_counts ADD COLUMN names TEXT").run(); } catch (e) {}
     const had = await env.OVERHANG.prepare(
-      `SELECT * FROM edgar_counts WHERE cik = ? AND fetched_at > datetime('now', '-7 days')`).bind(c).first();
+      `SELECT * FROM edgar_counts WHERE cik = ? AND fetched_at > datetime('now', '-7 days') AND names IS NOT NULL`).bind(c).first();
     if (had) return { since: had.since, total: had.total, forms: JSON.parse(had.forms || "{}"),
                       first: had.first_on, latest: had.latest_on, latest_form: had.latest_form,
-                      recent: JSON.parse(had.recent || "[]"), fetched: had.fetched_at };
+                      recent: JSON.parse(had.recent || "[]"), names: JSON.parse(had.names || "null"), fetched: had.fetched_at };
   } catch (e) {}
   try {
     const padded = c.padStart(10, "0");
@@ -1239,15 +1242,21 @@ async function edgarCounts(env, cik) {
         for (let i = 0; i < (r2.form || []).length; i++) take(r2.form[i], r2.filingDate[i], null, null);
       } catch (e) {}
     }
-    const out = { since: EDGAR_SINCE, total, forms, first, latest, latest_form: latestForm, recent };
+    /* ⚠ THE NAMES. His rule, 20 Sep 2026: "any company that changes its name
+       must be identified as a high risk" — WGRX/MEDS the example. EDGAR keeps
+       every former name with the dates it was used; that list is the fact. */
+    const names = { current: d.name || null,
+      former: (d.formerNames || []).map(f => ({ name: f.name, from: String(f.from || "").slice(0, 10) || null, to: String(f.to || "").slice(0, 10) || null }))
+        .sort((a, b) => String(b.to || "").localeCompare(String(a.to || ""))) };
+    const out = { since: EDGAR_SINCE, total, forms, first, latest, latest_form: latestForm, recent, names };
     try {
       await env.OVERHANG.prepare(
-        `INSERT INTO edgar_counts (cik, since, total, forms, first_on, latest_on, latest_form, recent, fetched_at)
-         VALUES (?,?,?,?,?,?,?,?,datetime('now'))
+        `INSERT INTO edgar_counts (cik, since, total, forms, first_on, latest_on, latest_form, recent, names, fetched_at)
+         VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))
          ON CONFLICT(cik) DO UPDATE SET since=excluded.since, total=excluded.total, forms=excluded.forms,
            first_on=excluded.first_on, latest_on=excluded.latest_on, latest_form=excluded.latest_form,
-           recent=excluded.recent, fetched_at=datetime('now')`)
-        .bind(c, EDGAR_SINCE, total, JSON.stringify(forms), first, latest, latestForm, JSON.stringify(recent)).run();
+           recent=excluded.recent, names=excluded.names, fetched_at=datetime('now')`)
+        .bind(c, EDGAR_SINCE, total, JSON.stringify(forms), first, latest, latestForm, JSON.stringify(recent), JSON.stringify(names)).run();
     } catch (e) {}
     return out;
   } catch (e) { return null; }
@@ -1259,7 +1268,12 @@ async function edgarCounts(env, cik) {
    warrant filings), newest first, one row per filing.
 ------------------------------------------------------------------ */
 const SIGNAL_LABEL = "Merger or sale of the company";
-async function signalsFor(env, tk, cik) {
+/* 2f, 20 Sep: the reverse split is the third tell-tale — "reverse splits, name
+   change and warrants are tell-tales." Same mechanism as the merger signal:
+   weight-0 phrases under their own label, reported for every company. */
+const SPLIT_LABEL = "Reverse split";
+async function signalsFor(env, tk, cik, label) {
+  label = label || SIGNAL_LABEL;
   try {
     /* by ticker, and by CIK too — a hit whose ticker was never filled in
        (a filer missing from the SEC's ticker map) still belongs to the company */
@@ -1268,7 +1282,7 @@ async function signalsFor(env, tk, cik) {
       `SELECT accession, MAX(form) form, MAX(filed_on) filed_on, MAX(doc_url) doc_url, MAX(label) label,
               GROUP_CONCAT(DISTINCT phrase) phrase
          FROM wire_hits WHERE label = ? AND (UPPER(ticker) = ? OR (? <> '' AND CAST(cik AS INTEGER) = CAST(? AS INTEGER)))
-        GROUP BY accession ORDER BY filed_on DESC LIMIT 12`).bind(SIGNAL_LABEL, tk, c, c || "0").all();
+        GROUP BY accession ORDER BY filed_on DESC LIMIT 12`).bind(label, tk, c, c || "0").all();
     return r.results || [];
   } catch (e) { return []; }
 }
@@ -1387,6 +1401,7 @@ async function wireSearch(env, asked, q, request, ctx) {
      8-K is not a warrant financing. They are reported here for every company,
      on the wire or not, and the page and the verdict raise them. */
   const signals = await signalsFor(env, tk, company && company.cik);
+  const splits = await signalsFor(env, tk, company && company.cik, SPLIT_LABEL);
 
   /* ⚠ THE GATE, ASKED AFTER THE ANSWER IS BUILT AND BEFORE IT IS SENT. The
      counts, the company and the terms are free; the documents are not.
@@ -1485,11 +1500,24 @@ async function wireSearch(env, asked, q, request, ctx) {
     } : null),
     /* the signals: a merger or sale of the company on the table. Free — the
        fact, the form and the date. Which document is the report. */
-    signals: signals.length ? {
-      merger: signals.map(s => ({ label: s.label, said: s.phrase, form: s.form, filed_on: s.filed_on,
-        accession: gate.paid ? s.accession : undefined, url: gate.paid ? s.doc_url : undefined })),
-      note: "The company's own filing carries the language of a merger, a sale, a strategic review or a wind-down. " +
-            "For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders' stake."
+    signals: (signals.length || splits.length || (edgar && edgar.names && edgar.names.former.length)) ? {
+      /* the reverse split: the company's own filing carries the words. Free —
+         the fact, the form, the date; the document is the report. */
+      splits: splits.length ? splits.map(s => ({ said: s.phrase, form: s.form, filed_on: s.filed_on,
+        accession: gate.paid ? s.accession : undefined, url: gate.paid ? s.doc_url : undefined })) : undefined,
+      merger: signals.length ? signals.map(s => ({ label: s.label, said: s.phrase, form: s.form, filed_on: s.filed_on,
+        accession: gate.paid ? s.accession : undefined, url: gate.paid ? s.doc_url : undefined })) : undefined,
+      /* ⚠ THE NAME CHANGE, 20 Sep 2026: a company that has changed its name is
+         high risk, every time. EDGAR's own list of former names, with the
+         dates each was used. Free — it is a fact, not a document. */
+      renamed: (edgar && edgar.names && edgar.names.former.length) ? {
+        now: edgar.names.current, former: edgar.names.former, times: edgar.names.former.length,
+        latest: edgar.names.former[0] && edgar.names.former[0].to,
+        note: "This company has filed under " + (edgar.names.former.length === 1 ? "another name" : edgar.names.former.length + " other names") +
+              ". A name change leaves the record behind: the old filings, the old warrant paper and the old shareholders stay on EDGAR under the old name, and a reader who searches the new one finds a clean slate. That is the point of it."
+      } : undefined,
+      note: signals.length ? "The company's own filing carries the language of a merger, a sale, a strategic review or a wind-down. " +
+            "For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders' stake." : undefined
     } : null,
     /* the whole record on EDGAR since 2001: the count, the forms, the latest
        filings — and each of those can be read at 8K10Q, bought here */

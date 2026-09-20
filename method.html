@@ -158,7 +158,11 @@ marks(<var>f</var>) = |{ <var>p</var> in <var>f</var> : weight(<var>p</var>) &gt
 <i>W9  no press release</i>          |{ <var>f</var> : "No press release clause" ∈ labels(<var>f</var>) }| ≥ 1       <i>once is enough</i>
 <i>W10 merger or sale</i>            |signals(<var>T</var>)| ≥ 1,  signals = the company's filings carrying merger / sale / strategic review /
                               liquidation / CVR language — watched on every company, on the wire or not;
-                              runs BEFORE W0, so it fires for a company with nothing else on the wire</div>
+                              runs BEFORE W0, so it fires for a company with nothing else on the wire
+<i>W11 changed its name</i>          |former(<var>T</var>)| ≥ 1,  former = the SEC's register of names <var>T</var> has filed under — HIGH RISK, no exception;
+                              the page stops the reader at the top; runs BEFORE W0
+<i>W12 reverse split</i>             |splits(<var>T</var>)| ≥ 1,  splits = the company's filings carrying reverse-split language — HIGH RISK; runs BEFORE W0
+                              <i>the three tell-tales: W11 the name, W12 the split, W1–W9 the warrant paper</i></div>
   <p>The verdict sentence is assembled from the rules that fired, the company&rsquo;s name in front of the
   parts that take one (W1, W3, W4, W9), the rest as sentences after it. It computes; it does not conclude.
   Part two of the verdict (dilution, splits, overhang, repricing, spend, the parties) runs against the

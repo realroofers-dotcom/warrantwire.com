@@ -138,7 +138,7 @@ html,body{overflow-x:clip}
 
   <h1>How the verdict is rendered</h1>
 
-  <p class="asof">Rules, version 3 <span>&middot; in force from 19 September 2026 &middot; version 2 (18 Sep) added W9; version 3 adds W10; version 1 ran from 11 September</span></p>
+  <p class="asof">Rules, version 4 <span>&middot; in force from 20 September 2026 &middot; version 2 (18 Sep) added W9; version 3 (19 Sep) W10; version 4 adds W11 and W12, the three tell-tales; version 1 ran from 11 September</span></p>
 
   <p class="lede">When you search a company, the wire writes a verdict. Nobody types it. It is
   assembled from the filings by the rules on this page, and nothing else. This page is the
@@ -326,6 +326,50 @@ html,body{overflow-x:clip}
         </dl>
       </div></div>
 
+      <div class="rule" id="W11"><span class="id">W11</span><div>
+        <h3>Changed its name &mdash; high risk</h3>
+        <dl>
+          <dt>Looks at</dt><dd>The SEC&rsquo;s own list of the names this company has filed under, with the
+            dates each was used. Not a phrase in a filing: the register itself. Watched on every company,
+            on the wire or not.</dd>
+          <dt>Fires when</dt><dd>The list has one former name or more. <b>Once is enough, and there is
+            no exception.</b> It fires before every other rule, and the page stops the reader at the
+            top: get the report before anything else. If the company has been on EDGAR less than three
+            years, it says so &mdash; a company public two years that has already been renamed is called
+            out as such. Added 20 September 2026, version 4.</dd>
+          <dt>Prints</dt><dd><q>DataMeds AI, Inc. has filed under 2 other names: &ldquo;Wellgistics Health,
+            Inc.&rdquo; until 2026-07-21; &ldquo;Danam Health, Inc&rdquo; until 2024-09-27. A company that
+            changes its name is high risk on this wire, without exception: the record &mdash; the filings,
+            the warrant paper, the shareholders who held the old paper &mdash; stays behind under the old
+            name, and the new name starts clean. Search the old names too.</q></dd>
+          <dt>Why it is a rule</dt><dd>A name change is the cheapest way to leave a record behind. The
+            old filings, the old warrant paper, the reverse splits and the shareholders who paid for all
+            of it stay on EDGAR under a name nobody searches any more; the new name has no history. It
+            is lawful, and it is a tell-tale &mdash; one of three, with the reverse split and the warrant
+            paper. The wire will not let it pass quietly.</dd>
+        </dl>
+      </div></div>
+
+      <div class="rule" id="W12"><span class="id">W12</span><div>
+        <h3>Reverse split &mdash; high risk</h3>
+        <dl>
+          <dt>Looks at</dt><dd>The company&rsquo;s own filings, for the words: <i>reverse stock split,
+            reverse split, reverse share split, share consolidation.</i> Watched on every company, on the
+            wire or not, from 20 September 2026 forward.</dd>
+          <dt>Fires when</dt><dd>Any filing carries it. <b>Once is enough.</b> Fires before every other
+            rule. Added 20 September 2026, version 4.</dd>
+          <dt>Prints</dt><dd><q>The company&rsquo;s own DEF 14A on 3 June 2026 carries the language of a
+            reverse split (&ldquo;reverse stock split&rdquo;). A reverse split changes nothing about the
+            company and everything about the count: the same business, fewer shares, and the price
+            marked up to match &mdash; until the next round of paper takes it back down.</q></dd>
+          <dt>Why it is a rule</dt><dd>A reverse split is how a company that has sold too many shares
+            gets back over the exchange&rsquo;s minimum price so it can sell more. It is the financier&rsquo;s
+            reset button. Each one scrapes the shareholders&rsquo; value down another notch, and the
+            warrant paper that follows is priced off the new, smaller count. With the name change and
+            the warrants, it is the third tell-tale.</dd>
+        </dl>
+      </div></div>
+
       <div class="rule" id="W0"><span class="id">W0</span><div>
         <h3>Nothing on the wire</h3>
         <dl>
@@ -490,7 +534,7 @@ html,body{overflow-x:clip}
   law.<br>
   Published by the Foundation for Job Creation &middot;
   <a href="https://triggeredshort.com/method.html" style="color:var(--ink2)">Method and corrections</a>
-  <p class="stamp">Built 2026-09-19 &middot; warrantwire rules-1c &middot; rules version 3 (W10 added; W9 on 18 Sep)</p>
+  <p class="stamp">Built 2026-09-20 &middot; warrantwire rules-1d &middot; rules version 4 (W11, W12 added; W10 on 19 Sep; W9 on 18 Sep)</p>
 </footer></div>
 
 <script src="/clock.js"></script>

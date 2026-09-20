@@ -1,4 +1,4 @@
-/* BUILT 2026-09-19 · warrantwire verdict.js · RULES VERSION 3 (v2 18 Sep: W9; v3 19 Sep: W10)
+/* BUILT 2026-09-20 · warrantwire verdict.js · RULES VERSION 4 (v2 18 Sep: W9; v3 19 Sep: W10; v4 20 Sep: W11 name change, W12 reverse split)
    ============================================================================
    THE AUTOMATIC VERDICT, PART ONE. Runs on what the wire knows about every
    company. Every rule here is written out in plain English on /rules.html
@@ -27,7 +27,12 @@
      near-term merger says the company is being sold or liquidated, and that
      is a necessary disclosure. It fires from the wire's signals, on the wire
      or not — it is the one rule that runs even when W0 says nothing is. */
-  var VERSION = 3, DATE = "2026-09-19";
+  /* version 4, 20 Sep 2026: W11, the name change. His rule: "any company that
+     changes its name must be identified as a high risk" — WGRX/MEDS the
+     example. EDGAR keeps every former name with its dates; the wire passes
+     them in signals.renamed. Like W10 it runs before W0: a renamed company
+     with nothing on the wire is still high risk. */
+  var VERSION = 4, DATE = "2026-09-20";
 
   var HEAVY = ["Price reset","Cashless exercise","Warrant inducement","Inducement agreement",
                "Reduced exercise price","Variable rate transaction","Equity line"];
@@ -76,13 +81,41 @@
       fired.push(w10);
     }
 
+    /* W11 — the company has changed its name: HIGH RISK, every time. The old
+       filings, the old paper and the old shareholders stay on EDGAR under the
+       old name; a reader who searches the new one finds a clean slate. */
+    var rn = d.signals && d.signals.renamed, w11 = null;
+    if (rn && rn.former && rn.former.length) {
+      var was = rn.former.map(function (f) { return "“" + f.name + "”" + (f.to ? " until " + String(f.to).slice(0, 10) : ""); }).join("; ");
+      w11 = { id: "W11", name: "Changed its name — high risk", risk: "high",
+        text: name + " has filed under " + (rn.former.length === 1 ? "another name" : rn.former.length + " other names") + ": " + was +
+          ". A company that changes its name is high risk on this wire, without exception: the record — the filings, the warrant paper, the shareholders who held the old paper — stays behind under the old name, and the new name starts clean. Search the old name" + (rn.former.length === 1 ? "" : "s") + " too." };
+      fired.push(w11);
+    }
+
+    /* W12 — the reverse split: the third tell-tale. "Reverse splits, name change
+       and warrants are tell-tales." From the wire's split signal; before W0. */
+    var sp = (d.signals && d.signals.splits) || [], w12 = null;
+    if (sp.length) {
+      var l12 = sp[0], said12 = String(l12.said || "").split(",").map(function (w) { return "“" + w.trim() + "”"; }).join(", ");
+      w12 = { id: "W12", name: "Reverse split — high risk", risk: "high",
+        text: "The company's own " + (l12.form || "filing") + (l12.filed_on ? " on " + l12.filed_on : "") + " carries the language of a reverse split (" + said12 + (sp.length > 1 ? ", in " + sp.length + " filings" : "") + "). A reverse split changes nothing about the company and everything about the count: the same business, fewer shares, and the price marked up to match — until the next round of paper takes it back down." };
+      fired.push(w12);
+    }
+
     /* W0 — nothing on the wire: no verdict, and not a clean bill of health */
     if (!n) {
       fired.push({ id: "W0", name: "Nothing on the wire",
         text: "No filing from this company has matched the language of a warrant financing since 2021." });
-      return { version: VERSION, date: DATE, fired: fired, sentence: w10 ? name + " has a merger, sale or wind-down on the table. Nothing on the wire." : null, missing: missing, none: true, merger: !!w10 };
+      var s0 = [];
+      if (w11) s0.push("has changed its name — high risk");
+      if (w12) s0.push("has done a reverse split — high risk");
+      if (w10) s0.push("has a merger, sale or wind-down on the table");
+      return { version: VERSION, date: DATE, fired: fired, sentence: s0.length ? name + " " + s0.join(", and ") + ". Nothing on the wire." : null, missing: missing, none: true, merger: !!w10, renamed: !!w11, split: !!w12, high_risk: !!(w11 || w12) };
     }
     if (w10) subject.unshift("has a merger, sale or wind-down on the table" + (sig[0].filed_on ? " as of " + sig[0].filed_on : ""));
+    if (w12) subject.unshift("has done a reverse split — high risk");
+    if (w11) subject.unshift("has changed its name — high risk");
 
     /* W1 — how often: filings per year over the period on record */
     var span = daysBetween(a.first, a.latest);
@@ -180,7 +213,7 @@
     if (subject.length) parts.push(name + " " + subject.join("; ") + ".");
     rest.forEach(function (t) { parts.push(cap(t) + "."); });
 
-    return { version: VERSION, date: DATE, fired: fired, sentence: parts.join(" ") || null, missing: missing, none: false, merger: !!w10 };
+    return { version: VERSION, date: DATE, fired: fired, sentence: parts.join(" ") || null, missing: missing, none: false, merger: !!w10, renamed: !!w11, split: !!w12, high_risk: !!(w11 || w12) };
   }
 
   window.WWVerdict = { version: VERSION, date: DATE, render: render };
