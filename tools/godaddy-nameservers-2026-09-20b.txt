@@ -1,0 +1,25 @@
+Set nameservers to june.ns.cloudflare.com / robert.ns.cloudflare.com
+
+NEW (the last 13, added 20 Sep after the pending cap cleared):
+siliconroofing.com
+tattooisnews.com
+thepregameshow.com
+theroofrepairco.com
+timeappy.com
+tinyhousers.com
+tinyroof.com
+tinyroofer.com
+tinyroofs.com
+trailshrink.com
+uglystartup.com
+unionroofrepair.com
+upyours.us
+
+RETRY - the registry still shows no nameservers for these after the bulk change; open each one on its own (ccTLDs and .us/.org sometimes drop out of a bulk edit):
+66kt.org
+66kt.us
+atomwatts.us
+goodsolar.ca
+realbuilder.us
+roofleak.co
+roofrepairco.us
