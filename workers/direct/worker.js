@@ -50,8 +50,10 @@ const DOORS = {
      stands. When a brand's site is live, take its line OUT of here and give
      the zone real records — a brand is not a door. Out of park's for-sale
      table. */
-  "nujobi.com":  { page: false, to: "https://warrantwire.com/readers" },
-  "gigapoo.com": { page: false, to: "https://warrantwire.com/readers" }
+  "nujobi.com":  { page: false, to: "https://warrantwire.com/market" }
+  /* gigapoo.com left the doors on 20 Sep: it is a site now (Pages project
+     `gigapoo`, the engine's own home). nujobi.com opens on the market until
+     its own site is built. */
 };
 
 function page(host, d) {
