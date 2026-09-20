@@ -836,7 +836,7 @@ async function readSearches(env, q) {
   const W = "WHERE " + where.join(" AND ");
   const rows = (await env.OVERHANG.prepare(`SELECT * FROM wire_searches ${W} ORDER BY id DESC LIMIT ?`).bind(...args, n).all()).results || [];
   const by = async (col) => (await env.OVERHANG.prepare(`SELECT ${col} k, COUNT(*) n FROM wire_searches ${W} GROUP BY ${col} ORDER BY n DESC LIMIT 40`).bind(...args).all()).results || [];
-  return { ok: true, build: "triggeredshort-wire 2g · 2026-09-20", days, filter: { ticker: tk || null, email: em || null },
+  return { ok: true, build: "triggeredshort-wire 2i · 2026-09-20", days, filter: { ticker: tk || null, email: em || null },
     total: (await env.OVERHANG.prepare(`SELECT COUNT(*) n, SUM(paid) paid, COUNT(DISTINCT email) emails, COUNT(DISTINCT ip) ips FROM wire_searches ${W}`).bind(...args).first()),
     by_ticker: await by("ticker"), by_country: await by("country"), by_email: await by("email"),
     by_day: (await env.OVERHANG.prepare(`SELECT date(at) k, COUNT(*) n FROM wire_searches ${W} GROUP BY date(at) ORDER BY k DESC LIMIT 60`).bind(...args).all()).results || [],
@@ -1228,11 +1228,17 @@ async function edgarCounts(env, cik) {
     /* 2f: the company's names — current and former, with dates — ride in the
        same row. A cached row from before 2f has no names; fetch again. */
     try { await env.OVERHANG.prepare("ALTER TABLE edgar_counts ADD COLUMN names TEXT").run(); } catch (e) {}
+    /* 2i, 20 Sep: how many in the past year and the past five, and EVERY recent
+       filing — "every filing is important" — for 8K10Q. Rows from before carry
+       no periods; fetch again. */
+    try { await env.OVERHANG.prepare("ALTER TABLE edgar_counts ADD COLUMN by_period TEXT").run(); } catch (e) {}
+    try { await env.OVERHANG.prepare("ALTER TABLE edgar_counts ADD COLUMN recent_all TEXT").run(); } catch (e) {}
     const had = await env.OVERHANG.prepare(
-      `SELECT * FROM edgar_counts WHERE cik = ? AND fetched_at > datetime('now', '-7 days') AND names IS NOT NULL`).bind(c).first();
+      `SELECT * FROM edgar_counts WHERE cik = ? AND fetched_at > datetime('now', '-7 days') AND names IS NOT NULL AND by_period IS NOT NULL`).bind(c).first();
     if (had) return { since: had.since, total: had.total, forms: JSON.parse(had.forms || "{}"),
                       first: had.first_on, latest: had.latest_on, latest_form: had.latest_form,
-                      recent: JSON.parse(had.recent || "[]"), names: JSON.parse(had.names || "null"), fetched: had.fetched_at };
+                      recent: JSON.parse(had.recent || "[]"), recent_all: JSON.parse(had.recent_all || "[]"), by_period: JSON.parse(had.by_period || "{}"),
+                      names: JSON.parse(had.names || "null"), fetched: had.fetched_at };
   } catch (e) {}
   try {
     const padded = c.padStart(10, "0");
@@ -1240,10 +1246,17 @@ async function edgarCounts(env, cik) {
     const res = await fetch("https://data.sec.gov/submissions/CIK" + padded + ".json", { headers: H });
     if (!res.ok) return null;
     const d = await res.json();
-    const forms = {}; let total = 0, first = null, latest = null, latestForm = null; const recent = [];
+    const forms = {}; let total = 0, first = null, latest = null, latestForm = null; const recent = [], recentAll = [];
+    const y1 = new Date(Date.now() - 365.25 * 86400000).toISOString().slice(0, 10), y5 = new Date(Date.now() - 5 * 365.25 * 86400000).toISOString().slice(0, 10);
+    const period = { year: 0, five_years: 0, year_forms: {}, five_forms: {} };
     const take = (form, date, acc, doc) => {
       if (!date || date < EDGAR_SINCE) return;
       total++; forms[form] = (forms[form] || 0) + 1;
+      if (date >= y1) { period.year++; period.year_forms[form] = (period.year_forms[form] || 0) + 1; }
+      if (date >= y5) { period.five_years++; period.five_forms[form] = (period.five_forms[form] || 0) + 1; }
+      /* every filing, the latest 40, whatever the form — Form 4s and all */
+      if (recentAll.length < 40 && acc) recentAll.push({ form, filed_on: date, accession: acc,
+        url: doc ? "https://www.sec.gov/Archives/edgar/data/" + c + "/" + acc.replace(/-/g, "") + "/" + doc : null });
       if (!first || date < first) first = date;
       if (!latest || date > latest) { latest = date; latestForm = form; }
       /* the list offered for reading is the filings worth reading — not the
@@ -1268,15 +1281,15 @@ async function edgarCounts(env, cik) {
     const names = { current: d.name || null,
       former: (d.formerNames || []).map(f => ({ name: f.name, from: String(f.from || "").slice(0, 10) || null, to: String(f.to || "").slice(0, 10) || null }))
         .sort((a, b) => String(b.to || "").localeCompare(String(a.to || ""))) };
-    const out = { since: EDGAR_SINCE, total, forms, first, latest, latest_form: latestForm, recent, names };
+    const out = { since: EDGAR_SINCE, total, forms, first, latest, latest_form: latestForm, recent, recent_all: recentAll, by_period: period, names };
     try {
       await env.OVERHANG.prepare(
-        `INSERT INTO edgar_counts (cik, since, total, forms, first_on, latest_on, latest_form, recent, names, fetched_at)
-         VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))
+        `INSERT INTO edgar_counts (cik, since, total, forms, first_on, latest_on, latest_form, recent, names, by_period, recent_all, fetched_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
          ON CONFLICT(cik) DO UPDATE SET since=excluded.since, total=excluded.total, forms=excluded.forms,
            first_on=excluded.first_on, latest_on=excluded.latest_on, latest_form=excluded.latest_form,
-           recent=excluded.recent, names=excluded.names, fetched_at=datetime('now')`)
-        .bind(c, EDGAR_SINCE, total, JSON.stringify(forms), first, latest, latestForm, JSON.stringify(recent), JSON.stringify(names)).run();
+           recent=excluded.recent, names=excluded.names, by_period=excluded.by_period, recent_all=excluded.recent_all, fetched_at=datetime('now')`)
+        .bind(c, EDGAR_SINCE, total, JSON.stringify(forms), first, latest, latestForm, JSON.stringify(recent), JSON.stringify(names), JSON.stringify(period), JSON.stringify(recentAll)).run();
     } catch (e) {}
     return out;
   } catch (e) { return null; }
@@ -1602,7 +1615,9 @@ async function wireSearch(env, asked, q, request, ctx) {
     searched_as: searchedAs ? { ticker: searchedAs, now: tk, note: searchedAs + " is a former ticker of this company; it trades as " + tk + " today. Old filings, old paper, old shareholders — same company." } : undefined,
     edgar: edgar ? { since: edgar.since, filings: edgar.total, forms: edgar.forms,
       first: edgar.first, latest: edgar.latest, latest_form: edgar.latest_form,
-      recent: edgar.recent, read_at: "8k10q", read_sku: "wire_read", read_cents: 2000 } : null,
+      past_year: edgar.by_period ? edgar.by_period.year : undefined, past_five_years: edgar.by_period ? edgar.by_period.five_years : undefined,
+      past_year_forms: edgar.by_period ? edgar.by_period.year_forms : undefined,
+      recent: edgar.recent, recent_all: edgar.recent_all || undefined, read_at: "8k10q", read_sku: "wire_read", read_cents: 2000 } : null,
     /* ⚠ UNPAID, EVERY ROW LOSES ITS ACCESSION, ITS DATE AND ITS FORM. It
        keeps its marks, which is what the page reads to say WHICH TERMS are
        in this company's paper — the free answer — without saying which
