@@ -184,12 +184,10 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase().replace(/^www\./, "");
-    /* every host to its own card. The stored spelling is used where the table
-       has it — the live site matched case-sensitively until 20 Sep and this
-       must not break a name for the hour between the two deploys — and any
-       other host goes as typed: the marketplace now matches on any spelling
-       and, for a name it does not hold, searches for it. */
-    const to = "https://wallstdomains.com/domain/" + encodeURIComponent(NAMES[host] || host);
+    /* every host to its own card, as typed. The marketplace matches a name on
+       any spelling (live since 20 Sep) and, for a name it does not hold,
+       searches for it. No table, no exceptions. */
+    const to = "https://wallstdomains.com/domain/" + encodeURIComponent(host);
     return new Response(null, { status: 302, headers: {
       "Location": to,
       "Cache-Control": "no-store",
