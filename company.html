@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-20 · warrantwire company-1g (1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
+<!-- BUILT 2026-09-20 · warrantwire company-1h (1h: the red-flag strip, free, only when there are flags; the split and merger lists behind the report; 1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,6 +35,14 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 @media(max-width:560px){.elist li{grid-template-columns:1fr 1fr;gap:6px 10px}.elist .readk8{grid-column:1/-1;justify-self:start}}
 /* the merger warning — red, at the top, free */
 .merger{border:2px solid var(--hot);border-radius:10px;padding:14px 18px;margin:14px 0 0;background:#fbeeec}
+.flags{border:2px solid var(--hot);border-radius:12px;padding:14px 18px;margin:14px 0 0;background:#fff;display:grid;grid-template-columns:1fr auto;gap:12px 18px;align-items:center}
+@media(max-width:640px){.flags{grid-template-columns:1fr}}
+.flags .k{display:block;font:800 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--hot);margin:0 0 6px}
+.flags .n{font:800 30px/1 var(--serif);color:var(--hot);margin-right:8px}
+.flags .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.flags .chip{font:600 13px var(--sans);border-radius:999px;padding:4px 11px;background:#fbeeec;color:var(--hot);border:1px solid #f0c9c4}
+.flags p{margin:0;font-size:15px;color:var(--ink2)}
+.flags .go{white-space:nowrap}
 .stop{border:3px solid var(--hot);border-radius:12px;padding:16px 20px;margin:14px 0 0;background:var(--hot);color:#fff}
 .stop .k{display:block;font:800 12px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:#fff;margin:0 0 8px}
 .stop p{color:#fff;margin:0 0 8px;max-width:none}.stop b{color:#fff}.stop a{color:#fff}
@@ -190,7 +198,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
   registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
   nothing here alleges that anyone broke any law.
-  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1g &middot; rules version 4</p>
+  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1h &middot; rules version 4</p>
 </footer></div>
 
 <script src="/wire.js?v=2a"></script>
@@ -307,6 +315,30 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      years and already renamed. EDGAR's own list of former names, with dates,
      and the first filing on record, so a young company that has already
      changed its name is called out as such. Free, at the very top. */
+  /* ⚠ THE RED FLAGS — FREE, AND ONLY WHEN THERE ARE ANY. His rule, 20 Sep
+     2026: "any company that on search shows up with name changes, reverse
+     splits or warrants should have a search result that indicates red-flag
+     issues and recommends the report. We are not giving the goods away free,
+     but the warning is free" — "only if they have those issues." So the
+     count and the kind of each flag are here for everyone; a clean company
+     gets no strip at all; which filings, which dates, which documents — the
+     goods — are in the report. */
+  function flagsBox(d, open, tk) {
+    var s = d.signals || {}, a = d.about || {};
+    var renamed = s.renamed && s.renamed.former && s.renamed.former.length ? s.renamed.former.length : 0;
+    var splits = (s.splits || []).length, merger = (s.merger || []).length, warrants = Number(a.filings || 0);
+    var flags = [];
+    if (renamed) flags.push("Name change" + (renamed > 1 ? " &times;" + renamed : "") + " &mdash; high risk");
+    if (splits) flags.push("Reverse split &mdash; " + splits + " filing" + (splits === 1 ? "" : "s") + " &mdash; high risk");
+    if (warrants) flags.push("Warrant paper &mdash; " + warrants + " filing" + (warrants === 1 ? "" : "s"));
+    if (merger) flags.push("Merger, sale or wind-down on the table");
+    if (!flags.length) return "";
+    return '<div class="flags" id="flags"><div><span class="k">Red flags &mdash; the warning is free</span>'
+      + '<p><span class="n">' + flags.length + '</span> <b>' + (flags.length === 1 ? 'tell-tale' : 'tell-tales') + ' on ' + esc((d.company && d.company.name) || tk) + '.</b> Which filings, which dates and what they say are in the report.</p>'
+      + '<div class="chips">' + flags.map(function (f) { return '<span class="chip">' + f + '</span>'; }).join("") + '</div></div>'
+      + (open ? '<a class="go verdict" href="#auto" style="font:700 15px var(--sans);color:var(--hot)">The report is below &darr;</a>' : '<button class="wbuy gold go" data-sku="wire_search" data-t="' + esc(tk) + '">Get the report &middot; $12</button>')
+      + '</div>';
+  }
   function stopBox(d, open, tk) {
     var r = d.signals && d.signals.renamed;
     if (!r || !r.former || !r.former.length) return "";
@@ -328,6 +360,14 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   function splitBox(d, open) {
     var s = d.signals && d.signals.splits;
     if (!s || !s.length) return "";
+    /* unpaid: the warning — how many, over what span. The filings are the goods. */
+    if (!open) {
+      var last = s[s.length - 1].filed_on, firstD = s[0].filed_on;
+      var span = s.length > 1 && last ? ' between ' + esc(String(last).slice(0, 7)) + ' and ' + esc(String(firstD).slice(0, 7)) : (firstD ? ' in ' + esc(String(firstD).slice(0, 7)) : '');
+      return '<div class="merger"><span class="k">&#9888; Reverse split &mdash; high risk</span>'
+        + '<p><b>Reverse-split language in ' + s.length + ' of the company&rsquo;s own filings' + span + '.</b> A reverse split changes nothing about the company and everything about the count: the same business, fewer shares, the price marked up to match &mdash; the financier&rsquo;s reset button. Which filings, and what they say, are in the report.</p>'
+        + '<p class="fine">Reverse splits, name changes and warrant paper are the three tell-tales. <a href="/rules.html#W12">Rule W12 &rarr;</a></p></div>';
+    }
     var seen = {}, grouped = [];
     s.forEach(function (x) { var k = (x.form || "") + "|" + (x.filed_on || "") + "|" + (x.said || ""); if (seen[k]) { seen[k].n++; return; } seen[k] = { x: x, n: 1 }; grouped.push(seen[k]); });
     var rows = grouped.slice(0, 6).map(function (g) {
@@ -348,6 +388,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     var latest = s[0], allSaid = s.map(function (x) { return String(x.said || ""); }).join(",");
     /* the gravest word wins: liquidation over a CVR over a review over a merger */
     var kind = /liquidation|dissolution|wind/i.test(allSaid) ? "a liquidation or wind-down" : /contingent value/i.test(allSaid) ? "a merger with a contingent value right &mdash; the shareholders get what is left, if anything" : /reverse merger/i.test(allSaid) ? "a reverse merger &mdash; the company is to be folded into another, and its shareholders diluted into it" : /strategic/i.test(allSaid) ? "a strategic review &mdash; the company is looking for a buyer" : "a merger or sale of the company";
+    /* unpaid: the warning — what kind, how many. The filings are the goods. */
+    if (!open) return '<div class="merger"><span class="k">&#9888; Merger, sale or wind-down on the table</span>'
+      + '<p><b>The company&rsquo;s own filings carry the language of ' + kind + (s.length > 1 ? ' &mdash; ' + s.length + ' of them' : '') + '.</b> For a company that has lived on warrant paper this is usually how the story ends, and what is sold is the shareholders&rsquo; stake. Which filings, and what they say, are in the report.</p>'
+      + '<p class="fine"><a href="/rules.html#W10">Rule W10 &rarr;</a></p></div>';
     /* one row per form + day + words; seven supplements filed the same day are one line */
     var seen = {}, grouped = [];
     s.forEach(function (x) { var k = (x.form || "") + "|" + (x.filed_on || "") + "|" + (x.said || ""); if (seen[k]) { seen[k].n++; return; } seen[k] = { x: x, n: 1 }; grouped.push(seen[k]); });
@@ -902,6 +946,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 
       page.innerHTML = who(c, a, SAMPLE[tk])
         + mark
+        + flagsBox(d, open, tk)
         + stopBox(d, open, tk)
         + splitBox(d, open)
         + mergerBox(d, open)

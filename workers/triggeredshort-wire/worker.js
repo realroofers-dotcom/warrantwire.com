@@ -1298,10 +1298,18 @@ async function signalsFor(env, tk, cik, label) {
     /* by ticker, and by CIK too — a hit whose ticker was never filled in
        (a filer missing from the SEC's ticker map) still belongs to the company */
     const c = cik ? String(Number(cik)) : "";
+    /* ⚠ NOT THE BOILERPLATE. Every option plan, warrant and indenture (EX-10,
+       EX-4) carries an adjustment clause that says "reverse split" and a
+       "strategic alternatives" recital; Alphabet's do. A reverse split that
+       matters is ANNOUNCED — in an 8-K, a proxy, a 10-K/10-Q, a prospectus —
+       so the split signal reads only the filing itself, never an exhibit.
+       The merger signal keeps EX-2 (the merger agreement) and EX-99 (the
+       press release) and drops the contract exhibits. */
+    const notEx = label === SPLIT_LABEL ? " AND form NOT LIKE 'EX-%'" : " AND form NOT LIKE 'EX-10%' AND form NOT LIKE 'EX-4%' AND form NOT LIKE 'EX-3%'";
     const r = await env.OVERHANG.prepare(
       `SELECT accession, MAX(form) form, MAX(filed_on) filed_on, MAX(doc_url) doc_url, MAX(label) label,
               GROUP_CONCAT(DISTINCT phrase) phrase
-         FROM wire_hits WHERE label = ? AND (UPPER(ticker) = ? OR (? <> '' AND CAST(cik AS INTEGER) = CAST(? AS INTEGER)))
+         FROM wire_hits WHERE label = ? AND (UPPER(ticker) = ? OR (? <> '' AND CAST(cik AS INTEGER) = CAST(? AS INTEGER)))` + notEx + `
         GROUP BY accession ORDER BY filed_on DESC LIMIT 12`).bind(label, tk, c, c || "0").all();
     return r.results || [];
   } catch (e) { return []; }
