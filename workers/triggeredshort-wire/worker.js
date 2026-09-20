@@ -544,6 +544,26 @@ async function loadTickers(env) {
     const data = await res.json();
     rows = Object.values(data || {});
   }
+  /* ⚠ OLD TICKERS ARE KEPT, 20 Sep 2026. His rule: "we should always show old
+     tickers and make them still searchable." Before the new map overwrites
+     the old, every ticker that is about to change is written to
+     ticker_aliases with the name it carried — so WGRX still finds the company
+     that is MEDS today. */
+  await aliasTable(env);
+  try {
+    const oldMap = {};
+    const o = await env.OVERHANG.prepare("SELECT cik, ticker, title FROM cik_tickers").all();
+    for (const x of (o.results || [])) oldMap[String(Number(x.cik))] = x;
+    const al = [];
+    for (const r of rows) {
+      if (!r || !r.cik_str || !r.ticker) continue;
+      const was = oldMap[String(Number(r.cik_str))];
+      if (was && was.ticker && String(was.ticker).toUpperCase() !== String(r.ticker).toUpperCase())
+        al.push(env.OVERHANG.prepare("INSERT OR IGNORE INTO ticker_aliases (ticker, cik, name, source) VALUES (?,?,?,'sec-map')")
+          .bind(String(was.ticker).toUpperCase(), String(Number(r.cik_str)), was.title || "", ));
+    }
+    for (let i = 0; i < al.length; i += 200) await env.OVERHANG.batch(al.slice(i, i + 200));
+  } catch (e) {}
   const stmt = env.OVERHANG.prepare(
     `INSERT INTO cik_tickers (cik, ticker, title, exchange, updated_at)
      VALUES (?,?,?,?,datetime('now'))
@@ -816,7 +836,7 @@ async function readSearches(env, q) {
   const W = "WHERE " + where.join(" AND ");
   const rows = (await env.OVERHANG.prepare(`SELECT * FROM wire_searches ${W} ORDER BY id DESC LIMIT ?`).bind(...args, n).all()).results || [];
   const by = async (col) => (await env.OVERHANG.prepare(`SELECT ${col} k, COUNT(*) n FROM wire_searches ${W} GROUP BY ${col} ORDER BY n DESC LIMIT 40`).bind(...args).all()).results || [];
-  return { ok: true, build: "triggeredshort-wire 2f · 2026-09-20", days, filter: { ticker: tk || null, email: em || null },
+  return { ok: true, build: "triggeredshort-wire 2g · 2026-09-20", days, filter: { ticker: tk || null, email: em || null },
     total: (await env.OVERHANG.prepare(`SELECT COUNT(*) n, SUM(paid) paid, COUNT(DISTINCT email) emails, COUNT(DISTINCT ip) ips FROM wire_searches ${W}`).bind(...args).first()),
     by_ticker: await by("ticker"), by_country: await by("country"), by_email: await by("email"),
     by_day: (await env.OVERHANG.prepare(`SELECT date(at) k, COUNT(*) n FROM wire_searches ${W} GROUP BY date(at) ORDER BY k DESC LIMIT 60`).bind(...args).all()).results || [],
@@ -1292,6 +1312,37 @@ async function signalsFor(env, tk, cik, label) {
    Name and exchange from the CIK map; SIC, sector and state of
    incorporation from cik_sic. Nothing here is our opinion.
 ------------------------------------------------------------------ */
+/* ---- the old tickers: kept, shown, searchable ---- */
+async function aliasTable(env) {
+  try { await env.OVERHANG.prepare(`CREATE TABLE IF NOT EXISTS ticker_aliases (ticker TEXT PRIMARY KEY, cik TEXT NOT NULL, name TEXT, source TEXT, made TEXT DEFAULT (datetime('now')))`).run(); } catch (e) {}
+}
+/* an old ticker → the company's CIK (null if it is a current ticker or unknown) */
+async function aliasOf(env, tk) {
+  if (!tk) return null;
+  await aliasTable(env);
+  try {
+    const cur = await env.OVERHANG.prepare("SELECT cik FROM cik_tickers WHERE UPPER(ticker) = ? LIMIT 1").bind(tk).first();
+    if (cur) return null;
+    const a = await env.OVERHANG.prepare("SELECT ticker, cik, name FROM ticker_aliases WHERE UPPER(ticker) = ? LIMIT 1").bind(tk).first();
+    return a || null;
+  } catch (e) { return null; }
+}
+/* every ticker a CIK has carried: the alias table, and the wire's own history
+   (a filing scanned under the old ticker still says so). New ones learned
+   from the history are written down. */
+async function formerTickers(env, cik, current) {
+  if (!cik) return [];
+  await aliasTable(env);
+  const c = String(Number(cik)), cur = String(current || "").toUpperCase(), out = [];
+  try {
+    const h = await env.OVERHANG.prepare("SELECT DISTINCT UPPER(ticker) t FROM wire_hits WHERE CAST(cik AS INTEGER) = CAST(? AS INTEGER) AND ticker IS NOT NULL AND ticker <> ''").bind(c).all();
+    for (const x of (h.results || [])) if (x.t && x.t !== cur)
+      await env.OVERHANG.prepare("INSERT OR IGNORE INTO ticker_aliases (ticker, cik, name, source) VALUES (?,?,NULL,'wire-history')").bind(x.t, c).run();
+    const a = await env.OVERHANG.prepare("SELECT ticker, name, source, made FROM ticker_aliases WHERE CAST(cik AS INTEGER) = CAST(? AS INTEGER) ORDER BY made").bind(c).all();
+    for (const x of (a.results || [])) if (String(x.ticker).toUpperCase() !== cur) out.push({ ticker: String(x.ticker).toUpperCase(), name: x.name || null, source: x.source });
+  } catch (e) {}
+  return out;
+}
 async function companyCard(env, tk, cikHint) {
   let t = null;
   try {
@@ -1299,6 +1350,8 @@ async function companyCard(env, tk, cikHint) {
       "SELECT cik, ticker, title, exchange FROM cik_tickers WHERE UPPER(ticker) = ? LIMIT 1"
     ).bind(tk).first();
   } catch (e) {}
+  /* an old ticker: the company it belonged to */
+  if (!t && !cikHint) { const a = await aliasOf(env, tk); if (a) cikHint = a.cik; }
   if (!t && cikHint) {
     try {
       t = await env.OVERHANG.prepare(
@@ -1336,6 +1389,7 @@ async function companyCard(env, tk, cikHint) {
     city: (s && s.city) || "",
     state_loc: (s && s.state_loc) || "",
     former_names: (s && s.former_names) ? String(s.former_names).split(" | ").filter(Boolean) : [],
+    former_tickers: await formerTickers(env, cik, (t && t.ticker) || ""),
     fy_end: (s && s.fy_end) || "",
     edgar: cik ? "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + cik + "&type=&dateb=&owner=include&count=40" : ""
   };
@@ -1347,12 +1401,27 @@ async function companyCard(env, tk, cikHint) {
    and .rows (the filings themselves).
 ------------------------------------------------------------------ */
 async function wireSearch(env, asked, q, request, ctx) {
-  const tk = asked.toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  let tk = asked.toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  /* ⚠ AN OLD TICKER STILL FINDS THE COMPANY. WGRX is MEDS now; a reader who
+     types WGRX gets MEDS's page, told what they searched and what it is
+     called today. Every ticker the company has carried is searched for
+     filings, because the wire scanned the old ones under the old name. */
+  let searchedAs = null, tickers = [tk];
+  const alias = await aliasOf(env, tk);
+  if (alias) {
+    const cur = await env.OVERHANG.prepare("SELECT ticker FROM cik_tickers WHERE CAST(cik AS INTEGER) = CAST(? AS INTEGER) LIMIT 1").bind(alias.cik).first();
+    if (cur && cur.ticker) { searchedAs = tk; tk = String(cur.ticker).toUpperCase(); }
+    const all = await formerTickers(env, alias.cik, tk);
+    tickers = [tk].concat(all.map(a => a.ticker));
+  } else {
+    try { const c0 = await env.OVERHANG.prepare("SELECT cik FROM cik_tickers WHERE UPPER(ticker) = ? LIMIT 1").bind(tk).first();
+      if (c0) tickers = [tk].concat((await formerTickers(env, c0.cik, tk)).map(a => a.ticker)); } catch (e) {}
+  }
   let rows = [];
   try {
     const r = await env.OVERHANG.prepare(
-      `SELECT * FROM v_wire_filings WHERE UPPER(ticker) = ? ORDER BY filed_on DESC LIMIT 500`
-    ).bind(tk).all();
+      `SELECT * FROM v_wire_filings WHERE UPPER(ticker) IN (` + tickers.map(() => "?").join(",") + `) ORDER BY filed_on DESC LIMIT 500`
+    ).bind(...tickers).all();
     rows = r.results || [];
   } catch (e) { rows = []; }
 
@@ -1521,6 +1590,8 @@ async function wireSearch(env, asked, q, request, ctx) {
     } : null,
     /* the whole record on EDGAR since 2001: the count, the forms, the latest
        filings — and each of those can be read at 8K10Q, bought here */
+    /* what was typed, when it was an old ticker */
+    searched_as: searchedAs ? { ticker: searchedAs, now: tk, note: searchedAs + " is a former ticker of this company; it trades as " + tk + " today. Old filings, old paper, old shareholders — same company." } : undefined,
     edgar: edgar ? { since: edgar.since, filings: edgar.total, forms: edgar.forms,
       first: edgar.first, latest: edgar.latest, latest_form: edgar.latest_form,
       recent: edgar.recent, read_at: "8k10q", read_sku: "wire_read", read_cents: 2000 } : null,

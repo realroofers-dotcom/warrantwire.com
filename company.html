@@ -252,6 +252,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<div class="who"><span class="tick">' + esc(c.ticker || T) + '</span>'
       + (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join("<i>&middot;</i>") + '</span>' : '')
       + ((c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
+      /* old tickers are always shown — his rule, 20 Sep: they are kept and searchable */
+      + ((c.former_tickers && c.former_tickers.length) ? '<p class="biz"><b>Formerly traded as ' + c.former_tickers.map(function (x) { return '<a href="/company.html?t=' + esc(x.ticker) + '">' + esc(x.ticker) + '</a>' + (x.name ? ' (' + esc(x.name) + ')' : ''); }).join(", ") + '</b> &mdash; the same company, the same record.</p>' : '')
       + (c.edgar ? '<p class="biz">Everything this company has filed: <a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">its EDGAR page &rarr;</a></p>' : '')
       + '</div></div>';
   }
@@ -312,8 +314,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     var years = first ? (Date.now() - Date.parse(first)) / 31557600000 : null;
     var young = years != null && years < 3;
     var rows = r.former.map(function (f) { return '<li><b>' + esc(f.name) + '</b>' + (f.from || f.to ? ' &mdash; ' + (f.from ? esc(String(f.from).slice(0, 10)) : '?') + ' to ' + (f.to ? esc(String(f.to).slice(0, 10)) : '?') : '') + '</li>'; }).join("");
+    var ft = (d.company && d.company.former_tickers) || [];
     return '<div class="stop" id="stop"><span class="k">&#9632; Stop &mdash; this company changed its name</span>'
-      + '<p><b>' + esc(r.now || tk) + ' has filed with the SEC under ' + (r.former.length === 1 ? 'another name' : r.former.length + ' other names') + '.</b>'
+      + (d.searched_as ? '<p><b>You searched ' + esc(d.searched_as.ticker) + '.</b> That is a former ticker; the company trades as ' + esc(d.searched_as.now) + ' today. Same company, same record.</p>' : '')
+      + '<p><b>' + esc(r.now || tk) + ' has filed with the SEC under ' + (r.former.length === 1 ? 'another name' : r.former.length + ' other names') + (ft.length ? ' and traded as ' + ft.map(function (x) { return x.ticker; }).join(", ") : '') + '.</b>'
       + (young ? ' It has been on EDGAR only since ' + esc(first) + ' &mdash; public about ' + (years < 1 ? 'a year' : Math.round(years) + ' years') + ' &mdash; and has already changed its name.' : (first ? ' On EDGAR since ' + esc(first) + '.' : ''))
       + ' A name change is high risk on this wire, without exception: the filings, the warrant paper and the shareholders who held it stay on EDGAR under the old name, and the new name starts clean. Search the old name' + (r.former.length === 1 ? '' : 's') + ' too.</p>'
       + '<ol>' + rows + '</ol>'
