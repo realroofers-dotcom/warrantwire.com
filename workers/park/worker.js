@@ -1,4 +1,11 @@
-/* BUILT 2026-09-18 · park 1c · nujobi.com and gigapoo.com came OUT — his call,
+/* BUILT 2026-09-20 · park 2 · ANY HOST GOES TO ITS OWN CARD. The marketplace
+   now finds a card on any spelling (atomwatt.com, ATOMWATT.COM, www.) and
+   sends a name it does not hold to its search with the name filled in — so
+   this worker no longer needs to know the stored spelling, and a name that
+   is not in the table below still lands right. The table stays as THE
+   INVENTORY LIST: tools/park.ps1 reads it to know which zones to create and
+   wire. The redirect itself is one line and has no exceptions.
+   Earlier: park 1c, 2026-09-18 · nujobi.com and gigapoo.com came OUT — his call,
    18 Sep: Nujobi is the marketplace brand, gigapoo its door; both are doors in
    the direct worker now, not names for sale. The same change to the
    marketplace table is in wallstdomains-dotcom/data/reconcile_2026-09-18.sql.
@@ -177,10 +184,9 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase().replace(/^www\./, "");
-    const stored = NAMES[host];
-    const to = stored
-      ? "https://wallstdomains.com/domain/" + encodeURIComponent(stored)
-      : "https://wallstdomains.com/?from=" + encodeURIComponent(host);
+    /* every host to its own card; the marketplace matches the name on any
+       spelling and, for a name it does not hold, searches for it */
+    const to = "https://wallstdomains.com/domain/" + encodeURIComponent(host);
     return new Response(null, { status: 302, headers: {
       "Location": to,
       "Cache-Control": "no-store",
