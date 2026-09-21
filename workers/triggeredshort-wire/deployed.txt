@@ -1,1 +1,1 @@
-﻿deployed triggeredshort-wire at 2026-09-20T18:29:15 from commit cd73c90
+﻿deployed triggeredshort-wire at 2026-09-21T09:07:20 from commit 1d5821a

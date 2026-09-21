@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-20 · warrantwire company-1h (1h: the red-flag strip, free, only when there are flags; the split and merger lists behind the report; 1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
+<!-- BUILT 2026-09-20 · warrantwire company-1i (1i: the state and the agent for service on the summary, a flag when none is disclosed; 1h: the red-flag strip, free, only when there are flags; the split and merger lists behind the report; 1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -198,7 +198,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
   registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
   nothing here alleges that anyone broke any law.
-  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1h &middot; rules version 4</p>
+  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1i &middot; rules version 4</p>
 </footer></div>
 
 <script src="/wire.js?v=2a"></script>
@@ -261,6 +261,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join("<i>&middot;</i>") + '</span>' : '')
       + ((c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
       /* old tickers are always shown — his rule, 20 Sep: they are kept and searchable */
+      /* the state and the agent for service — his rule, 21 Sep: on the summary, free, and a red flag when none is disclosed */
+      + (c.incorporated ? '<p class="biz"><b>Incorporated in ' + esc(c.incorporated.name) + '.</b>' + (c.incorporated.registry ? ' Registered agent of record: <a href="' + esc(c.incorporated.registry.url) + '" target="_blank" rel="noopener">' + esc(c.incorporated.registry.name) + ' &rarr;</a>' : '') + '</p>' : '')
+      + (c.agent ? '<p class="biz"><b>Agent for service:</b> ' + esc(c.agent.name) + (c.agent.address ? ', ' + esc(c.agent.address) : '') + (c.agent.phone ? ', ' + esc(c.agent.phone) : '') + ' <span style="color:var(--ink3)">&mdash; per its ' + esc(c.agent.source.form) + ' of ' + esc(c.agent.source.filed_on) + '</span> &middot; <a href="/agents.html?q=' + esc(c.ticker || "") + '">the agents page</a></p>'
+                 : '<p class="biz" style="color:var(--hot)"><b>No agent for service disclosed</b> on any registration statement in its record &mdash; a red flag. <a href="/agents.html?q=' + esc(c.ticker || "") + '" style="color:var(--hot)">The agents page, and a letter to the SEC &rarr;</a></p>')
       + ((c.former_tickers && c.former_tickers.length) ? '<p class="biz"><b>Formerly traded as ' + c.former_tickers.map(function (x) { return '<a href="/company.html?t=' + esc(x.ticker) + '">' + esc(x.ticker) + '</a>' + (x.name ? ' (' + esc(x.name) + ')' : ''); }).join(", ") + '</b> &mdash; the same company, the same record.</p>' : '')
       + (c.edgar ? '<p class="biz">Everything this company has filed: <a class="edg" href="' + esc(c.edgar) + '" target="_blank" rel="noopener">its EDGAR page &rarr;</a></p>' : '')
       + '</div></div>';
@@ -332,6 +336,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     if (splits) flags.push("Reverse split &mdash; " + splits + " filing" + (splits === 1 ? "" : "s") + " &mdash; high risk");
     if (warrants) flags.push("Warrant paper &mdash; " + warrants + " filing" + (warrants === 1 ? "" : "s"));
     if (merger) flags.push("Merger, sale or wind-down on the table");
+    if (d.company && !d.company.agent) flags.push("No agent for service disclosed &mdash; high risk");
     if (!flags.length) return "";
     return '<div class="flags" id="flags"><div><span class="k">Red flags &mdash; the warning is free</span>'
       + '<p><span class="n">' + flags.length + '</span> <b>' + (flags.length === 1 ? 'tell-tale' : 'tell-tales') + ' on ' + esc((d.company && d.company.name) || tk) + '.</b> Which filings, which dates and what they say are in the report.</p>'
@@ -339,7 +344,16 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + (open ? '<a class="go verdict" href="#auto" style="font:700 15px var(--sans);color:var(--hot)">The report is below &darr;</a>' : '<button class="wbuy gold go" data-sku="wire_search" data-t="' + esc(tk) + '">Get the report &middot; $12</button>')
       + '</div>';
   }
-  function stopBox(d, open, tk) {
+  /* the path of the shell — every name and ticker, oldest first, each one searchable */
+  function pathHtml(d, base) {
+    var p = d.path; if (!p || !p.steps || p.steps.length < 2) return "";
+    var tk = {}; (p.tickers || []).forEach(function (t) { if (t.name) tk[t.name] = t.ticker; });
+    var cur = (p.tickers || []).filter(function (t) { return t.current; })[0];
+    return '<p style="margin-top:10px"><b>The path:</b> ' + p.steps.map(function (s, i) {
+      var q = s.current ? (cur ? cur.ticker : s.name) : (tk[s.name] || s.name);
+      return '<a href="' + base + encodeURIComponent(q) + '" style="font-weight:700">' + esc(s.name) + (tk[s.name] ? ' / ' + esc(tk[s.name]) : (s.current && cur ? ' / ' + esc(cur.ticker) : '')) + '</a> <span style="opacity:.85">(' + esc(s.from || '?') + ' &rarr; ' + (s.current ? 'today' : esc(s.to || '?')) + ')</span>';
+    }).join(' &rarr; ') + '. ' + esc(p.note || '') + '</p>';
+  }  function stopBox(d, open, tk) {
     var r = d.signals && d.signals.renamed;
     if (!r || !r.former || !r.former.length) return "";
     var first = d.edgar && d.edgar.first ? String(d.edgar.first).slice(0, 10) : null;
@@ -348,11 +362,11 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     var rows = r.former.map(function (f) { return '<li><b>' + esc(f.name) + '</b>' + (f.from || f.to ? ' &mdash; ' + (f.from ? esc(String(f.from).slice(0, 10)) : '?') + ' to ' + (f.to ? esc(String(f.to).slice(0, 10)) : '?') : '') + '</li>'; }).join("");
     var ft = (d.company && d.company.former_tickers) || [];
     return '<div class="stop" id="stop"><span class="k">&#9632; Stop &mdash; this company changed its name</span>'
-      + (d.searched_as ? '<p><b>You searched ' + esc(d.searched_as.ticker) + '.</b> That is a former ticker; the company trades as ' + esc(d.searched_as.now) + ' today. Same company, same record.</p>' : '')
+      + (d.searched_as ? '<p><b>You searched ' + esc(d.searched_as.ticker) + '.</b> ' + esc(d.searched_as.note || ("That is a former name; the company trades as " + d.searched_as.now + " today.")) + '</p>' : '')
       + '<p><b>' + esc(r.now || tk) + ' has filed with the SEC under ' + (r.former.length === 1 ? 'another name' : r.former.length + ' other names') + (ft.length ? ' and traded as ' + ft.map(function (x) { return x.ticker; }).join(", ") : '') + '.</b>'
       + (young ? ' It has been on EDGAR only since ' + esc(first) + ' &mdash; public about ' + (years < 1 ? 'a year' : Math.round(years) + ' years') + ' &mdash; and has already changed its name.' : (first ? ' On EDGAR since ' + esc(first) + '.' : ''))
       + ' A name change is high risk on this wire, without exception: the filings, the warrant paper and the shareholders who held it stay on EDGAR under the old name, and the new name starts clean. Search the old name' + (r.former.length === 1 ? '' : 's') + ' too.</p>'
-      + '<ol>' + rows + '</ol>'
+      + '<ol>' + rows + '</ol>' + pathHtml(d, "/company.html?t=")
       + '<p><b>Get this report before you do anything else.</b> ' + (open ? '<a class="go" href="#auto">The verdict is below &darr;</a>' : '<button class="wbuy go" data-sku="wire_search" data-t="' + esc(tk) + '">The report &middot; $12</button>') + ' <a href="/rules.html#W11" style="margin-left:10px">Rule W11 &rarr;</a></p>'
       + '</div>';
   }
