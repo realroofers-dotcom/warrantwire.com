@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3i · 2026-09-21 · one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account for the rest; 3h: AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
+const BUILD = "pay-3j · 2026-09-21 · the seven-day promise on every Checkout page (custom_text) and /refunds?on=; 3i: one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account for the rest; 3h: AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -110,6 +110,31 @@ const AB_API = "https://adhotbox.realroofers.workers.dev";
    one at a time. The books do not care which account paid: the session id,
    the sku and `on` are all the webhook needs.
    ============================================================ */
+/* THE SEVEN-DAY PROMISE — the same words on every site's checkout and terms.
+   His rule, 21 Sep 2026: seven days for returns on all sites, so Stripe is
+   comfortable, the customer is comfortable, and nobody phones their bank.
+   11 Sep: a refund is a conversation, not a vending machine — the buyer tells
+   us what was wrong, and gets the money whatever they say. */
+const PAY_HOME = "https://pay.warrantwire.com";
+const REFUND_LINE = "Seven-day money back. Ask within seven days of paying, from the address you paid with, and it is returned. Tell us what was wrong; nothing you write can lose you the refund.";
+function refundsPage(on) {
+  const site = SITE[on] || null;
+  const name = site ? site.name : "the sites we run";
+  const home = site ? site.home : "https://warrantwire.com";
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Refunds — ${esc(name)}. Seven-day money back.</title><meta name="robots" content="noindex">
+<style>body{margin:0;background:#fff;color:#12283d;font:18px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}.w{max-width:680px;margin:0 auto;padding:36px 22px 60px}h1{font-size:34px;line-height:1.1;margin:0 0 6px}h2{font-size:20px;margin:26px 0 6px}p{margin:0 0 12px;color:#3d5468}p b{color:#12283d}.big{background:#fff6c7;border-left:8px solid #f28c28;padding:14px 18px;margin:18px 0}a{color:#12283d}.k{font:700 12px monospace;letter-spacing:.14em;text-transform:uppercase;color:#6d8294}</style></head>
+<body><div class="w"><p class="k">${esc(name)} &middot; refunds</p><h1>If you want your money back, you get it.</h1>
+<div class="big"><p><b>Ask within seven days of paying.</b> Write from the address you paid with to <a href="mailto:refunds@warrantwire.com">refunds@warrantwire.com</a>, or telephone <b>702-544-2002</b> &mdash; a person answers.</p>
+<p><b>We ask one thing back: tell us what was wrong.</b> A sentence is enough. Nothing you write can lose you the refund; the answer is not a test. You will get a reply from a person, and the money goes back to the card it came from.</p></div>
+<h2>Why it is this simple</h2><p>A refund here is a conversation, not a vending machine. We would rather return the money and know why than have you phone your bank &mdash; a chargeback costs everyone a fee and teaches nobody anything. So the refund is unconditional, and the one thing we ask is the reason.</p>
+<h2>What is covered</h2><p>Everything paid by card through this desk on ${esc(name)}: a report, a read, a listing, a placement, a gig, a seat, a shirt. Within seven days of the charge. After seven days, write anyway &mdash; a person still reads it and we are not unreasonable; only the promise is seven days.</p>
+<h2>Gigs, seats and things shipped</h2><p>A gig paid by card is held and paid to the seller two days after the work is delivered; ask before then and it is simply returned. A seat at an event is refundable up to the day before it. A shirt is refundable on return within seven days of delivery.</p>
+<h2>Paid from a bank</h2><p>Payments from a bank account come through <a href="https://achplug.com">achplug.com</a>, not Stripe; the same seven days apply, and the money goes back to the account it came from.</p>
+<p class="k" style="margin-top:30px">${esc(name)} is run by Mark Nejmeh &middot; Jersey Shore Const LLC &middot; <a href="${esc(home)}">${esc(home.replace(/^https:\/\//, ""))}</a></p></div></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "public, max-age=600" } });
+}
 function keyFor(env, on) {
   return env["STRIPE_KEY_" + String(on || "").toUpperCase()] || env.STRIPE_KEY;
 }
@@ -359,6 +384,8 @@ export default {
     if (url.pathname === "/webhook" && request.method === "POST") {
       return await webhook(env, request);
     }
+    /* the refund policy every Checkout page points at — one page, the brand's name on it */
+    if (url.pathname === "/refunds") return refundsPage(q.get("on"));
 
     try {
       if (q.get("buy")) return json(await buy(env, q, request), cors);
@@ -685,6 +712,13 @@ async function buy(env, q, request) {
   form.set("mode", sku.mode);
   form.set("success_url", back);
   form.set("cancel_url", off);
+  /* THE SEVEN-DAY PROMISE, ON THE CHECKOUT PAGE ITSELF — his rule, 21 Sep
+     2026: "our terms on all sites is 7 days for returns, so we do not get
+     chargebacks and a mess." A worried buyer who can see the way back never
+     phones the bank. Stripe prints this under the pay button; the policy page
+     is the desk's own, brand-neutral, at /refunds?on=<site>. */
+  form.set("custom_text[submit][message]", REFUND_LINE);
+  form.set("custom_text[after_submit][message]", "The policy, in full: " + PAY_HOME + "/refunds?on=" + on);
   /* ⚠ AN EMPTY customer_email IS REJECTED BY STRIPE, so the field is left off
      entirely rather than sent blank. */
   if (email) form.set("customer_email", email);
