@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3h · 2026-09-21 · AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
+const BUILD = "pay-3i · 2026-09-21 · one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account for the rest; 3h: AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -96,6 +96,32 @@ const SITE = {
   ab:    { name: "AdHotBox",       suffix: "ADHOTBOX",   home: "https://adhotbox.com",   back: "/advertise.html?paid={CHECKOUT_SESSION_ID}", off: "/advertise.html?cancelled=1" }
 };
 const AB_API = "https://adhotbox.realroofers.workers.dev";
+
+/* ============================================================
+   ONE STRIPE ACCOUNT PER BRAND — his call, 21 Sep 2026: "I think we want each
+   site branded properly." Stripe shows ONE name and ONE logo per account on
+   its Checkout page, so a brand that wants its own face needs its own
+   account. The desk holds a key per site: STRIPE_KEY_WIRE, STRIPE_KEY_K8,
+   STRIPE_KEY_WSD, STRIPE_KEY_GP, STRIPE_KEY_WS, STRIPE_KEY_AB — set with
+   .\tools\cf.ps1 setvar pay STRIPE_KEY_AB sk_live_… — and a webhook secret
+   per account, STRIPE_WH_AB etc., every account's webhook pointed at the same
+   /webhook. A site with no key of its own sells on the house account
+   (STRIPE_KEY / STRIPE_WH), so nothing breaks while the accounts are opened
+   one at a time. The books do not care which account paid: the session id,
+   the sku and `on` are all the webhook needs.
+   ============================================================ */
+function keyFor(env, on) {
+  return env["STRIPE_KEY_" + String(on || "").toUpperCase()] || env.STRIPE_KEY;
+}
+function whSecrets(env) {
+  const out = [];
+  if (env.STRIPE_WH) out.push(String(env.STRIPE_WH));
+  for (const k of Object.keys(env)) if (/^STRIPE_WH_/.test(k) && env[k]) out.push(String(env[k]));
+  return out;
+}
+function accountOf(env, on) {
+  return env["STRIPE_KEY_" + String(on || "").toUpperCase()] ? on : "house";
+}
 /* the gig engine's site keys → where the buyer was standing */
 const GIG_SITE = { wire: "wire", k8: "k8", gigapoo: "gp", nujobi: "gp", wisesleuth: "ws" };
 const GIG_API = "https://api.gigapoo.com";
@@ -433,7 +459,17 @@ export default {
           const c = await (await fetch("https://api.stripe.com/v1/accounts?limit=1", { headers: { "Authorization": "Bearer " + env.STRIPE_KEY } })).json();
           if (acct) acct.connect = c && c.object === "list" ? "ON — " + (c.data ? c.data.length : 0) + " connected account(s) so far" : "OFF — " + ((c.error && c.error.message) || "refused");
         } catch (e) {}
-        return json({ ok:true, build: BUILD, stripe_account: acct,
+        /* one account per brand: which sites have their own key and secret;
+           the account's own name is fetched so a wrong key shows at once */
+        const brands = {};
+        for (const on of Object.keys(SITE)) {
+          const k = env["STRIPE_KEY_" + on.toUpperCase()], w = env["STRIPE_WH_" + on.toUpperCase()];
+          if (!k && !w) { brands[on] = "house account"; continue; }
+          let name = null;
+          try { const a = await (await fetch("https://api.stripe.com/v1/account", { headers: { "Authorization": "Bearer " + k } })).json(); name = a && (a.id + " — " + ((a.business_profile && a.business_profile.name) || (a.settings && a.settings.dashboard && a.settings.dashboard.display_name) || "?")); } catch (e) {}
+          brands[on] = { key: k ? (String(k).indexOf("sk_live") === 0 ? "LIVE" : "test") : "MISSING", webhook_secret: w ? (String(w).startsWith("whsec_") ? "set" : "wrong shape") : "MISSING", account: name };
+        }
+        return json({ ok:true, build: BUILD, stripe_account: acct, brands,
           stripe_key: env.STRIPE_KEY ? (isLive(env) ? "LIVE key set" : "test key set") : "MISSING",
           webhook_secret: shape(env.STRIPE_WH),
           webhook_secret_looks_right: wh.startsWith("whsec_"),
@@ -629,12 +665,13 @@ async function buy(env, q, request) {
   if (!collect && (!email || email.indexOf("@") < 1))
     throw new Error("an email address, please");
 
-  if (!env.STRIPE_KEY) throw new Error("payments are not switched on yet");
-
-  /* WHERE THE BUYER WAS STANDING decides the descriptor and the pages he
-     comes back to. WHOSE PRODUCT IT IS stays on the SKU, for the books. */
+  /* WHERE THE BUYER WAS STANDING decides the descriptor, the pages he comes
+     back to, and — one account per brand — WHICH STRIPE ACCOUNT takes the
+     card. WHOSE PRODUCT IT IS stays on the SKU, for the books. */
   const on   = SITE[q.get("on")] ? q.get("on") : sku.site;
   const site = SITE[on];
+  const stripeKey = keyFor(env, on);
+  if (!stripeKey) throw new Error("payments are not switched on yet");
   const ref  = (q.get("ref") || q.get("ticker") || q.get("q") || "").slice(0, 40);
 
   /* what somebody sees on their card statement. One account, three
@@ -701,10 +738,11 @@ async function buy(env, q, request) {
     form.set("payment_method_types[0]", "card");
   }
 
+  form.set("metadata[account]", accountOf(env, on));   /* which brand's Stripe account took it */
   const r = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
-      "Authorization": "Bearer " + env.STRIPE_KEY,
+      "Authorization": "Bearer " + stripeKey,
       "Content-Type": "application/x-www-form-urlencoded"
     },
     body: form.toString()
@@ -733,8 +771,12 @@ async function webhook(env, request) {
   const body = await request.text();
   const sig  = request.headers.get("Stripe-Signature") || "";
 
-  if (!env.STRIPE_WH) return new Response("no signing secret", { status: 500 });
-  const okSig = await verify(body, sig, env.STRIPE_WH);
+  /* one account per brand: the event may come from any of them; each one's
+     signing secret is tried until one fits */
+  const secrets = whSecrets(env);
+  if (!secrets.length) return new Response("no signing secret", { status: 500 });
+  let okSig = false;
+  for (const sec of secrets) { if (await verify(body, sig, sec)) { okSig = true; break; } }
   if (!okSig) {
     await log(env, { kind:"bad-signature", note: sig.slice(0, 60) });
     return new Response("bad signature", { status: 400 });
