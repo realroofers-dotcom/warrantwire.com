@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-10 20:20 ET · thanks-2a · warrantwire.com/thanks.html
+<!-- BUILT 2026-09-21 · thanks-2b (the session id is checked first; the seven-day line) · 2026-09-10 · thanks-2a · warrantwire.com/thanks.html
      ==========================================================================
      EVERY PAID BUYER LANDS HERE. The pay worker sends them to
      warrantwire.com/thanks.html?s=SESSION_ID after Stripe.
@@ -327,8 +327,27 @@ footer a{color:var(--dim)}
     if (e.key === "Enter") check();
   });
 
-  if (document.getElementById("em").value) check();
-  else show('<span style="color:var(--faint)">Put in the email you paid with and press Check.</span>');
+  /* 2b, 21 Sep 2026: the session id Stripe sent back is enough — the desk says
+     what it bought and for whom, so the buyer types nothing. The email box
+     stays for a later visit. */
+  var LINE = { search:"One search", wire:"The year — unlimited searches", chart:"The summary, for the day", chart_year:"The summary, for a year", read:"A filing read, in plain English", read_year:"The year — every filing read", opinion:"An agent's opinion", deep:"A deep dive", watch:"Watching a company", verdict:"The founder's verdict", reader_verdict:"A reader's verdict" };
+  var tries = 0;
+  function bySession() {
+    if (!/^cs_(live|test)_/.test(s)) { if (document.getElementById("em").value) check(); else show('<span style="color:var(--faint)">Put in the email you paid with and press Check.</span>'); return; }
+    show("Checking your payment&hellip;");
+    fetch(PAY + "/?paid=" + encodeURIComponent(s)).then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.paid) {
+        if (d.email) { document.getElementById("em").value = d.email; try { localStorage.setItem("ww.email", d.email); window.name = d.email; } catch (e) {} }
+        var out = "";
+        (d.grants || d.skus || []).forEach(function (g, i) { out += '<div class="row"><span class="k">' + (LINE[g] || LABEL[g] || g) + '</span><span>' + (d.ends_on ? "good until " + d.ends_on : "") + '</span></div>'; });
+        out += '<div class="row"><span class="k">Paid</span><span>$' + ((d.cents || 0) / 100).toFixed(2) + (d.email ? " &middot; receipt from Stripe to " + d.email : "") + '</span></div>';
+        out += '<div class="row"><span class="k">Seven-day money back</span><span>Ask within seven days and it is returned. <a href="/terms">The terms</a>.</span></div>';
+        show(out);
+      } else if (tries++ < 8) setTimeout(bySession, 1500);
+      else show('<span style="color:var(--faint)">Stripe has not confirmed yet &mdash; it usually does within a minute. If your card was charged you are covered; press Check in a moment, or watch your email.</span>');
+    }).catch(function () { if (tries++ < 8) setTimeout(bySession, 1500); });
+  }
+  bySession();
 })();
 </script>
 <script>
