@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "0.0.1",
   "configurations": [
     {
@@ -6,6 +6,19 @@
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools/serve.ps1", "8765"],
       "port": 8765
+    },
+    {
+      "name": "gigapoo",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "../gigapoo/tools/serve.ps1", "9766"],
+      "port": 9766
+    },
+    {
+      "name": "wisesleuth",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "../wisesleuth/tools/serve.ps1", "9767"],
+      "port": 9767
     }
   ]
 }
+
