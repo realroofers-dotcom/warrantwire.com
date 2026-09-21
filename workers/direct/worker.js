@@ -1,4 +1,4 @@
-/* BUILT 2026-09-15 · direct 1a
+/* BUILT 2026-09-21 · direct 1b (wisesleuths.com → wisesleuth.com); 2026-09-15 · direct 1a
    ============================================================================
    THE DIRECTIONAL WORKER — the names bought to point at Warrant Wire. Not
    inventory (that is park), not sites of their own: doors.
@@ -53,10 +53,12 @@ const DOORS = {
   "nujobi.com":  { page: false, to: "https://warrantwire.com/market" },
   /* 21 Sep: wslth.com is the short way into the research club — his call:
      "these type of people will use it" — listed on the club's pages */
-  "wslth.com":   { page: false, to: "https://wisesleuth.com/" }
-  /* 21 Sep: wisesleuth.com is a SITE — the research club — served by the
-     `wisesleuth` worker in the gigapoo repo, not a door. wisesleuths.com and
-     wslth.com, bought with it, are for sale (park). */
+  "wslth.com":   { page: false, to: "https://wisesleuth.com/" },
+  /* 21 Sep, later: wisesleuths.com (the plural) points at the club too — his
+     call: "wisesleuths.com needs pointing". Out of park. */
+  "wisesleuths.com": { page: false, to: "https://wisesleuth.com/" }
+  /* 21 Sep: wisesleuth.com is a SITE — the research club — a Pages project
+     of its own (repo wisesleuth), not a door. */
   /* gigapoo.com left the doors on 20 Sep: it is a site now (Pages project
      `gigapoo`, the engine's own home). nujobi.com opens on the market until
      its own site is built. */

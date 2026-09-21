@@ -177,11 +177,8 @@ const NAMES = {
   "upyours.us": "upyours.us",
   "wallstdomain.com": "wallstdomain.com",
   "wallstdomains.com": "wallstdomains.com",
-  /* 21 Sep 2026 — three more, bought for a research club for senior citizens;
-     for sale at $5,600 each until that is built */
-  "wisesleuths.com": "wisesleuths.com",
-  "wisesleuth.com": "wisesleuth.com",
-  "wslth.com": "wslth.com",
+  /* 21 Sep 2026: wisesleuth.com is the research club's own site; wisesleuths.com
+     and wslth.com are doors to it (direct). None of the three is for sale. */
   "workappy.com": "workappy.com"
 };
 
