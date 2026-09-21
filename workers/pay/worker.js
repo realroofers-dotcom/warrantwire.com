@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3e · 2026-09-21 · Stripe on everything: the gig (priced by the engine, booked there), the Wise Sleuth T-shirt (shipping collected)";
+const BUILD = "pay-3f · 2026-09-21 · Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -93,6 +93,7 @@ const SITE = {
 /* the gig engine's site keys → where the buyer was standing */
 const GIG_SITE = { wire: "wire", k8: "k8", gigapoo: "gp", nujobi: "gp", wisesleuth: "ws" };
 const GIG_API = "https://api.gigapoo.com";
+const ACH_FROM_CENTS = 15000;   /* from $150 the buyer may pay by bank transfer as well as card */
 
 /* THE PRICE LIST. The pages must match this; this is what charges.
 
@@ -665,6 +666,19 @@ async function buy(env, q, request) {
     /* a one-off payment can carry its own descriptor */
     form.set("payment_intent_data[statement_descriptor_suffix]", site.suffix.slice(0, 10));
     form.set("payment_intent_data[description]", sku.label);
+    /* ⚠ BANK TRANSFER BESIDE THE CARD ON ANYTHING BIG — 21 Sep 2026. His
+       worry: large payments cost us in card fees. Stripe's ACH debit is 0.8%
+       capped at $5 against 2.9% + 30¢ on a card, so from $150 up the buyer
+       sees both and picks. ACH confirms days later: Stripe fires
+       checkout.session.completed with payment_status "unpaid", then
+       async_payment_succeeded — the webhook grants on the second, never the
+       first. Under $150 it is card only: nobody waits four days for a shirt. */
+    const totalNow = items.reduce((n, x) => n + x.cents, 0);
+    if (totalNow >= ACH_FROM_CENTS) {
+      form.set("payment_method_types[0]", "card");
+      form.set("payment_method_types[1]", "us_bank_account");
+      form.set("payment_method_options[us_bank_account][financial_connections][permissions][0]", "payment_method");
+    }
   }
 
   const r = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -710,7 +724,20 @@ async function webhook(env, request) {
   try { ev = JSON.parse(body); } catch (e) { return new Response("bad json", { status: 400 }); }
   const o = (ev.data && ev.data.object) || {};
 
-  if (ev.type === "checkout.session.completed") {
+  /* ⚠ A BANK TRANSFER CONFIRMS LATER. A card session completes paid; an ACH
+     session completes "unpaid" and Stripe says so again, days later, with
+     async_payment_succeeded (or _failed). Nothing is granted, booked or
+     shipped until the money is in. */
+  if (ev.type === "checkout.session.completed" && o.payment_status && o.payment_status !== "paid") {
+    await log(env, { kind: "awaiting-bank", session: o.id, sku: (o.metadata || {}).sku, cents: o.amount_total || 0, note: "ACH debit started; granting when it clears" });
+    return new Response("ok — waiting for the bank", { status: 200 });
+  }
+  if (ev.type === "checkout.session.async_payment_failed") {
+    await log(env, { kind: "bank-failed", session: o.id, sku: (o.metadata || {}).sku, cents: o.amount_total || 0, note: "ACH debit failed; nothing granted" });
+    return new Response("ok — noted", { status: 200 });
+  }
+
+  if (ev.type === "checkout.session.completed" || ev.type === "checkout.session.async_payment_succeeded") {
     const m = o.metadata || {};
 
     /* ⚠ WHERE THE ADDRESS COMES FROM. If a page asked for it, it is in the
