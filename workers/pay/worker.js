@@ -244,7 +244,7 @@ const SKU = {
      "look it up": buy() reads the offer's price and the buyer's flat fee from
      the engine (?offer=<id>) at the moment of sale. The webhook books the sale
      on the engine (?action=sale, rail stripe) — the seller absorbs Stripe's
-     fee there and is paid by ACH through achpay.com. Nothing is granted here
+     fee there and is paid by ACH through achplug.com. Nothing is granted here
      but the receipt. */
   gig:          { site:"gp",   cents: 0, mode:"payment", gig: true,
                   label:"Gigapoo — a gig", grants:"gig", days: 3650 },
@@ -535,7 +535,7 @@ async function buy(env, q, request) {
     const r0 = await fetch(GIG_API + (bidId ? "/?bid=" + encodeURIComponent(bidId) : "/?offer=" + encodeURIComponent(offerId)), { headers: { "Accept": "application/json" } });
     const o = r0.ok ? await r0.json() : null;
     if (!o || !o.ok) throw new Error((o && o.error) || "no such gig");
-    if (!o.payable) throw new Error(o.by.name + " cannot be paid yet — no achpay.com address on file");
+    if (!o.payable) throw new Error(o.by.name + " cannot be paid yet — no achplug.com address on file");
     items[gi].cents = o.buyer_pays_cents;
     items[gi].label = "Gigapoo — " + o.title + " · by " + o.by.name;
     gigMeta = { offer: bidId ? "" : String(o.id), bid: bidId ? String(o.id) : "", seller: String(o.by.id), gsite: String(o.site || ""), price_cents: String(o.price_cents), delivery: String(o.delivery || "text"), where: String(o.where || "remote") };
