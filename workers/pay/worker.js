@@ -262,7 +262,19 @@ const SKU = {
      house's cut is the same half-year bill every site pays. The first
      product is Wise Sleuth's T-shirt. */
   store:        { site:"gp",   cents: 0, mode:"payment", store: true, ship: true,
-                  label:"The store", grants:"store", days: 3650 }
+                  label:"The store", grants:"store", days: 3650 },
+
+  /* ---------- STRIPE WHEREVER MONEY MOVES — 21 Sep 2026 ----------
+     His call: "do the Stripe wherever missing; that is the part that makes
+     me nervous." A TICKET the host has approved, paid now by card instead of
+     carried on credit; a SITE'S half-year BILL, paid by card so the market is
+     never switched off. Both priced by the engine at the moment of sale and
+     booked there by the webhook. (A bid on a request goes through `gig`
+     with &bid=<id>.) */
+  ticket:       { site:"gp",   cents: 0, mode:"payment", ticket: true,
+                  label:"A ticket", grants:"ticket", days: 3650 },
+  bill:         { site:"gp",   cents: 0, mode:"payment", bill: true,
+                  label:"Gigapoo — a site's half-year bill", grants:"bill", days: 3650 }
 
   /* RETIRED, kept as history: opinion_10 ($129 for ten when one was $16),
      reader ($1,340) and pro ($3,990) — none can be sold against an $1,800
@@ -517,15 +529,42 @@ async function buy(env, q, request) {
   let gigMeta = null;
   if (gi > -1) {
     if (items.length > 1) throw new Error("a gig is bought on its own");
-    const offerId = String(q.get("gig") || q.get("offer") || "").trim();
-    if (!offerId) throw new Error("which gig? (&gig=<offer id>)");
-    const r0 = await fetch(GIG_API + "/?offer=" + encodeURIComponent(offerId), { headers: { "Accept": "application/json" } });
+    const bidId = String(q.get("bid") || "").trim(), offerId = String(q.get("gig") || q.get("offer") || "").trim();
+    if (!offerId && !bidId) throw new Error("which gig? (&gig=<offer id> or &bid=<bid id>)");
+    const r0 = await fetch(GIG_API + (bidId ? "/?bid=" + encodeURIComponent(bidId) : "/?offer=" + encodeURIComponent(offerId)), { headers: { "Accept": "application/json" } });
     const o = r0.ok ? await r0.json() : null;
     if (!o || !o.ok) throw new Error((o && o.error) || "no such gig");
     if (!o.payable) throw new Error(o.by.name + " cannot be paid yet — no achpay.com address on file");
     items[gi].cents = o.buyer_pays_cents;
     items[gi].label = "Gigapoo — " + o.title + " · by " + o.by.name;
-    gigMeta = { offer: String(o.id), seller: String(o.by.id), gsite: String(o.site || ""), price_cents: String(o.price_cents), delivery: String(o.delivery || "text"), where: String(o.where || "remote") };
+    gigMeta = { offer: bidId ? "" : String(o.id), bid: bidId ? String(o.id) : "", seller: String(o.by.id), gsite: String(o.site || ""), price_cents: String(o.price_cents), delivery: String(o.delivery || "text"), where: String(o.where || "remote") };
+  }
+  /* a ticket the host approved: pay it now by card */
+  const ti = items.findIndex(x => x.ticket);
+  let ticketMeta = null;
+  if (ti > -1) {
+    const tid = String(q.get("ticket") || "").trim(); if (!tid) throw new Error("which ticket? (&ticket=<id>)");
+    const rt = await fetch(GIG_API + "/?ticket=" + encodeURIComponent(tid), { headers: { "Accept": "application/json" } });
+    const tk = rt.ok ? await rt.json() : null;
+    if (!tk || !tk.ok) throw new Error((tk && tk.error) || "no such ticket");
+    if (tk.paid) throw new Error("that ticket is already paid");
+    if (!tk.payable_now) throw new Error("the host has not let you in yet — a ticket is paid once it is approved");
+    items[ti].cents = tk.buyer_pays_cents;
+    items[ti].label = tk.title + " · " + tk.seats + " seat" + (tk.seats === 1 ? "" : "s") + " · " + String(tk.starts).replace("T", " ");
+    ticketMeta = { ticket: String(tk.id), tsite: String(tk.site || "") };
+  }
+  /* a site's half-year bill */
+  const bi = items.findIndex(x => x.bill);
+  let billMeta = null;
+  if (bi > -1) {
+    const iid = String(q.get("invoice") || "").trim(); if (!iid) throw new Error("which invoice? (&invoice=<id>)");
+    const ri = await fetch(GIG_API + "/?invoice=" + encodeURIComponent(iid), { headers: { "Accept": "application/json" } });
+    const inv = ri.ok ? await ri.json() : null;
+    if (!inv || !inv.ok) throw new Error((inv && inv.error) || "no such invoice");
+    if (!inv.payable_now) throw new Error("that invoice is " + inv.state);
+    items[bi].cents = inv.due_cents;
+    items[bi].label = "Gigapoo — " + inv.site_name + ", " + inv.half + ": " + inv.rate + " of " + inv.gross;
+    billMeta = { invoice: String(inv.id), bsite: String(inv.site) };
   }
 
   /* ⚠ A STORE PRODUCT IS PRICED BY THE ENGINE at the moment of sale */
@@ -598,6 +637,8 @@ async function buy(env, q, request) {
   }
   if (gigMeta) for (const k of Object.keys(gigMeta)) form.set("metadata[gig_" + k + "]", gigMeta[k]);
   if (storeMeta) for (const k of Object.keys(storeMeta)) form.set("metadata[store_" + k + "]", storeMeta[k]);
+  if (ticketMeta) for (const k of Object.keys(ticketMeta)) form.set("metadata[tk_" + k + "]", ticketMeta[k]);
+  if (billMeta) for (const k of Object.keys(billMeta)) form.set("metadata[bill_" + k + "]", billMeta[k]);
   /* a physical thing: Stripe asks for the shipping address; quantity allowed */
   const qty = Math.max(1, Math.min(10, parseInt(q.get("qty") || "1", 10) || 1));
   if (items.some(x => x.ship)) { form.set("shipping_address_collection[allowed_countries][0]", "US"); form.set("phone_number_collection[enabled]", "true"); }
@@ -708,11 +749,29 @@ async function webhook(env, request) {
         one.cents = Number(o.amount_total || 0);
         try {
           const gsite = m.gig_gsite || "gigapoo";
-          const qs = new URLSearchParams({ action: "sale", key: env.LOG_KEY || "", site: gsite, seller: m.gig_seller || "", offer: m.gig_offer || "",
+          const qs = new URLSearchParams({ action: "sale", key: env.LOG_KEY || "", site: gsite, seller: m.gig_seller || "", offer: m.gig_offer || "", bid: m.gig_bid || "",
             price: (Number(m.gig_price_cents || 0) / 100).toFixed(2), buyer_email: m.email || "", delivery: m.gig_delivery || "text", where: m.gig_where || "remote", rail: "stripe", ref: "stripe:" + o.id });
           const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
           await log(env, { kind: "gig-booked", session: o.id, note: (await rs.text()).slice(0, 200) });
         } catch (e) { await log(env, { kind: "gig-book-failed", session: o.id, note: String(e).slice(0, 200) }); }
+      }
+      /* a ticket paid by card: the engine flips it from credit to paid, rail stripe */
+      if (one.ticket) {
+        one.cents = Number(o.amount_total || 0);
+        try {
+          const qs = new URLSearchParams({ action: "sale", key: env.LOG_KEY || "", site: m.tk_tsite || "gigapoo", ticket: m.tk_ticket || "", rail: "stripe", ref: "stripe:" + o.id });
+          const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
+          await log(env, { kind: "ticket-paid", session: o.id, note: (await rs.text()).slice(0, 200) });
+        } catch (e) { await log(env, { kind: "ticket-pay-failed", session: o.id, note: String(e).slice(0, 200) }); }
+      }
+      /* a site's bill paid by card: the engine marks the invoice paid; a switched-off market comes back at once */
+      if (one.bill) {
+        one.cents = Number(o.amount_total || 0);
+        try {
+          const qs = new URLSearchParams({ action: "paid", key: env.LOG_KEY || "", invoice: m.bill_invoice || "", note: "stripe:" + o.id });
+          const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
+          await log(env, { kind: "bill-paid", session: o.id, note: (await rs.text()).slice(0, 200) });
+        } catch (e) { await log(env, { kind: "bill-pay-failed", session: o.id, note: String(e).slice(0, 200) }); }
       }
       /* the store: the order — product, what was paid, the choice (size), the
          address Stripe collected — goes to the engine, which books the sale on
