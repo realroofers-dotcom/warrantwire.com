@@ -1,5 +1,5 @@
-// ACHplug worker — build 3c, 21 Sep 2026 — cleanup: the changelog moved to achplug.com/CHANGELOG.md (it was this line). No behaviour change from 3b.
-// Serves: /plug.js  /plan (payer pause/resume/stop)  + scheduled() daily for reminders
+// ACHplug worker — build 3d, 21 Sep 2026 — /phone: the owner's box on their own phone (the door is achpayapp.com); "Your phone" link on the dashboard. 3c: changelog moved to achplug.com/CHANGELOG.md.
+// Serves: /plug.js  /plan (payer pause/resume/stop)  /phone (the counter)  + scheduled() daily for reminders
 // Serves: /plug.js  /api/config  /api/order  /signup  /desk  /desk/register  /desk/settings  /desk/mark  /admin
 
 const H = { html: { 'content-type': 'text/html;charset=utf-8' }, js: { 'content-type': 'application/javascript', 'cache-control': 'public,max-age=300' }, json: { 'content-type': 'application/json' } };
@@ -94,6 +94,7 @@ export default {
       if (p === '/desk/close' && req.method === 'POST') return closeSite(req, env);
       if (p === '/desk/switch') return switchSite(u, env, req);
       if (p === '/desk') return desk(u, env, req);
+      if (p === '/phone') return phone(u, env, req);
       if (p === '/desk/register') return register(u, env, req);
       if (p === '/desk/settings' && req.method === 'POST') return settingsPost(req, env);
       if (p === '/desk/mark' && req.method === 'POST') return mark(req, env);
@@ -706,6 +707,30 @@ async function loginGo(u, env) {
   await env.DB.prepare('DELETE FROM logins WHERE token=?').bind(t).run();
   return new Response(null, { status: 303, headers: { location: `${env.SITE}/dashboard`, 'set-cookie': `achplug_s=${row.secret}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax` } });
 }
+/* ---------------- /phone — the counter: the owner's box on their own phone (3d, 21 Sep 2026) ----------------
+   achpayapp.com is the door for this. The owner bookmarks achplug.com/phone?key=KEY on the phone (add to home
+   screen); at the job or the counter they type what it is for and the amount, the same box the website shows
+   renders below, and they hand the phone to the customer, who approves from their bank. Same key, same
+   settings, same journal, same bank file — nothing new to set up. No key: a logged-in owner is sent to theirs. */
+async function phone(u, env, req) {
+  let key = (u.searchParams.get('key') || '').trim();
+  if (!key) { const o = await owner(u, env, req); if (!o) return Response.redirect(`${env.SITE}/login`, 303); return Response.redirect(`${env.SITE}/phone?key=${encodeURIComponent(o.key)}`, 303); }
+  const o = await env.DB.prepare('SELECT key,entity,site,mode,closed,routing,account FROM owners WHERE key=?').bind(key).first();
+  if (!o || o.closed) return page('Not found', '<h1>No box at that key.</h1><p class="lead">Open your dashboard and use the "Your phone" link there.</p>', 404, pubNav);
+  const don = o.mode === 'donation', name = (u.searchParams.get('name') || '').trim().slice(0, 80), price = Math.max(0, Math.round((Number(u.searchParams.get('price')) || 0) * 100) / 100);
+  const live = name && (don || price >= 0.5);
+  const ready = o.routing && o.account && o.entity;
+  const box = !ready ? `<div class="notice"><b>The box is not ready yet.</b> Fill in where the money goes — payee name, routing and account number — in <a href="/dashboard">your dashboard</a>, and it appears here and on your site.</div>` : live ? `<script src="${esc(env.SITE)}/plug.js" data-key="${esc(o.key)}" data-name="${esc(name)}"${don ? '' : ` data-price="${price}"`} data-repeat="off"></script>` : '';
+  const body = `<h1 style="font-size:24px;margin-top:10px">${esc(o.entity || o.site || 'Your box')}</h1><p class="lead" style="font-size:14px">On your phone. Type what it is for${don ? '' : ' and the amount'}, press Show, hand the phone over.</p>
+<form method="get" action="/phone" class="card" style="padding:12px 14px"><input type="hidden" name="key" value="${esc(o.key)}">
+<label>What it is for<input name="name" value="${esc(name)}" placeholder="${don ? 'Gift to the fund' : 'Roof repair, table 4, invoice 1187'}" required maxlength="80" autocomplete="off"></label>
+${don ? '' : `<label>Amount, $<input name="price" type="number" inputmode="decimal" min="0.5" step="0.01" value="${price || ''}" placeholder="0.00" required></label>`}
+<button class="primary big" style="margin-top:12px">${live ? 'Change' : 'Show the box'}</button></form>
+${box}
+<p class="help" style="margin-top:18px">Add this page to your phone's home screen and it opens like an app: Safari — Share → Add to Home Screen; Chrome — ⋮ → Add to Home screen. Every approval lands in your <a href="/dashboard">dashboard</a> and your bank file like any other. Nothing repeats from this page.</p>`;
+  return page('Your phone — ACHplug', body, 200, '<nav class="nav"><a href="/dashboard">Dashboard</a><a href="/dashboard/collect">Collect</a></nav>');
+}
+
 async function desk(u, env, req) {
   const o = await owner(u, env, req); if (!o) return Response.redirect(`${env.SITE}/login`, 303); if (false) return page('Desk', '<h1>No dashboard at that link.</h1><p><a href="/signup">Sign up</a> to get one.</p>', 403);
   const rows = (await env.DB.prepare("SELECT * FROM orders WHERE key=? AND status='awaiting' ORDER BY id DESC LIMIT 200").bind(o.key).all()).results;
@@ -767,7 +792,8 @@ async function desk(u, env, req) {
   if (!ready) {
     b += `<h2>Step 1 of 2 — where the money goes</h2><p class="lead">Fill in the payee name, routing and account number and press the button. Your code appears on the next screen.</p>` + settings;
   } else {
-    b += `<h2>Your code — paste this on your site where the box should appear</h2><p>One line. Change the words and the price to match what you sell; use one line per thing you sell. For a one-time sale that should never offer repeating, add <code>data-repeat="off"</code> to that line. It goes in any HTML block, code block or embed your site builder gives you.</p><pre>${line}</pre>`;
+    b += `<h2>Your code — paste this on your site where the box should appear</h2><p>One line. Change the words and the price to match what you sell; use one line per thing you sell. For a one-time sale that should never offer repeating, add <code>data-repeat="off"</code> to that line. It goes in any HTML block, code block or embed your site builder gives you.</p><pre>${line}</pre>
+    <div class="notice" style="background:#eef5f1;border-color:#9cc7b1"><b>On your phone, at the job or the counter:</b> <a href="/phone?key=${esc(o.key)}">${esc(env.SITE)}/phone?key=${esc(o.key)}</a> — type what it is for and the amount, hand the phone over, the customer approves from their bank. Add it to your home screen and it opens like an app. Same journal, same bank file.</div>`;
     const pull = (await env.DB.prepare("SELECT SUM(status='authorized') a, SUM(status='collecting') c FROM orders WHERE key=?").bind(o.key).first());
     if (pull && (pull.a || pull.c)) b += `<div class="notice" style="background:#eef5f1;border-color:#9cc7b1"><b>${pull.a || 0} authorized and ready to collect</b>, ${pull.c || 0} sent to your bank and waiting to clear — <a href="/dashboard/collect?s=${esc(o.secret)}">open Collect</a>.</div>`;
     b += `<h2>Waiting for money${waiting ? ` <span class="badge">${waiting}</span>` : ''}</h2><p class="lead">Orders where the customer is sending the money themselves. Once you mark one received it moves to the Sales Journal.</p>`;
