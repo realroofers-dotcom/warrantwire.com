@@ -1,4 +1,4 @@
-/* BUILT 2026-08-31 17:13 ET */
+/* BUILT 2026-09-21 · adhotbox 1b: ?action=paid — a placement paid by card on the pay desk is booked here (ab_payments; campaign budget or advertiser balance). 2026-08-31 17:13 ET: 1a */
 /* ============================================================
    adhotbox  —  Cloudflare Worker
    The ad server. Two sides: advertisers buy, publishers carry.
@@ -131,6 +131,7 @@ export default {
       if (a === "perf")     return json(await perf(env), cors);
       if (a === "earnings") return json(await earnings(env), cors);
       if (a === "pay")      return json(await pay(env, q), cors);
+      if (a === "paid")     return json(await placementPaid(env, q), cors);
       if (a === "setshare") return json(await setShare(env, q), cors);
       if (a === "notify") {
         const pubId = q.get("pub");
@@ -1610,6 +1611,44 @@ async function earnings(env) {
   return { ok:true, publishers: r.results || [],
     note: "gross_cents is what the impressions billed. pub_share_cents is that " +
           "times the publisher's share. The difference is the network's." };
+}
+
+/* 21 Sep 2026 — A PLACEMENT PAID BY CARD. The pay desk (pay.warrantwire.com)
+   calls this from Stripe's webhook, with the house key, once the card has
+   cleared: ?action=paid&code=&email=&sku=&cents=&session=. If `code` is a
+   campaign, the money goes on that campaign's budget; if not, it goes on the
+   advertiser's balance by email (a pending advertiser is opened if the
+   address is new) and the campaign is set up against it. Stripe is cards
+   only; a bank payment comes through achplug.com and is recorded with
+   ?action=pay by hand. A session is booked once. */
+async function placementPaid(env, q) {
+  const code = (q.get("code") || "").trim().slice(0, 40);
+  const email = (q.get("email") || "").trim().toLowerCase().slice(0, 160);
+  const sku = (q.get("sku") || "").slice(0, 40), session = (q.get("session") || "").slice(0, 80);
+  const cents = Math.max(0, Math.round(Number(q.get("cents")) || 0));
+  if (!cents || !session) throw new Error("cents and session required");
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS ab_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, session TEXT UNIQUE, email TEXT, code TEXT, sku TEXT,
+       cents INTEGER, campaign_id INTEGER, advertiser_id INTEGER, created_at TEXT DEFAULT (datetime('now')))`).run();
+  const had = await env.OVERHANG.prepare("SELECT id FROM ab_payments WHERE session = ?").bind(session).first();
+  if (had) return { ok:true, already:true, note:"that session was booked before" };
+  let camp = code ? await env.OVERHANG.prepare("SELECT id, advertiser_id FROM ab_campaigns WHERE code = ?").bind(code).first() : null;
+  let advId = camp ? camp.advertiser_id : null;
+  if (!advId && email) {
+    const a = await env.OVERHANG.prepare("SELECT id FROM ab_advertisers WHERE lower(email) = ? ORDER BY id LIMIT 1").bind(email).first();
+    if (a) advId = a.id;
+    else {
+      await env.OVERHANG.prepare(
+        `INSERT INTO ab_advertisers (name, contact_name, email, status, note) VALUES (?,?,?, 'pending', ?)`)
+        .bind(email.split("@")[0], "", email, "opened by a card payment on " + new Date().toISOString().slice(0, 10) + " (" + sku + ")").run();
+      advId = (await env.OVERHANG.prepare("SELECT id FROM ab_advertisers WHERE lower(email) = ? ORDER BY id DESC LIMIT 1").bind(email).first()).id;
+    }
+  }
+  if (camp) await env.OVERHANG.prepare("UPDATE ab_campaigns SET budget_cents = budget_cents + ? WHERE id = ?").bind(cents, camp.id).run();
+  else if (advId) await env.OVERHANG.prepare("UPDATE ab_advertisers SET balance_cents = balance_cents + ? WHERE id = ?").bind(cents, advId).run();
+  await env.OVERHANG.prepare("INSERT INTO ab_payments (session, email, code, sku, cents, campaign_id, advertiser_id) VALUES (?,?,?,?,?,?,?)")
+    .bind(session, email, code || null, sku, cents, camp ? camp.id : null, advId).run();
+  return { ok:true, booked: camp ? "campaign " + code : (advId ? "advertiser balance #" + advId : "unmatched — kept in ab_payments"), cents };
 }
 
 async function pay(env, q) {

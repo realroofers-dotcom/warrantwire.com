@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "0.0.1",
   "configurations": [
     {
@@ -12,6 +12,12 @@
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "../gigapoo/tools/serve.ps1", "9766"],
       "port": 9766
+    },
+    {
+      "name": "adhotbox",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "../adhotbox.com/tools/serve.ps1", "9768"],
+      "port": 9768
     },
     {
       "name": "wisesleuth",

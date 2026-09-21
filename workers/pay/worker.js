@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3f · 2026-09-21 · Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
+const BUILD = "pay-3h · 2026-09-21 · AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -88,12 +88,17 @@ const SITE = {
      store and the research club sell through here: same account, same
      webhook, same books. */
   gp:    { name: "Gigapoo",        suffix: "GIGAPOO",    home: "https://gigapoo.com",    back: "/?paid={CHECKOUT_SESSION_ID}", off: "/?cancelled=1" },
-  ws:    { name: "Wise Sleuth",    suffix: "WISESLEUTH", home: "https://wisesleuth.com", back: "/?paid={CHECKOUT_SESSION_ID}", off: "/?cancelled=1" }
+  ws:    { name: "Wise Sleuth",    suffix: "WISESLEUTH", home: "https://wisesleuth.com", back: "/?paid={CHECKOUT_SESSION_ID}", off: "/?cancelled=1" },
+  /* 21 Sep 2026 — ADHOTBOX, the ad network: an advertiser pays for a placement
+     by card here; the money is booked on the network (AB_API ?action=paid) and
+     the buyer lands on advertise.html, which reads the session and says what
+     happens next. Same account, same webhook, same books. */
+  ab:    { name: "AdHotBox",       suffix: "ADHOTBOX",   home: "https://adhotbox.com",   back: "/advertise.html?paid={CHECKOUT_SESSION_ID}", off: "/advertise.html?cancelled=1" }
 };
+const AB_API = "https://adhotbox.realroofers.workers.dev";
 /* the gig engine's site keys → where the buyer was standing */
 const GIG_SITE = { wire: "wire", k8: "k8", gigapoo: "gp", nujobi: "gp", wisesleuth: "ws" };
 const GIG_API = "https://api.gigapoo.com";
-const ACH_FROM_CENTS = 15000;   /* from $150 the buyer may pay by bank transfer as well as card */
 
 /* THE PRICE LIST. The pages must match this; this is what charges.
 
@@ -238,6 +243,28 @@ const SKU = {
   wsd_partner:  { site:"wsd",  cents:  6000, mode:"payment",
                   label:"Wall St Domains — Partnership option, one year",
                   grants:"partner", days: 365 },
+
+  /* ---------- ADHOTBOX — 21 Sep 2026 ----------
+     A placement, a month, on the sites and subjects the advertiser picked.
+     The four prices are the network's own (ab_prices). `ref` may carry the
+     campaign code; the webhook books the money on the network either way —
+     against the campaign if the code is known, else on the advertiser's
+     balance by email — and the placement runs when the sites accept it. */
+  ad_standard:  { site:"ab",   cents:  2000, mode:"payment",
+                  label:"AdHotBox — a placement for a month: words or a picture",
+                  grants:"placement", days: 31, ad: true },
+
+  ad_video:     { site:"ab",   cents:  5000, mode:"payment",
+                  label:"AdHotBox — a placement for a month: video, 45 seconds",
+                  grants:"placement", days: 31, ad: true },
+
+  ad_political: { site:"ab",   cents: 11000, mode:"payment",
+                  label:"AdHotBox — a placement for a month: political or ballot question (carries a paid-for line)",
+                  grants:"placement", days: 31, ad: true },
+
+  ad_political_video: { site:"ab", cents: 15000, mode:"payment",
+                  label:"AdHotBox — a placement for a month: political video, 45 seconds",
+                  grants:"placement", days: 31, ad: true },
 
   /* ---------- THE GIG — 21 Sep 2026 ----------
      A gig on the Gigapoo engine, paid by card. `cents: 0, gig: true` means
@@ -666,19 +693,12 @@ async function buy(env, q, request) {
     /* a one-off payment can carry its own descriptor */
     form.set("payment_intent_data[statement_descriptor_suffix]", site.suffix.slice(0, 10));
     form.set("payment_intent_data[description]", sku.label);
-    /* ⚠ BANK TRANSFER BESIDE THE CARD ON ANYTHING BIG — 21 Sep 2026. His
-       worry: large payments cost us in card fees. Stripe's ACH debit is 0.8%
-       capped at $5 against 2.9% + 30¢ on a card, so from $150 up the buyer
-       sees both and picks. ACH confirms days later: Stripe fires
-       checkout.session.completed with payment_status "unpaid", then
-       async_payment_succeeded — the webhook grants on the second, never the
-       first. Under $150 it is card only: nobody waits four days for a shirt. */
-    const totalNow = items.reduce((n, x) => n + x.cents, 0);
-    if (totalNow >= ACH_FROM_CENTS) {
-      form.set("payment_method_types[0]", "card");
-      form.set("payment_method_types[1]", "us_bank_account");
-      form.set("payment_method_options[us_bank_account][financial_connections][permissions][0]", "payment_method");
-    }
+    /* STRIPE IS CARDS ONLY — his rule, 21 Sep 2026, later the same day: "the
+       bank payment is only on ACH (achplug.com), not on Stripe; Stripe is for
+       credit cards only." The bank-transfer option Stripe offered from $150
+       (3f) is withdrawn; the webhook's async_payment branches stay as a
+       harmless guard. Big money — a domain, a project — is escrow or wire. */
+    form.set("payment_method_types[0]", "card");
   }
 
   const r = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -813,6 +833,15 @@ async function webhook(env, request) {
           const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
           await log(env, { kind: "store-order", session: o.id, note: (await rs.text()).slice(0, 200) });
         } catch (e) { await log(env, { kind: "store-order-failed", session: o.id, note: String(e).slice(0, 200) }); }
+      }
+      /* an AdHotBox placement: the money goes on the network's books — against
+         the campaign code in `ref` if it is one, else on the advertiser's balance */
+      if (one.ad) {
+        try {
+          const qs = new URLSearchParams({ action: "paid", code: m.ref || "", email: m.email || "", sku: name, cents: String(one.cents || 0), session: o.id });
+          const rs = await fetch(AB_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
+          await log(env, { kind: "ad-paid", session: o.id, note: (await rs.text()).slice(0, 200) });
+        } catch (e) { await log(env, { kind: "ad-pay-failed", session: o.id, note: String(e).slice(0, 200) }); }
       }
       await grant(env, m.email, name, one, m.ref, o.id + "#" + name, one.cents, one.reader || null);
       /* ⚠ A SUBSCRIPTION'S ID IS KEPT so that when it is cancelled the
