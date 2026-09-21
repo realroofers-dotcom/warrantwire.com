@@ -125,6 +125,7 @@ export default {
       if (q.get("company")) return json(await readCompany(env, q, request), cors);
       if (q.get("rescan"))  return json(await addRescan(env, q), cors);
       if (q.get("agents"))  return json(await agentsSearch(env, q, url.origin), cors);
+      if (q.get("states"))  return json(await statesOf(env, q), cors);
     } catch (e) { return json({ ok:false, error:String(e) }, cors, 500); }
 
     const key = request.headers.get("X-Auth-Key") || q.get("key");
@@ -152,7 +153,7 @@ export default {
       }
       if (action === "searches") return json(await readSearches(env, q), cors);
       if (action === "tickers") return json(await loadTickers(env), cors);
-      if (action === "sic")     return json(await loadSic(env, +(q.get("max")||"150")), cors);
+      if (action === "sic")     return json(await loadSic(env, +(q.get("max")||"150"), q.get("all") === "1"), cors);
       if (action === "sectors") return json(await readSectors(env, q), cors);
       if (action === "holders") return json(await findHolders(env, q), cors);
       if (action === "ownership") return json(await readOwnership(env, q), cors);
@@ -436,15 +437,19 @@ function sectorOf(sic) {
   return "Other";
 }
 
-async function loadSic(env, max) {
+async function loadSic(env, max, all) {
   await env.OVERHANG.prepare(
     `CREATE TABLE IF NOT EXISTS cik_sic (cik TEXT PRIMARY KEY, sic TEXT, sic_desc TEXT,
        sector TEXT, state_inc TEXT, name TEXT, fetched_at TEXT DEFAULT (datetime('now')))`).run();
   await addProfileColumns(env);
 
-  /* only the CIKs the wire has seen and we do not know yet */
-  const r = await env.OVERHANG.prepare(
-    `SELECT DISTINCT cik FROM wire_hits
+  /* only the CIKs the wire has seen and we do not know yet — or, with all=1,
+     EVERY company on the SEC's ticker map (21 Sep: the states page counts the
+     public companies incorporated in each state, so every one needs a state) */
+  const r = await env.OVERHANG.prepare(all
+    ? `SELECT DISTINCT cik FROM cik_tickers
+        WHERE CAST(cik AS INTEGER) NOT IN (SELECT CAST(cik AS INTEGER) FROM cik_sic) LIMIT ?`
+    : `SELECT DISTINCT cik FROM wire_hits
       WHERE cik IS NOT NULL AND cik <> ''
         AND CAST(cik AS INTEGER) NOT IN (SELECT CAST(cik AS INTEGER) FROM cik_sic)
       LIMIT ?`).bind(Math.min(max, 400)).all();
@@ -1592,6 +1597,33 @@ async function agentsSearch(env, q, origin) {
   } catch (e) { return { ok:false, error: String(e) }; }
 }
 const BUILD_AGENTS = "triggeredshort-wire 2j · 2026-09-21 · agents";
+/* ------------------------------------------------------------------
+   THE STATES — his rule, 21 Sep 2026: rank the states by fairness of
+   their corporate law to shareholders, count the public companies in
+   each, list the symbols. The count and the symbols are here; the
+   ranking is on the page, written out with its statutes.
+     ?states=1              every state: how many, and the symbols
+     ?states=1&state=NV     one state: the companies, with names
+------------------------------------------------------------------ */
+async function statesOf(env, q) {
+  const one = String(q.get("state") || "").toUpperCase();
+  try {
+    if (one) {
+      const r = await env.OVERHANG.prepare(
+        `SELECT c.ticker, c.title, c.exchange, s.sector FROM cik_sic s JOIN cik_tickers c ON CAST(c.cik AS INTEGER) = CAST(s.cik AS INTEGER)
+          WHERE UPPER(s.state_inc) = ? AND c.ticker IS NOT NULL AND c.ticker <> '' ORDER BY c.title LIMIT 3000`).bind(one).all();
+      return { ok:true, build: BUILD_AGENTS, state: stateOf(one), count: (r.results || []).length,
+        companies: (r.results || []).map(x => ({ ticker: x.ticker, name: x.title, exchange: x.exchange || null, sector: x.sector || null })) };
+    }
+    const r = await env.OVERHANG.prepare(
+      `SELECT UPPER(s.state_inc) st, COUNT(*) n, GROUP_CONCAT(c.ticker, ' ') tickers FROM cik_sic s JOIN cik_tickers c ON CAST(c.cik AS INTEGER) = CAST(s.cik AS INTEGER)
+        WHERE s.state_inc IS NOT NULL AND s.state_inc <> '' AND c.ticker IS NOT NULL AND c.ticker <> '' GROUP BY UPPER(s.state_inc) ORDER BY n DESC`).all();
+    const known = await env.OVERHANG.prepare("SELECT (SELECT COUNT(*) FROM cik_tickers) all_tickers, (SELECT COUNT(*) FROM cik_sic WHERE state_inc IS NOT NULL AND state_inc <> '') with_state").first();
+    return { ok:true, build: BUILD_AGENTS, companies_on_map: Number(known.all_tickers) || 0, with_a_state: Number(known.with_state) || 0,
+      states: (r.results || []).map(x => ({ code: x.st, name: (stateOf(x.st) || {}).name || x.st, count: x.n, tickers: String(x.tickers || "").split(" ").filter(Boolean).sort() })),
+      note: "The state of incorporation is the SEC's own record of each filer. A company is counted once it has been looked at; the walk over the whole ticker map is under way." };
+  } catch (e) { return { ok:false, error: String(e) }; }
+}
 /* the house fills the table: the next N companies on the wire not yet looked at */
 async function agentsFill(env, max) {
   const lim = Math.max(1, Math.min(60, Number(max) || 40));
