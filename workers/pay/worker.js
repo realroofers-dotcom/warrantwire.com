@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3d · 2026-09-12 · the Wall St Domains watch: every ten minutes, new submissions, contacts and captured emails are mailed to the founder";
+const BUILD = "pay-3e · 2026-09-21 · Stripe on everything: the gig (priced by the engine, booked there), the Wise Sleuth T-shirt (shipping collected)";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -83,8 +83,16 @@ const SITE = {
      `back` is where the buyer lands afterwards — that site has no
      thanks.html, it has a seller page that reads the session id. */
   wsd:   { name: "Wall St Domains", suffix: "WALLSTDOM", home: "https://wallstdomains.com",
-           back: "/list-domain?paid={CHECKOUT_SESSION_ID}", off: "/list-domain?cancelled=1" }
+           back: "/list-domain?paid={CHECKOUT_SESSION_ID}", off: "/list-domain?cancelled=1" },
+  /* 21 Sep 2026 — STRIPE ON EVERYTHING. His call. The gig engine's sites, the
+     store and the research club sell through here: same account, same
+     webhook, same books. */
+  gp:    { name: "Gigapoo",        suffix: "GIGAPOO",    home: "https://gigapoo.com",    back: "/?paid={CHECKOUT_SESSION_ID}", off: "/?cancelled=1" },
+  ws:    { name: "Wise Sleuth",    suffix: "WISESLEUTH", home: "https://wisesleuth.com", back: "/?paid={CHECKOUT_SESSION_ID}", off: "/?cancelled=1" }
 };
+/* the gig engine's site keys → where the buyer was standing */
+const GIG_SITE = { wire: "wire", k8: "k8", gigapoo: "gp", nujobi: "gp", wisesleuth: "ws" };
+const GIG_API = "https://api.gigapoo.com";
 
 /* THE PRICE LIST. The pages must match this; this is what charges.
 
@@ -228,7 +236,33 @@ const SKU = {
 
   wsd_partner:  { site:"wsd",  cents:  6000, mode:"payment",
                   label:"Wall St Domains — Partnership option, one year",
-                  grants:"partner", days: 365 }
+                  grants:"partner", days: 365 },
+
+  /* ---------- THE GIG — 21 Sep 2026 ----------
+     A gig on the Gigapoo engine, paid by card. `cents: 0, gig: true` means
+     "look it up": buy() reads the offer's price and the buyer's flat fee from
+     the engine (?offer=<id>) at the moment of sale. The webhook books the sale
+     on the engine (?action=sale, rail stripe) — the seller absorbs Stripe's
+     fee there and is paid by ACH through achpay.com. Nothing is granted here
+     but the receipt. */
+  gig:          { site:"gp",   cents: 0, mode:"payment", gig: true,
+                  label:"Gigapoo — a gig", grants:"gig", days: 3650 },
+
+  /* ---------- THE T-SHIRT — 21 Sep 2026 ----------
+     Wise Sleuth's shirt. A physical thing: Stripe collects the shipping
+     address; ref carries size and colour; the founder ships it. $28, US
+     shipping included. */
+  /* ---------- THE STORE — 21 Sep 2026 ----------
+     ONE STORE FOR ALL THE SITES, his call: "like a department store — other
+     sites use it and we get our cut." A product lives on the engine
+     (gp_products) under the site that sells it; `cents: 0, store: true`
+     means buy() reads its price from the engine (?product=<id>) at the
+     moment of sale. Stripe collects the shipping address; the vendor ships;
+     the webhook books the order on the vendor site's ledger — and the
+     house's cut is the same half-year bill every site pays. The first
+     product is Wise Sleuth's T-shirt. */
+  store:        { site:"gp",   cents: 0, mode:"payment", store: true, ship: true,
+                  label:"The store", grants:"store", days: 3650 }
 
   /* RETIRED, kept as history: opinion_10 ($129 for ten when one was $16),
      reader ($1,340) and pro ($3,990) — none can be sold against an $1,800
@@ -477,6 +511,40 @@ async function buy(env, q, request) {
     items[rv].reader = w.email;
   }
 
+  /* ⚠ A GIG IS PRICED BY THE ENGINE at the moment of sale: the offer's price
+     plus the buyer's flat fee, and the seller must be payable (achpay on file). */
+  const gi = items.findIndex(x => x.gig);
+  let gigMeta = null;
+  if (gi > -1) {
+    if (items.length > 1) throw new Error("a gig is bought on its own");
+    const offerId = String(q.get("gig") || q.get("offer") || "").trim();
+    if (!offerId) throw new Error("which gig? (&gig=<offer id>)");
+    const r0 = await fetch(GIG_API + "/?offer=" + encodeURIComponent(offerId), { headers: { "Accept": "application/json" } });
+    const o = r0.ok ? await r0.json() : null;
+    if (!o || !o.ok) throw new Error((o && o.error) || "no such gig");
+    if (!o.payable) throw new Error(o.by.name + " cannot be paid yet — no achpay.com address on file");
+    items[gi].cents = o.buyer_pays_cents;
+    items[gi].label = "Gigapoo — " + o.title + " · by " + o.by.name;
+    gigMeta = { offer: String(o.id), seller: String(o.by.id), gsite: String(o.site || ""), price_cents: String(o.price_cents), delivery: String(o.delivery || "text"), where: String(o.where || "remote") };
+  }
+
+  /* ⚠ A STORE PRODUCT IS PRICED BY THE ENGINE at the moment of sale */
+  const si = items.findIndex(x => x.store);
+  let storeMeta = null;
+  if (si > -1) {
+    if (items.length > 1) throw new Error("a product is bought on its own");
+    const productId = String(q.get("product") || "").trim();
+    if (!productId) throw new Error("which product? (&product=<id>)");
+    const r1 = await fetch(GIG_API + "/?product=" + encodeURIComponent(productId), { headers: { "Accept": "application/json" } });
+    const pr = r1.ok ? await r1.json() : null;
+    if (!pr || !pr.ok) throw new Error((pr && pr.error) || "no such product");
+    if (pr.product.sold_out) throw new Error("sold out");
+    items[si].cents = pr.product.price_cents;
+    items[si].label = pr.product.sold_by + " — " + pr.product.title + (q.get("ref") ? " · " + String(q.get("ref")).slice(0, 30) : "");
+    items[si].ship = !!pr.product.ships;
+    storeMeta = { product: String(pr.product.id), psite: String(pr.product.site || ""), price_cents: String(pr.product.price_cents) };
+  }
+
   /* ⚠ TWO SUBSCRIPTIONS CANNOT SHARE A SESSION. One subscription CAN carry
      one-off lines — Stripe puts them on the first invoice — which is how a
      monthly listing takes its add-ons (11 Sep 2026). The subscription has to
@@ -528,6 +596,11 @@ async function buy(env, q, request) {
     form.set("metadata[reader]", items[rv].reader);
     form.set("metadata[reader_cents]", String(items[rv].cents));
   }
+  if (gigMeta) for (const k of Object.keys(gigMeta)) form.set("metadata[gig_" + k + "]", gigMeta[k]);
+  if (storeMeta) for (const k of Object.keys(storeMeta)) form.set("metadata[store_" + k + "]", storeMeta[k]);
+  /* a physical thing: Stripe asks for the shipping address; quantity allowed */
+  const qty = Math.max(1, Math.min(10, parseInt(q.get("qty") || "1", 10) || 1));
+  if (items.some(x => x.ship)) { form.set("shipping_address_collection[allowed_countries][0]", "US"); form.set("phone_number_collection[enabled]", "true"); }
 
   /* ⚠ ONE LINE PER THING, so the buyer sees on Stripe's own page exactly what
      he saw on the checkout — not a single total he has to take on trust. */
@@ -630,6 +703,31 @@ async function webhook(env, request) {
           .bind(o.id + "#" + name, name).first();
       } catch (e) { had = null; }
       if (had) continue;
+      /* a gig: the price is what the buyer paid; the sale goes on the engine's books */
+      if (one.gig) {
+        one.cents = Number(o.amount_total || 0);
+        try {
+          const gsite = m.gig_gsite || "gigapoo";
+          const qs = new URLSearchParams({ action: "sale", key: env.LOG_KEY || "", site: gsite, seller: m.gig_seller || "", offer: m.gig_offer || "",
+            price: (Number(m.gig_price_cents || 0) / 100).toFixed(2), buyer_email: m.email || "", delivery: m.gig_delivery || "text", where: m.gig_where || "remote", rail: "stripe", ref: "stripe:" + o.id });
+          const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
+          await log(env, { kind: "gig-booked", session: o.id, note: (await rs.text()).slice(0, 200) });
+        } catch (e) { await log(env, { kind: "gig-book-failed", session: o.id, note: String(e).slice(0, 200) }); }
+      }
+      /* the store: the order — product, what was paid, the choice (size), the
+         address Stripe collected — goes to the engine, which books the sale on
+         the vendor site's ledger and holds the order for the vendor to ship */
+      if (one.store) {
+        one.cents = Number(o.amount_total || 0);
+        try {
+          const sd = o.shipping_details || o.customer_details || {};
+          const qs = new URLSearchParams({ action: "order", key: env.LOG_KEY || "", product: m.store_product || "", site: m.store_psite || "", paid_cents: String(one.cents),
+            buyer_email: m.email || "", buyer_name: sd.name || "", phone: (o.customer_details || {}).phone || "", ref: "stripe:" + o.id, choice: m.ref || "",
+            address: JSON.stringify(sd.address || {}) });
+          const rs = await fetch(GIG_API + "/?" + qs.toString(), { headers: { "X-Auth-Key": env.LOG_KEY || "" } });
+          await log(env, { kind: "store-order", session: o.id, note: (await rs.text()).slice(0, 200) });
+        } catch (e) { await log(env, { kind: "store-order-failed", session: o.id, note: String(e).slice(0, 200) }); }
+      }
       await grant(env, m.email, name, one, m.ref, o.id + "#" + name, one.cents, one.reader || null);
       /* ⚠ A SUBSCRIPTION'S ID IS KEPT so that when it is cancelled the
          entitlement ends with it (see customer.subscription.deleted). Before
