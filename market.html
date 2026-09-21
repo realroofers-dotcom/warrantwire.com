@@ -18,6 +18,14 @@
 <title>The market — named readers, real people. Warrant Wire</title>
 <meta name="description" content="Named people who read warrant filings for a living, and people who need one read. Every seller has a name, a telephone and a location on file, verified by a call. Nobody is anonymous.">
 <link rel="canonical" href="https://warrantwire.com/market.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Warrant Wire">
+<meta property="og:title" content="The market — named readers, real people. Warrant Wire">
+<meta property="og:description" content="Named people who read warrant filings for a living, and people who need one read. Every seller has a name, a telephone and a location on file, verified by a call. Nobody is anonymous.">
+<meta property="og:url" content="https://warrantwire.com/market.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The market — named readers, real people. Warrant Wire">
+<meta name="twitter:description" content="Named people who read warrant filings for a living, and people who need one read. Every seller has a name, a telephone and a location on file, verified by a call. Nobody is anonymous.">
 <meta name="robots" content="index, follow">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="/wire.css?v=2a">
@@ -50,6 +58,11 @@ html.light header.top{background:#fff}
   <a href="/readers.html">GIG readers</a>
   <a href="/prices.html">Prices</a>
 </nav></div>
+<div class="wrap"><form class="sellbox" onsubmit="var v=this.q.value.trim().toUpperCase(); if(v) location.href='/company.html?t='+encodeURIComponent(v); return false;" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px auto 0;padding:12px 14px;border:2px solid var(--hot,#c0392b);border-radius:10px;background:rgba(192,57,43,.04)">
+  <label for="q2" style="font:700 14px var(--sans,sans-serif);color:var(--hot,#c0392b);white-space:nowrap">Search a company &mdash; the red flags are free, the verdict is $12</label>
+  <input id="q2" name="q" placeholder="Ticker or name — old ones work too" autocomplete="off" style="flex:1 1 220px;font:600 16px var(--sans,sans-serif);padding:10px 12px;border:2px solid var(--ink,#14150f);border-radius:8px;background:#fff;color:var(--ink,#14150f)">
+  <button type="submit" style="font:700 15px var(--sans,sans-serif);background:var(--hot,#c0392b);color:#fff;border:0;border-radius:8px;padding:11px 18px;cursor:pointer">The verdict &rarr;</button>
+</form></div>
 
 <main><div class="wrapn">
   <section class="mk">
