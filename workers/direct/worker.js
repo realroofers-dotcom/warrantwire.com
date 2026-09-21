@@ -50,11 +50,10 @@ const DOORS = {
      stands. When a brand's site is live, take its line OUT of here and give
      the zone real records — a brand is not a door. Out of park's for-sale
      table. */
-  "nujobi.com":  { page: false, to: "https://warrantwire.com/market" },
-  /* 21 Sep: wisesleuth.com is the research club for senior citizens — its
-     page lives on the engine's site until it has one of its own. The other
-     two names bought with it (wisesleuths.com, wslth.com) stay for sale. */
-  "wisesleuth.com": { page: false, to: "https://gigapoo.com/wisesleuth" }
+  "nujobi.com":  { page: false, to: "https://warrantwire.com/market" }
+  /* 21 Sep: wisesleuth.com is a SITE — the research club — served by the
+     `wisesleuth` worker in the gigapoo repo, not a door. wisesleuths.com and
+     wslth.com, bought with it, are for sale (park). */
   /* gigapoo.com left the doors on 20 Sep: it is a site now (Pages project
      `gigapoo`, the engine's own home). nujobi.com opens on the market until
      its own site is built. */
