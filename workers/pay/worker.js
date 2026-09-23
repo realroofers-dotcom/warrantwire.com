@@ -366,7 +366,9 @@ export default {
   async scheduled(event, env, ctx) {
     /* two clocks: every ten minutes the Wall St Domains watch; every sixth
        hour the payouts as before. Which one fired is on event.cron. */
-    if (String(event.cron || "").startsWith("*/10")) ctx.waitUntil(wsdWatch(env));
+    const when = String(event.cron || "");
+    if (when.startsWith("*/10")) ctx.waitUntil(wsdWatch(env));
+    else if (when.startsWith("0 13")) ctx.waitUntil(wsdDaily(env).catch(() => {}));   /* 9am New York: the daily note */
     else ctx.waitUntil((async () => { await release(env); await wsdProjects(env).catch(() => {}); })());
   },
 
@@ -438,6 +440,7 @@ export default {
            ever send each item once, the watermark sees to that. */
         if (q.get("watch") === "1") c.watch = await wsdWatch(env);
         if (q.get("projects") === "1") c.projects = await wsdProjects(env);
+        if (q.get("daily") === "1") c.daily = await wsdDaily(env, true);
         else { try { c.watch_marks = (await env.OVERHANG.prepare("SELECT * FROM wsd_watch").all()).results; } catch (e) {} }
         return json(c, cors);
       }
@@ -1426,8 +1429,8 @@ async function wsdWatch(env) {
     if (!Array.isArray(rows) || !rows.length) { await env.OVERHANG.prepare("UPDATE wsd_watch SET checked = datetime('now') WHERE tbl = ?").bind(t.table).run(); out.push(t.table + ": nothing new"); continue; }
     let sent = 0, thanked = 0, last = null;
     for (const r of rows) {
-      const ok = await mailFounder(env, "Wall St Domains: " + t.what + (r.domains || r.domain_name || r.name ? " — " + (r.domains || r.domain_name || r.name) : ""),
-        t.line(r).filter(Boolean).concat(["", "received " + (r.created_at || "?") + " · id " + (r.id || "?")]).join("\n"), WSD_MAIL);
+      const ok = await mailBoth(env, "Wall St Domains: " + t.what + (r.domains || r.domain_name || r.name ? " — " + (r.domains || r.domain_name || r.name) : ""),
+        t.line(r).filter(Boolean).concat(["", "received " + (r.created_at || "?") + " · id " + (r.id || "?")]).join("\n"));
       if (!ok) break;                       /* mail failed: stop, keep the mark, retry next run */
       sent++; last = r.created_at;
       /* and the visitor hears back — never the founder's own address */
@@ -1439,6 +1442,97 @@ async function wsdWatch(env) {
   }
   await log(env, { kind:"wsd-watch", note: out.join(" | ") }).catch(() => {});
   return { ok:true, watched: out };
+}
+
+/* ============================================================
+   THE DAILY NOTE — 23 Sep 2026
+
+   One email a morning, to both inboxes: what was looked at, who left
+   an address, what came in. His rule for it: KEEP IT SIMPLE. Counts,
+   the names that moved, the new addresses, and a link. Nothing else.
+
+   Yesterday's figures are kept in D1 so today's can be a CHANGE and
+   not a running total nobody can read. The first morning has nothing
+   to compare against and says so instead of inventing a number.
+   ============================================================ */
+async function sbCount(s, table) {
+  const r = await fetch(s.url + "/rest/v1/" + table + "?select=id&limit=0",
+    { headers: { ...s.headers, "Prefer": "count=exact" } });
+  const range = r.headers.get("content-range") || "";
+  const n = Number((range.split("/")[1] || "").trim());
+  return isNaN(n) ? null : n;
+}
+
+async function wsdDaily(env, force) {
+  const s = sb(env);
+  if (!s) return { ok:false, error:"no Supabase on this worker" };
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS wsd_daily (day TEXT PRIMARY KEY, captures INTEGER, subs INTEGER,
+       contacts INTEGER, views INTEGER, per_domain TEXT, at TEXT DEFAULT (datetime('now')))`).run();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const had = await env.OVERHANG.prepare("SELECT * FROM wsd_daily WHERE day = ?").bind(today).first();
+  if (had && !force) return { ok:true, skipped: "already sent today" };
+
+  const prev = await env.OVERHANG.prepare(
+    "SELECT * FROM wsd_daily WHERE day < ? ORDER BY day DESC LIMIT 1").bind(today).first();
+
+  const captures = await sbCount(s, "email_captures");
+  const subs     = await sbCount(s, "domain_sell_submissions");
+  const contacts = await sbCount(s, "contact_entries");
+
+  let rows = [];
+  try { rows = await sbGet(s, "domains?select=name,view_count,buy_price&order=view_count.desc&limit=500"); } catch (e) {}
+  if (!Array.isArray(rows)) rows = [];
+  const views = rows.reduce((n, r) => n + (Number(r.view_count) || 0), 0);
+  const per = {}; rows.forEach(r => { per[r.name] = Number(r.view_count) || 0; });
+
+  /* which names were looked at since yesterday, most first */
+  let before = {}; try { before = JSON.parse((prev && prev.per_domain) || "{}"); } catch (e) {}
+  const moved = Object.keys(per)
+    .map(n => ({ name: n, up: per[n] - (before[n] || 0) }))
+    .filter(x => x.up > 0).sort((a, b) => b.up - a.up).slice(0, 10);
+
+  /* the addresses that came in since yesterday — the list, growing */
+  let fresh = [];
+  if (prev) {
+    try {
+      fresh = await sbGet(s, "email_captures?select=email,domain_name,purpose,created_at&created_at=gt." +
+        encodeURIComponent(String(prev.at).replace(" ", "T") + "Z") + "&order=created_at.desc&limit=25");
+    } catch (e) {}
+  }
+  if (!Array.isArray(fresh)) fresh = [];
+
+  const d = (now, was) => (was == null || now == null) ? "" : (now - was >= 0 ? " (+" + (now - was) + ")" : " (" + (now - was) + ")");
+  const body = [
+    prev ? "Since yesterday." : "The first note — nothing to compare it with yet.",
+    "",
+    "Looked at:   " + (prev ? (views - (prev.views || 0)) + " views" : views + " views in all"),
+    "Addresses:   " + captures + d(captures, prev && prev.captures),
+    "Submissions: " + subs + d(subs, prev && prev.subs),
+    "Messages:    " + contacts + d(contacts, prev && prev.contacts),
+    "",
+    moved.length ? "Looked at most:" : "Nothing was looked at.",
+    ...moved.map(x => "  " + x.name + " — " + x.up),
+    "",
+    fresh.length ? "New addresses:" : "",
+    ...fresh.map(x => "  " + x.email + (x.domain_name ? "  (" + x.domain_name + ")" : "")),
+    "",
+    "The desk: " + WSD_LOX
+  ].filter(x => x !== "" || true).join("\n");
+
+  await mailBoth(env, "Wall St Domains — " +
+    new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }), body);
+
+  await env.OVERHANG.prepare(
+    `INSERT INTO wsd_daily (day, captures, subs, contacts, views, per_domain, at)
+     VALUES (?,?,?,?,?,?,datetime('now'))
+     ON CONFLICT(day) DO UPDATE SET captures=excluded.captures, subs=excluded.subs,
+       contacts=excluded.contacts, views=excluded.views, per_domain=excluded.per_domain, at=datetime('now')`)
+    .bind(today, captures, subs, contacts, views, JSON.stringify(per)).run();
+
+  await log(env, { kind:"wsd-daily", note: "views " + views + " · addresses " + captures + " · " + moved.length + " names moved" }).catch(() => {});
+  return { ok:true, views, captures, subs, contacts, moved: moved.length, new_addresses: fresh.length };
 }
 
 /* ============================================================
@@ -1492,7 +1586,7 @@ async function wsdProjects(env) {
     /* only on a change, and on the first sighting only if it is already down */
     const changed = had ? (had.live !== live) : (live === 0);
     if (changed) {
-      await mailFounder(env,
+      await mailBoth(env,
         live ? "Wall St Domains: " + name + " is answering again"
              : "Wall St Domains: " + name + " is listed as a completed project but its site is DOWN",
         live
@@ -1506,7 +1600,7 @@ async function wsdProjects(env) {
               "",
               "Either put the site back up, or change its category off 'Completed project' at " + WSD_HOME + "/lox and it goes back in with the names.",
               "", WSD_HOME + "/projects" ].join("\n"),
-        WSD_MAIL);
+        );
     }
     out.push(name + ": " + (live ? "live" : "DOWN") + " (" + status + ")" + (changed ? " — founder told" : ""));
   }
@@ -1687,7 +1781,7 @@ async function publishListing(env, ref, opts) {
   }, "return=minimal").catch(() => {});
 
   const page = WSD_HOME + "/domain/" + encodeURIComponent(name);
-  await mailFounder(env, "New paid listing: " + name + (premium ? " (Premium)" : ""),
+  await mailBoth(env, "New paid listing: " + name + (premium ? " (Premium)" : ""),
     [ name + " is live: " + page,
       "",
       "Seller: " + (sub.seller_name || sub.name || "?") + " · " + (sub.email || "?") + " · " + (sub.phone || sub.tel_number || "?") + (sub.whatsapp_number ? " · WhatsApp " + sub.whatsapp_number : ""),
@@ -1700,7 +1794,7 @@ async function publishListing(env, ref, opts) {
       "Call the seller. If it is false, take it down:",
       "  https://pay.realroofers.workers.dev/?action=unpublish&ref=" + ref + "&key=YOUR-KEY",
       "(the listing comes off the site; the submission stays in the queue as rejected)"
-    ].filter(x => x !== null).join("\n"), WSD_MAIL);
+    ].filter(x => x !== null).join("\n"));
 
   return { ok:true, name, page, domain_id: dom && dom.id, premium, partner, submission: ref };
 }
