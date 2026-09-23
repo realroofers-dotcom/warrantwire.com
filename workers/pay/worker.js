@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3j · 2026-09-21 · the seven-day promise on every Checkout page (custom_text) and /refunds?on=; 3i: one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account for the rest; 3h: AdHotBox on the desk: ad_standard/video/political/political_video, booked on the network (?action=paid), back to advertise.html?paid=; 3g: Stripe is cards only (bank = achplug.com), the $150+ bank option withdrawn; 3f: Stripe on everything; bank transfer (ACH, 0.8% capped $5) beside the card from $150; granted only when the money is in";
+const BUILD = "pay-3k · 2026-09-23 · forgot the Wall St Domains admin password: ?wsdforgot=1 emails a one-hour link to wallstdomains@gmail.com, ?wsdreset= sets it; pay-3j · 2026-09-21 · the seven-day promise on every Checkout page (custom_text) and /refunds?on=; 3i: one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account fo";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -440,6 +440,11 @@ export default {
         else { try { c.watch_marks = (await env.OVERHANG.prepare("SELECT * FROM wsd_watch").all()).results; } catch (e) {} }
         return json(c, cors);
       }
+      /* the Wall St Domains admin desk, locked out: ask for a link, then set
+         a new password. Public on purpose — the link only ever goes to
+         wallstdomains@gmail.com, so there is nothing here to abuse. */
+      if (q.has("wsdforgot")) return await wsdForgot(env, request);
+      if (q.get("wsdreset"))  return await wsdReset(env, request, q.get("wsdreset"));
       if (q.get("me"))  return json(await me(env, q), cors);
       /* the seller page on Wall St Domains, back from Stripe: was this session paid? */
       if (q.get("paid")) return json(await sessionPaid(env, q), cors);
@@ -1433,6 +1438,125 @@ async function wsdWatch(env) {
   }
   await log(env, { kind:"wsd-watch", note: out.join(" | ") }).catch(() => {});
   return { ok:true, watched: out };
+}
+
+/* ============================================================
+   THE WALL ST DOMAINS ADMIN DESK — FORGOT THE PASSWORD, 23 Sep 2026
+
+   The desk at wallstdomains.com/lox checks the password against
+   admin_users with pgcrypto, and there was no way back if it was
+   lost. There is now, and it is done from here because this is
+   where the service key and a working mailbox already are.
+
+     ?wsdforgot=1   type the username; a link is emailed
+     ?wsdreset=<t>  type the new password
+
+   ⚠ THE LINK GOES TO wallstdomains@gmail.com AND NOWHERE ELSE. The
+   form takes a username, never an address, so a stranger pressing
+   the button can only ever send mail to Mark. The reply never says
+   whether the username existed.
+
+   ⚠ THE TWO FUNCTIONS IT CALLS ARE GRANTED TO THE SERVICE ROLE ONLY
+   (data/forgot_password.sql in the wallstdomains-dotcom repo). The
+   website's public key cannot call them.
+   ============================================================ */
+const WSD_LOX = WSD_HOME + "/lox";
+function wsdPage(title, inner, status = 200) {
+  return new Response(
+`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} — Wall St Domains</title><meta name="robots" content="noindex">
+<style>:root{--ink:#14150f;--ink2:#474a3e;--ink3:#7a7d70;--line:#dcdad0;--panel:#f6f5ef;--gold:#C9A227;--hot:#c0392b}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.w{max-width:520px;margin:0 auto;padding:44px 22px 60px}
+h1{font:700 clamp(24px,4.4vw,32px)/1.15 "Iowan Old Style",Palatino,Georgia,serif;margin:0 0 10px;letter-spacing:-.01em}
+p{color:var(--ink2);margin:0 0 14px}p b{color:var(--ink)}
+form{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin:18px 0 0}
+label{display:block;font:700 11px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 6px}
+input{width:100%;background:#fff;border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:12px 13px;font:16px inherit;margin:0 0 14px}
+input:focus{outline:3px solid rgba(201,162,39,.35);outline-offset:1px}
+button{background:var(--gold);border:0;border-radius:999px;color:#14150f;font:700 15px inherit;padding:12px 20px;cursor:pointer}
+.bad{border-left:3px solid var(--hot);padding-left:12px;color:var(--ink)}
+.fine{font-size:13px;color:var(--ink3);margin-top:16px}
+a{color:#2f7a5a}</style></head><body><div class="w">${inner}</div></body></html>`,
+    { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+
+async function wsdForgot(env, request) {
+  const form = `<h1>Forgot the password.</h1>
+<p>Type the admin username. A link to set a new password is emailed to <b>wallstdomains@gmail.com</b> — the only address it is ever sent to.</p>
+<form method="POST"><label for="u">Admin username</label>
+<input id="u" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" required>
+<button type="submit">Email me the link</button></form>
+<p class="fine">The link lasts an hour and works once. <a href="${WSD_LOX}">Back to the desk</a></p>`;
+  if (request.method !== "POST") return wsdPage("Forgot the password", form);
+
+  const s = sb(env);
+  if (!s) return wsdPage("Not configured", `<h1>Not configured.</h1><p class="bad">This worker has no Supabase key, so it cannot reset anything.</p>`, 500);
+  let who = "";
+  try { who = String((await request.formData()).get("username") || "").trim(); } catch (e) {}
+  if (!who) return wsdPage("Forgot the password", `<p class="bad">A username, please.</p>` + form, 400);
+
+  let r = null;
+  try { r = await sbWrite(s, "POST", "rpc/admin_reset_start", { p_username: who }); }
+  catch (e) {
+    await log(env, { kind:"wsd-forgot-failed", note: String(e).slice(0, 200) }).catch(() => {});
+    return wsdPage("Not ready", `<h1>Not ready yet.</h1><p class="bad">The reset functions are not in the database. Run <b>data/forgot_password.sql</b> in the Supabase SQL Editor once, then try again.</p><p class="fine">${String(e).slice(0, 200)}</p>`, 500);
+  }
+
+  /* ⚠ THE SAME ANSWER EITHER WAY. Whether the username exists is not
+     something a stranger gets to learn from this page. */
+  if (r && r.found && r.token) {
+    const u = new URL(request.url);
+    const link = u.origin + "/?wsdreset=" + r.token;
+    await mailFounder(env,
+      "Wall St Domains: set a new admin password",
+      [ "Somebody asked to reset the password for the admin desk.",
+        "",
+        "Username: " + (r.username || who),
+        "",
+        "Set a new password here — the link lasts one hour and works once:",
+        "  " + link,
+        "",
+        "If this was not you, ignore it. Nothing has changed and the password still works.",
+        "The desk: " + WSD_LOX
+      ].join("\n"), WSD_MAIL);
+  }
+  await log(env, { kind:"wsd-forgot", note: "asked for '" + who.slice(0, 40) + "' · found=" + !!(r && r.found) }).catch(() => {});
+  return wsdPage("Check the inbox",
+    `<h1>Check the inbox.</h1><p>If that account exists, a link is on its way to <b>wallstdomains@gmail.com</b>. It lasts an hour and works once.</p>
+     <p class="fine">Nothing on this page says whether that username exists. <a href="${WSD_LOX}">Back to the desk</a></p>`);
+}
+
+async function wsdReset(env, request, token) {
+  const form = (msg) => `<h1>Set a new password.</h1>${msg || ""}
+<form method="POST"><input type="hidden" name="token" value="${String(token).replace(/[^a-f0-9]/gi, "")}">
+<label for="p">New password</label>
+<input id="p" name="password" type="password" autocomplete="new-password" minlength="8" required>
+<label for="p2">Again</label>
+<input id="p2" name="again" type="password" autocomplete="new-password" minlength="8" required>
+<button type="submit">Set it</button></form>
+<p class="fine">Eight characters at least. Setting it signs every other browser out.</p>`;
+  if (request.method !== "POST") return wsdPage("Set a new password", form(""));
+
+  const s = sb(env);
+  if (!s) return wsdPage("Not configured", `<h1>Not configured.</h1>`, 500);
+  let pw = "", again = "", tok = token;
+  try { const f = await request.formData(); pw = String(f.get("password") || ""); again = String(f.get("again") || ""); tok = String(f.get("token") || token); } catch (e) {}
+  if (pw !== again) return wsdPage("Set a new password", form(`<p class="bad">Those two did not match.</p>`), 400);
+
+  let r = null;
+  try { r = await sbWrite(s, "POST", "rpc/admin_reset_finish", { p_token: tok, p_password: pw }); }
+  catch (e) { return wsdPage("Not ready", `<h1>Not ready.</h1><p class="bad">${String(e).slice(0, 200)}</p>`, 500); }
+  if (!r || !r.ok) return wsdPage("Set a new password", form(`<p class="bad">${(r && r.error) || "That did not work."}</p>`), 400);
+
+  await log(env, { kind:"wsd-reset", note: "password set for " + (r.username || "?") }).catch(() => {});
+  await mailFounder(env, "Wall St Domains: the admin password was changed",
+    "The admin password for " + (r.username || "the desk") + " was just set from a reset link.\n\nIf that was not you, set it again now: " +
+    new URL(request.url).origin + "/?wsdforgot=1", WSD_MAIL);
+  return wsdPage("Done",
+    `<h1>Done.</h1><p>The password is set for <b>${(r.username || "the desk")}</b>, and every other browser is signed out.</p>
+     <p><a href="${WSD_LOX}">Sign in at the desk &rarr;</a></p>`);
 }
 
 /* the number in "asking $12,000" and its kin, when the old form put prices in the notes */
