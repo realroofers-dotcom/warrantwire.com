@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3k · 2026-09-23 · forgot the Wall St Domains admin password: ?wsdforgot=1 emails a one-hour link to wallstdomains@gmail.com, ?wsdreset= sets it; pay-3j · 2026-09-21 · the seven-day promise on every Checkout page (custom_text) and /refunds?on=; 3i: one Stripe account per brand: STRIPE_KEY_<SITE> / STRIPE_WH_<SITE> per site, the house account fo";
+const BUILD = "pay-3l · 2026-09-23 · a completed project must still be LIVE: every six hours each one is fetched and the founder is told when the answer changes; pay-3k · 2026-09-23 · forgot the Wall St Domains admin password: ?wsdforgot=1 emails a one-hour link to wallstdomains@gmail.com, ?wsdreset= sets it; pay-3j · 2026-09-21 · the seven";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -367,7 +367,7 @@ export default {
     /* two clocks: every ten minutes the Wall St Domains watch; every sixth
        hour the payouts as before. Which one fired is on event.cron. */
     if (String(event.cron || "").startsWith("*/10")) ctx.waitUntil(wsdWatch(env));
-    else ctx.waitUntil(release(env));
+    else ctx.waitUntil((async () => { await release(env); await wsdProjects(env).catch(() => {}); })());
   },
 
   async fetch(request, env) {
@@ -437,6 +437,7 @@ export default {
         /* &watch=1 runs the ten-minute watch now. Safe to expose: it can only
            ever send each item once, the watermark sees to that. */
         if (q.get("watch") === "1") c.watch = await wsdWatch(env);
+        if (q.get("projects") === "1") c.projects = await wsdProjects(env);
         else { try { c.watch_marks = (await env.OVERHANG.prepare("SELECT * FROM wsd_watch").all()).results; } catch (e) {} }
         return json(c, cors);
       }
@@ -1438,6 +1439,79 @@ async function wsdWatch(env) {
   }
   await log(env, { kind:"wsd-watch", note: out.join(" | ") }).catch(() => {});
   return { ok:true, watched: out };
+}
+
+/* ============================================================
+   IS THE PROJECT STILL LIVE? — 23 Sep 2026
+
+   His rule: a completed project must STILL BE LIVE, otherwise it is
+   just a domain. The marketplace calls a row a project when its
+   category says "Completed project", and the card then sends the
+   buyer to https://<name>/ — so the day that site stops answering,
+   the listing is selling something that is not there.
+
+   Nothing here changes a listing. It LOOKS, every six hours, and
+   writes to the founder when the answer changes — up to down, or
+   down to up. A page that quietly took a listing down would be
+   worse than the problem: the decision is his.
+   ============================================================ */
+async function wsdProjects(env) {
+  const s = sb(env);
+  if (!s) return { ok:false, error:"no Supabase on this worker" };
+  await env.OVERHANG.prepare(
+    `CREATE TABLE IF NOT EXISTS wsd_projects (name TEXT PRIMARY KEY, live INTEGER, status TEXT, checked TEXT)`).run();
+
+  let rows = [];
+  try { rows = await sbGet(s, "domains?select=name,buy_price,is_sold&category=ilike.*completed%20project*&is_sold=eq.false&limit=100"); }
+  catch (e) { return { ok:false, error: String(e).slice(0, 160) }; }
+  if (!Array.isArray(rows)) rows = [];
+
+  const out = [];
+  for (const r of rows) {
+    const name = String(r.name || "").trim().toLowerCase();
+    if (!name) continue;
+    let live = 0, status = "";
+    try {
+      const resp = await fetch("https://" + name + "/", { redirect: "follow", cf: { cacheTtl: 0 } });
+      status = String(resp.status);
+      /* ⚠ 200 IS NOT ENOUGH ON ITS OWN. A parked page answers 200 too, and the
+         park worker's own redirect would send this straight to the marketplace
+         — a project pointing at its own for-sale page is not a live project. */
+      const where = String(resp.url || "");
+      const parked = /wallstdomains\.com/i.test(where) || resp.headers.get("X-Parked-By");
+      live = (resp.ok && !parked) ? 1 : 0;
+      if (parked) status += " (parked, not a site)";
+    } catch (e) { status = "no answer: " + String(e).slice(0, 60); }
+
+    const had = await env.OVERHANG.prepare("SELECT live FROM wsd_projects WHERE name = ?").bind(name).first();
+    await env.OVERHANG.prepare(
+      `INSERT INTO wsd_projects (name, live, status, checked) VALUES (?,?,?,datetime('now'))
+       ON CONFLICT(name) DO UPDATE SET live=excluded.live, status=excluded.status, checked=datetime('now')`)
+      .bind(name, live, status).run();
+
+    /* only on a change, and on the first sighting only if it is already down */
+    const changed = had ? (had.live !== live) : (live === 0);
+    if (changed) {
+      await mailFounder(env,
+        live ? "Wall St Domains: " + name + " is answering again"
+             : "Wall St Domains: " + name + " is listed as a completed project but its site is DOWN",
+        live
+          ? [ name + " is back up (" + status + ").",
+              "It is listed as a completed project at $" + Number(r.buy_price || 0).toLocaleString("en-US") + " and the listing is fine as it stands.",
+              "", WSD_HOME + "/projects" ].join("\n")
+          : [ name + " did not answer as a live site — " + status + ".",
+              "",
+              "It is listed as a COMPLETED PROJECT at $" + Number(r.buy_price || 0).toLocaleString("en-US") + ", and the card on the marketplace sends buyers straight to https://" + name + "/.",
+              "A project has to be live; a project that is dark is just a domain.",
+              "",
+              "Either put the site back up, or change its category off 'Completed project' at " + WSD_HOME + "/lox and it goes back in with the names.",
+              "", WSD_HOME + "/projects" ].join("\n"),
+        WSD_MAIL);
+    }
+    out.push(name + ": " + (live ? "live" : "DOWN") + " (" + status + ")" + (changed ? " — founder told" : ""));
+  }
+  await log(env, { kind:"wsd-projects", note: out.join(" | ").slice(0, 400) }).catch(() => {});
+  return { ok:true, checked: rows.length, projects: out };
 }
 
 /* ============================================================
