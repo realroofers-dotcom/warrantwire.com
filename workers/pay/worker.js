@@ -1583,7 +1583,7 @@ async function wsdForgot(env, request) {
   if (r && r.found && r.token) {
     const u = new URL(request.url);
     const link = u.origin + "/?wsdreset=" + r.token;
-    await mailFounder(env,
+    await mailBoth(env,
       "Wall St Domains: set a new admin password",
       [ "Somebody asked to reset the password for the admin desk.",
         "",
@@ -1594,7 +1594,7 @@ async function wsdForgot(env, request) {
         "",
         "If this was not you, ignore it. Nothing has changed and the password still works.",
         "The desk: " + WSD_LOX
-      ].join("\n"), WSD_MAIL);
+      ].join("\n"));
   }
   await log(env, { kind:"wsd-forgot", note: "asked for '" + who.slice(0, 40) + "' · found=" + !!(r && r.found) }).catch(() => {});
   return wsdPage("Check the inbox",
@@ -1625,9 +1625,9 @@ async function wsdReset(env, request, token) {
   if (!r || !r.ok) return wsdPage("Set a new password", form(`<p class="bad">${(r && r.error) || "That did not work."}</p>`), 400);
 
   await log(env, { kind:"wsd-reset", note: "password set for " + (r.username || "?") }).catch(() => {});
-  await mailFounder(env, "Wall St Domains: the admin password was changed",
+  await mailBoth(env, "Wall St Domains: the admin password was changed",
     "The admin password for " + (r.username || "the desk") + " was just set from a reset link.\n\nIf that was not you, set it again now: " +
-    new URL(request.url).origin + "/?wsdforgot=1", WSD_MAIL);
+    new URL(request.url).origin + "/?wsdforgot=1");
   return wsdPage("Done",
     `<h1>Done.</h1><p>The password is set for <b>${(r.username || "the desk")}</b>, and every other browser is signed out.</p>
      <p><a href="${WSD_LOX}">Sign in at the desk &rarr;</a></p>`);
@@ -1724,6 +1724,35 @@ async function unpublishListing(env, ref, why) {
 
 /* Cloudflare Email Service: the EMAIL send_email binding, from warrantwire.com,
    the same way the wire worker writes to readers. To the founder only. */
+/* ⚠ TWO INBOXES, ON PURPOSE — 23 Sep 2026.
+
+   A reset link that goes to one mailbox locks the desk for good the day
+   that mailbox cannot be reached. And that is not hypothetical: on 23 Sep
+   a link was made for the right account, the worker reported NO error, and
+   nothing ever arrived at wallstdomains@gmail.com. Cloudflare will only
+   deliver to an address VERIFIED in Email Routing, and an unverified one
+   can be accepted and dropped without a word.
+
+   So anything that must arrive goes to both addresses, each sent on its
+   own and each written to the log. The log then says which inbox actually
+   took it instead of leaving it to guesswork. */
+async function mailBoth(env, subject, text) {
+  const list = [...new Set([WSD_MAIL, env.FOUNDER_EMAIL || "realroofers@gmail.com"]
+    .map(x => String(x || "").trim().toLowerCase()).filter(Boolean))];
+  let any = false;
+  for (const to of list) {
+    if (!(env.EMAIL && env.EMAIL.send)) { await log(env, { kind:"mail-skipped", email: to, note: subject }).catch(() => {}); continue; }
+    try {
+      await env.EMAIL.send({ from: { email: "desk@warrantwire.com", name: "Wall St Domains desk" }, to, subject, text });
+      any = true;
+      await log(env, { kind:"mail-sent", email: to, note: String(subject).slice(0, 120) }).catch(() => {});
+    } catch (e) {
+      await log(env, { kind:"mail-failed", email: to, note: to + " — " + String(e).slice(0, 160) }).catch(() => {});
+    }
+  }
+  return any;
+}
+
 async function mailFounder(env, subject, text, to) {
   to = to || env.FOUNDER_EMAIL || "realroofers@gmail.com";
   if (!(env.EMAIL && env.EMAIL.send)) { await log(env, { kind:"mail-skipped", note: subject }); return false; }
