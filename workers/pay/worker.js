@@ -3,7 +3,7 @@
    said 2g and so did the ?action=prices reply — so a deploy of a new file
    reported the old name and there was no way to tell from the outside which
    file was actually running. */
-const BUILD = "pay-3l · 2026-09-23 · a completed project must still be LIVE: every six hours each one is fetched and the founder is told when the answer changes; pay-3k · 2026-09-23 · forgot the Wall St Domains admin password: ?wsdforgot=1 emails a one-hour link to wallstdomains@gmail.com, ?wsdreset= sets it; pay-3j · 2026-09-21 · the seven";
+const BUILD = "pay-3m · 2026-09-24 · Google suspended wallstdomains@gmail.com: every Wall St Domains letter, the reset link and the thank-you reply-to now go to mark@wallstdomains.com, which Cloudflare Email Routing forwards to realroofers@gmail.com; pay-3l · 2026-09-23 ·a completed project must still be LIVE: every six hours each one is fetched and the founder is told when the answer changes; pay-3k · 2026-09-23 · forgot the Wall St Domains admin password: ?wsdforgot=1 emails a one-hour link to wallstdomains@gmail.com, ?wsdreset= sets it; pay-3j · 2026-09-21 · the seven";
 /* ------------------------------------------------------------------
    WHAT CHANGED FROM 1 SEP
      wire_search   $8  → $12        opinion   $16 → $40
@@ -446,7 +446,7 @@ export default {
       }
       /* the Wall St Domains admin desk, locked out: ask for a link, then set
          a new password. Public on purpose — the link only ever goes to
-         wallstdomains@gmail.com, so there is nothing here to abuse. */
+         mark@wallstdomains.com, so there is nothing here to abuse. */
       if (q.has("wsdforgot")) return await wsdForgot(env, request);
       if (q.get("wsdreset"))  return await wsdReset(env, request, q.get("wsdreset"));
       if (q.get("me"))  return json(await me(env, q), cors);
@@ -1307,8 +1307,11 @@ async function listingPaid(env, q) {
    ============================================================ */
 const WSD_HOME = "https://wallstdomains.com";
 /* ⚠ EVERYTHING ABOUT WALL ST DOMAINS GOES TO THIS ADDRESS — his instruction,
-   12 Sep: the paid-listing note, the watch, the reply-to on every thank-you. */
-const WSD_MAIL = "wallstdomains@gmail.com";
+   12 Sep: the paid-listing note, the watch, the reply-to on every thank-you.
+   24 Sep: Google suspended wallstdomains@gmail.com, so it is now
+   mark@wallstdomains.com — Cloudflare Email Routing forwards that to
+   realroofers@gmail.com. */
+const WSD_MAIL = "mark@wallstdomains.com";
 
 function sb(env) {
   const url = String(env.SUPABASE_URL || "").replace(/\/$/, "");
@@ -1375,13 +1378,13 @@ async function sbCheck(env) {
 /* ⚠ THE VISITOR IS THANKED, FROM HERE TOO. Bolt's thank-you never sent for
    the same reason. Each table names what the visitor gets. Sent from
    desk@wallstdomains.com when Cloudflare will send from that domain, else
-   from desk@warrantwire.com signed Wall St Domains — the founder's address
+   from desk@warrantwire.com signed Wall St Domains — mark@wallstdomains.com
    is the reply-to either way, so an answer comes straight to him. */
 async function mailVisitor(env, to, subject, text) {
   const e = String(to || "").trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return false;
   if (!(env.EMAIL && env.EMAIL.send)) return false;
-  const replyTo = env.FOUNDER_EMAIL || "realroofers@gmail.com";
+  const replyTo = WSD_MAIL;
   for (const from of ["desk@wallstdomains.com", "desk@warrantwire.com"]) {
     try {
       await env.EMAIL.send({ from: { email: from, name: "Wall St Domains" }, to: e, replyTo, subject, text });
@@ -1619,7 +1622,7 @@ async function wsdProjects(env) {
      ?wsdforgot=1   type the username; a link is emailed
      ?wsdreset=<t>  type the new password
 
-   ⚠ THE LINK GOES TO wallstdomains@gmail.com AND NOWHERE ELSE. The
+   ⚠ THE LINK GOES TO mark@wallstdomains.com AND NOWHERE ELSE. The
    form takes a username, never an address, so a stranger pressing
    the button can only ever send mail to Mark. The reply never says
    whether the username existed.
@@ -1652,7 +1655,7 @@ a{color:#2f7a5a}</style></head><body><div class="w">${inner}</div></body></html>
 
 async function wsdForgot(env, request) {
   const form = `<h1>Forgot the password.</h1>
-<p>Type the admin username. A link to set a new password is emailed to <b>wallstdomains@gmail.com</b> — the only address it is ever sent to.</p>
+<p>Type the admin username. A link to set a new password is emailed to <b>mark@wallstdomains.com</b> — the only address it is ever sent to.</p>
 <form method="POST"><label for="u">Admin username</label>
 <input id="u" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" required>
 <button type="submit">Email me the link</button></form>
@@ -1692,7 +1695,7 @@ async function wsdForgot(env, request) {
   }
   await log(env, { kind:"wsd-forgot", note: "asked for '" + who.slice(0, 40) + "' · found=" + !!(r && r.found) }).catch(() => {});
   return wsdPage("Check the inbox",
-    `<h1>Check the inbox.</h1><p>If that account exists, a link is on its way to <b>wallstdomains@gmail.com</b>. It lasts an hour and works once.</p>
+    `<h1>Check the inbox.</h1><p>If that account exists, a link is on its way to <b>mark@wallstdomains.com</b>. It lasts an hour and works once.</p>
      <p class="fine">Nothing on this page says whether that username exists. <a href="${WSD_LOX}">Back to the desk</a></p>`);
 }
 
