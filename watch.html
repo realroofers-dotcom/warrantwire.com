@@ -1,0 +1,285 @@
+<!-- BUILT 2026-09-26 · warrantwire watch-1a · the reverse-merger watch: $100 a year per company, sold here only
+
+     ⚠ NOTHING ON THIS PAGE IS TYPED IN except the rules themselves. Every alert
+     is fetched live from reverse-merger-watch.realroofers.workers.dev, which reads
+     the filings the collector stores. If the worker is not answering, the page
+     says so and shows nothing — never a sample dressed up as a real alert.
+
+     ⚠ NOT FOR SALE YET. The button stays "Opens soon" until one real alert has
+     been delivered end to end (his rule: never sell what is not delivered). When
+     it is: add the SKU rmw_year to checkout.html and the pay worker, then set
+     SELLING = true below.
+
+     ⚠ SOLD ON WARRANT WIRE ONLY. 8K10Q links here. His call, 26 Sep 2026. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reverse-merger watch — Warrant Wire</title>
+<meta name="description" content="Every morning we read the SEC filings of the companies you watch for the signs that come before a reverse merger, a poison pill, a reverse split, a change of control or new warrants — and email you the day they are filed. $100 a year per company.">
+<link rel="canonical" href="https://warrantwire.com/watch.html">
+<meta name="author" content="Mark Nejmeh">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="/wire.css?v=2a">
+<style>
+/* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. */
+.standing{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px 26px;max-width:76ch;margin:0 0 8px}
+.standing p{margin:0 0 13px;max-width:none}
+.standing p:last-child{margin-bottom:0}
+.standing b{color:var(--ink)}
+.sect{padding:34px 0;border-top:1px solid var(--line2)}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:980px;margin:14px 0 0}
+@media(max-width:760px){.levels{grid-template-columns:1fr}}
+.lv{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:16px 18px}
+.lv h3{font:700 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.lv h3 i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.lv.red h3{color:var(--hot)} .lv.red h3 i{background:var(--hot)}
+.lv.amber h3{color:var(--warm)} .lv.amber h3 i{background:var(--warm)}
+.lv.watch h3{color:var(--ink3)} .lv.watch h3 i{background:var(--ink3)}
+.lv ul{margin:0;padding:0 0 0 17px;font-size:14.5px;color:var(--ink2)}
+.lv li{margin:0 0 5px}
+.lv li b{color:var(--ink);font-weight:600}
+.find{display:flex;gap:8px;flex-wrap:wrap;max-width:520px;margin:10px 0 18px}
+.find input{flex:1 1 180px;font:600 16px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:11px 13px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
+.find button{font:600 14px var(--sans);padding:11px 18px;border:0;border-radius:5px;background:var(--ink);color:#fff;cursor:pointer}
+.find input:focus-visible,.find button:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+#who{font:600 17px/1.35 var(--sans);color:var(--ink);margin:0 0 4px}
+#whosub{font:400 12.5px var(--mono);color:var(--ink3);margin:0 0 14px}
+.al{display:grid;grid-template-columns:96px 88px minmax(0,1fr);gap:4px 14px;padding:12px 0;border-top:1px solid var(--line2);max-width:980px;font-size:14.5px}
+.al:first-child{border-top:0}
+.al .lvl{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;border-radius:3px;padding:3px 7px;text-align:center;align-self:start}
+.al .lvl.red{background:var(--hot);color:#fff} .al .lvl.amber{background:var(--warm);color:#fff} .al .lvl.watch{background:var(--line);color:var(--ink2)}
+.al .d{font:400 13px var(--mono);color:var(--ink3);padding-top:2px}
+.al .t b{color:var(--ink);font-weight:600} .al .t .why{color:var(--ink2)} .al .t .ph{font:400 12px var(--mono);color:var(--cool)}
+.al .t a{color:var(--cool);font:400 12.5px var(--mono)}
+@media(max-width:620px){.al{grid-template-columns:1fr}.al .lvl{justify-self:start}}
+.filt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.filt button{font:600 12px var(--mono);padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink2);cursor:pointer}
+.filt button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.msg{border:1px dashed var(--line);border-radius:6px;padding:14px 16px;color:var(--ink2);font-size:14.5px;max-width:76ch}
+.buybox{display:flex;flex-wrap:wrap;gap:18px 30px;align-items:center;border:2px solid var(--ink);border-radius:8px;padding:20px 24px;max-width:780px;background:#fff}
+.buybox .price{font:700 40px/1 var(--mono);color:var(--ink)}
+.buybox .price small{display:block;font:400 12.5px var(--mono);color:var(--ink3);margin-top:6px}
+.buybox p{margin:0;flex:1 1 280px;font-size:14.5px;color:var(--ink2)}
+.buybox button{font:700 15px var(--sans);padding:13px 22px;border-radius:5px;border:0;background:var(--ink);color:#fff;cursor:pointer}
+.buybox button[disabled]{background:var(--line);color:var(--ink3);cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<a class="wwflag" href="/look.html" aria-label="Look at this"><span class="label"><span class="dot" aria-hidden="true"></span>Look at this</span></a>
+
+<header class="top"><div class="wrap masthead"><div class="mast">
+  <a class="logo" href="/">WARRANT<i>WIRE</i><small>Every warrant financing, as it is filed</small></a>
+  <span class="live"><span class="dot" aria-hidden="true"></span>Reverse-merger watch</span>
+  <span id="nyc"></span>
+</div></div></header>
+
+<div class="wrap"><nav class="crumbs">
+  <a href="/">The wire</a>
+  <a href="/watch.html" aria-current="page">Reverse-merger watch</a>
+  <a href="/cases.html">Case studies</a>
+  <a href="/patterns.html">The patterns</a>
+</nav></div>
+
+<main><div class="wrap">
+
+  <h1>Reverse-merger watch</h1>
+  <p class="lede">A reverse merger can end a company as its stockholders know it: a private company
+  takes over the listing, a flood of new shares is issued, and the board and management are
+  replaced. It rarely comes out of nowhere. The steps before it &mdash; a strategic review, a reverse
+  split, new authorized shares, a rights plan, a letter of intent &mdash; are filed with the SEC first.
+  <b>Every morning we read the filings of the companies you watch, and email you the day one of
+  those steps appears.</b></p>
+
+  <div class="standing">
+    <p><b>$100 a year, per company.</b> Name the company; we watch every filing it makes for a year
+    and email you when one of the signs below appears, with the filing, the words we found in it,
+    and a line on why it matters.</p>
+    <p><b>A signal is a reason to read, not an accusation.</b> Everything on this list is lawful and
+    common. A reverse split may be needed to keep a listing; a material agreement may be good news.
+    The watch tells you it happened, the day it happened. You decide what it means.</p>
+    <p><b>Public filings only.</b> Every alert comes from a filing on the SEC&rsquo;s EDGAR system and
+    links to it. Nothing here is investment advice.</p>
+  </div>
+
+  <section class="sect">
+    <h2>What we watch for</h2>
+    <p class="lede" style="margin-bottom:0">Three levels. <b>Red</b> means the thing itself has been filed.
+    <b>Amber</b> means a step that often comes before it. <b>Watch</b> means worth reading, routine on its own.</p>
+    <div class="levels">
+      <div class="lv red"><h3><i></i>Red</h3><ul>
+        <li><b>Merger filings</b> &mdash; S-4, merger proxy, Rule 425 communications</li>
+        <li><b>Rights plan (poison pill)</b> &mdash; 8-K Item 3.03, a new class on Form 8-A</li>
+        <li><b>Change in control</b> &mdash; 8-K Item 5.01</li>
+        <li><b>Assets bought or sold</b> &mdash; 8-K Item 2.01</li>
+        <li><b>Tender offers</b> &mdash; SC TO, SC 14D-9</li>
+        <li><b>Delisting or deregistration</b> &mdash; Form 25, Form 15</li>
+        <li><b>Successor company</b> &mdash; Form 8-K12, as after a reverse merger</li>
+      </ul></div>
+      <div class="lv amber"><h3><i></i>Amber</h3><ul>
+        <li><b>Material agreement signed</b> &mdash; 8-K Item 1.01, read for which kind</li>
+        <li><b>Charter amended</b> &mdash; 8-K Item 5.03: reverse splits, new authorized shares</li>
+        <li><b>Listing warning</b> &mdash; 8-K Item 3.01</li>
+        <li><b>Shares or warrants sold privately</b> &mdash; 8-K Item 3.02</li>
+        <li><b>Preliminary proxy</b> &mdash; PRE 14A: splits, share increases, warrant votes</li>
+        <li><b>Offerings</b> &mdash; 424B prospectuses, often units with warrants</li>
+        <li><b>5% holder with intent</b> &mdash; Schedule 13D</li>
+      </ul></div>
+      <div class="lv watch"><h3><i></i>Watch</h3><ul>
+        <li><b>Directors or officers changed</b> &mdash; 8-K Item 5.02</li>
+        <li><b>Shareholder vote results</b> &mdash; 8-K Item 5.07</li>
+        <li><b>Other events</b> &mdash; 8-K Item 8.01, where strategic reviews are announced</li>
+        <li><b>New debt</b> &mdash; 8-K Item 2.03</li>
+        <li><b>Proxy statements and registrations</b> &mdash; DEF 14A, S-1, S-3</li>
+      </ul></div>
+    </div>
+    <p class="lede" style="margin-top:16px">We also read the text of the filings that matter for words such as
+    <i>reverse merger</i>, <i>merger agreement</i>, <i>rights agreement</i>, <i>reverse stock split</i>,
+    <i>letter of intent</i>, <i>strategic alternatives</i>, <i>pre-funded warrant</i> and <i>foreclosure</i>.
+    A word found in the text can raise an alert&rsquo;s level; it never lowers it.</p>
+  </section>
+
+  <section class="sect" id="record">
+    <h2>The record, company by company</h2>
+    <p class="lede" style="margin-bottom:0">Every alert the watch has raised, fetched live. Free to look at.</p>
+    <form class="find" id="sf" role="search">
+      <label for="tk" class="quiet" style="position:absolute;left:-9999px">Ticker</label>
+      <input id="tk" name="t" placeholder="TICKER" autocomplete="off" maxlength="8" value="TOVX">
+      <button type="submit">Show the record</button>
+    </form>
+    <div id="out"><p class="msg">Loading the record&hellip;</p></div>
+  </section>
+
+  <section class="sect" id="buy">
+    <h2>Watch a company</h2>
+    <div class="buybox">
+      <div class="price">$100<small>per company, per year</small></div>
+      <p>Every filing that company makes for 365 days, read the morning after it is filed, with an email
+      the day a red or amber signal appears. Opens as soon as the first alert has been delivered end to end
+      &mdash; we do not sell what we have not yet delivered.</p>
+      <button type="button" id="buybtn" disabled>Opens soon</button>
+    </div>
+  </section>
+
+  <section class="sect">
+    <h2>Why this exists</h2>
+    <p class="lede">The case that started it is on the <a href="/cases.html" style="color:var(--cool)">case studies</a>
+    page: two companies with directors in common, the same sequence of offerings, listing warnings and
+    reverse splits, and at one of them, the sale of its main asset to a company controlled by its chief
+    executive, two amendments that removed a guaranteed royalty, and a foreclosure. Every step was in a
+    filing before it was finished.</p>
+  </section>
+
+</div></main>
+
+<div class="wrap"><footer>
+  <div class="footnav">
+    <a href="/">The wire</a><a href="/watch.html" aria-current="page">Reverse-merger watch</a><a href="/cases.html">Case studies</a><a href="/patterns.html">The patterns</a>
+    <a href="/prices.html">What it costs</a><a href="/about.html">Who runs the wire</a>
+    <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
+  </div>
+  <em>&ldquo;It&rsquo;s never as it seems.&rdquo; &mdash; Mark Nejmeh</em><br><br>
+  Every signal on this page describes lawful conduct that is common in the market. Nothing here is
+  investment advice, nothing here is a recommendation to buy or sell any security, and nothing here
+  alleges that anyone broke any law. Mark Nejmeh, who runs Warrant Wire, holds shares of Theriva Biologics (TOVX) and is the plaintiff in
+  <i>Nejmeh v. Theriva Biologics, Inc.</i>, No. 3:26-cv-00705 (D. Nev.); see
+  <a href="https://nejmehvstheriva.com">nejmehvstheriva.com</a>.
+  <p class="stamp">Built 2026-09-26 &middot; warrantwire watch-1a</p>
+</footer></div>
+
+<script>
+(function () {
+  "use strict";
+  var WATCH = "https://reverse-merger-watch.realroofers.workers.dev";
+  var SELLING = false; /* ⚠ see the note at the top of this file */
+  var out = document.getElementById("out"), level = "all", data = null;
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]; }); }
+  var qs = new URLSearchParams(location.search);
+  var T = (qs.get("t") || qs.get("ticker") || "TOVX").trim().toUpperCase().replace(/[^A-Z.\-]/g, "");
+  document.getElementById("tk").value = T;
+  document.getElementById("sf").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = document.getElementById("tk").value.trim().toUpperCase().replace(/[^A-Z.\-]/g, "");
+    if (!v) return;
+    history.replaceState(null, "", "?t=" + encodeURIComponent(v) + "#record");
+    load(v);
+  });
+  if (SELLING) { var b = document.getElementById("buybtn"); b.disabled = false; b.textContent = "Watch a company"; }
+
+  /* ⚠ ONE ENTRY PER FILING. The worker stores one row per rule (an 8-K with
+     three items is three rows); a reader thinks in filings, so the rows are
+     grouped here, the filing takes its highest level, and each rule is listed. */
+  var RANK = { watch: 1, amber: 2, red: 3 };
+  function group(rows) {
+    var by = {}, order = [];
+    rows.forEach(function (x) {
+      var g = by[x.accession];
+      if (!g) { g = by[x.accession] = { accession: x.accession, filed_date: x.filed_date, form: x.form, items: x.items, doc_url: x.doc_url, level: x.level, rules: [], phrases: {} }; order.push(g); }
+      if (RANK[x.level] > RANK[g.level]) g.level = x.level;
+      g.rules.push(x);
+      String(x.phrases || "").split(/,\s*/).forEach(function (p) { if (p) g.phrases[p] = 1; });
+    });
+    order.forEach(function (g) { g.rules.sort(function (p, q) { return RANK[q.level] - RANK[p.level]; }); });
+    return order;
+  }
+
+  function draw() {
+    var c = data.company || {}, a = group(data.alerts || []);
+    var n = { red: 0, amber: 0, watch: 0 }; a.forEach(function (x) { n[x.level] = (n[x.level] || 0) + 1; });
+    var h = '<p id="who">' + esc(c.title || data.ticker) + ' (' + esc(data.ticker) + ')</p>'
+      + '<p id="whosub">' + (c.exchange ? esc(c.exchange) + ' &middot; ' : '') + (c.state_inc ? 'incorporated in ' + esc(c.state_inc) + ' &middot; ' : '')
+      + a.length + ' flagged filing' + (a.length === 1 ? '' : 's') + ' on record'
+      + (data.last_check && data.last_check.finished_at ? ' &middot; last checked ' + esc(String(data.last_check.finished_at).slice(0, 10)) : '') + '</p>'
+      + '<div class="filt" role="group" aria-label="Show">'
+      + ['all', 'red', 'amber', 'watch'].map(function (k) {
+          return '<button type="button" data-l="' + k + '" aria-pressed="' + (level === k) + '">'
+            + (k === 'all' ? 'All ' + a.length : k.charAt(0).toUpperCase() + k.slice(1) + ' ' + (n[k] || 0)) + '</button>';
+        }).join('') + '</div>';
+    var rows = a.filter(function (x) { return level === 'all' || x.level === level; });
+    h += rows.length ? '<div>' + rows.map(function (x) {
+      return '<div class="al"><span class="lvl ' + esc(x.level) + '">' + esc(x.level) + '</span>'
+        + '<span class="d">' + esc(x.filed_date) + '</span>'
+        + '<div class="t">Form <b>' + esc(x.form) + '</b>' + (x.items ? ', items ' + esc(x.items) : '')
+        + x.rules.map(function (r) {
+            return '<br><b>' + esc(r.rule) + '</b> &mdash; <span class="why">' + esc(r.why) + '</span>';
+          }).join('')
+        + (Object.keys(x.phrases).length ? '<br><span class="ph">Words found in the filing: ' + esc(Object.keys(x.phrases).join(', ')) + '</span>' : '')
+        + (x.doc_url ? '<br><a href="' + esc(x.doc_url) + '" rel="noopener">The filing on EDGAR &rarr;</a>' : '')
+        + '</div></div>';
+    }).join('') + '</div>' : '<p class="msg">No ' + (level === 'all' ? '' : esc(level) + ' ') + 'alerts on record for this company.</p>';
+    out.innerHTML = h;
+    Array.prototype.forEach.call(out.querySelectorAll(".filt button"), function (b) {
+      b.addEventListener("click", function () { level = b.getAttribute("data-l"); draw(); });
+    });
+  }
+
+  function load(t) {
+    level = "all";
+    out.innerHTML = '<p class="msg">Loading the record for ' + esc(t) + '&hellip;</p>';
+    fetch(WATCH + "/alerts?ticker=" + encodeURIComponent(t) + "&limit=200")
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        data = d;
+        if (!d.cik) {
+          out.innerHTML = '<p class="msg"><b>' + esc(t) + '</b> is not on the watch yet. When the watch opens, '
+            + 'anyone can add a company; until then the watch covers the companies we already follow.</p>';
+          return;
+        }
+        draw();
+      })
+      .catch(function () {
+        out.innerHTML = '<p class="msg">The watch is being switched on and is not answering yet. '
+          + 'Nothing is shown rather than a sample. Please come back shortly.</p>';
+      });
+  }
+  load(T);
+})();
+</script>
+<script src="/wire.js?v=2a"></script>
+<script src="/clock.js"></script>
+<script src="/nav.js?v=1c" defer></script>
+</body>
+</html>

@@ -23,9 +23,11 @@
     ["green",  "/violations.html",           "M5 4h14v16H5zM8 8h8M8 11h8M8 14h5M15 15l4 4", "File Salad"],
     ["teal",   "/wire.html",                 "M4 5h16v14H4zM8 9h8M8 12h8M8 15h5", "Free reports"],
     ["sky",    "/look.html",                 "M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", "Look at this"],
-    ["blue",   "/#alerts",                   "M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2zM10 20a2 2 0 0 0 4 0", "Warn me"]
+    ["blue",   "/#alerts",                   "M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2zM10 20a2 2 0 0 0 4 0", "Warn me"],
+    ["coral",  "/watch.html",                "M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 12l7-7", "Reverse-merger watch"],
+    ["slate",  "/cases.html",                "M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h10M9 8h5", "Case studies"]
   ];
-  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0" };
+  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0", coral:"#f08a7e", slate:"#a9b7c8" };
 
   var CSS = ''
     + '.wwnav{border-bottom:1px solid var(--line,#dcdad0);background:var(--paper,#fff)}'
