@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-21 · warrantwire states-1b · THE STATES: ranked by how fair their corporate law is to a shareholder, with a chart, the count of public companies incorporated in each, the symbols, and the rule that bites first — the shares must be in your own name. -->
+<!-- BUILT 2026-09-28 · warrantwire states-1c · the sixth test (deals with a controller), twelve points · earlier 2026-09-21 states-1b · THE STATES: ranked by how fair their corporate law is to a shareholder, with a chart, the count of public companies incorporated in each, the symbols, and the rule that bites first — the shares must be in your own name. -->
 <!--
    HIS RULE, 21 Sep 2026: "Rank the states by fairness in corporate laws and
    make a chart, then a list of companies in each state. For instance, in
@@ -9,7 +9,7 @@
    broker and put some shares in their own name, not the broker's."
 
    HOW THE GRADE IS MADE. Five questions a shareholder cares about, each
-   answered from the statute, each scored 0–2, ten points at most:
+   answered from the statute, each scored 0–2, ten points at most (SIX tests and twelve points from 2026-09-28 — the sixth: can a shareholder challenge a deal with a controller or a conflicted director):
      1. Can you hold a director to account for breaking a duty?
      2. Can a small holder open the books?
      3. Does a reverse split need your vote?
@@ -90,6 +90,8 @@ details.stl .syms{padding:0 16px 14px;display:flex;flex-wrap:wrap;gap:6px}
 details.stl .syms a{font:600 12.5px var(--mono);text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:3px 8px}
 details.stl .syms a:hover{border-color:var(--hot);color:var(--hot)}
 details.stl .why{padding:0 16px 10px;font-size:14px;color:var(--ink2)}
+.t6{background:#FFF4E5;border-left:3px solid #FF4A00}.t6 small{display:block;font-weight:500;font-size:11px;color:#8A5A2B;margin-top:2px}
+.dealtest{background:#FFF4E5;border:2px solid #FF4A00;border-radius:12px;padding:22px 24px;margin:28px 0}.dealtest .k{font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#C23A00;margin:0 0 6px}.dealtest h2{margin-top:0}.dealtest p{max-width:72ch}.dealcta{margin-top:14px}.dealcta .btn{display:inline-block;margin-left:8px;background:#FF4A00;color:#fff;border-radius:6px;padding:8px 14px;text-decoration:none;font-weight:700}
 </style>
 </head>
 <body>
@@ -142,11 +144,19 @@ details.stl .why{padding:0 16px 10px;font-size:14px;color:var(--ink2)}
     <div class="legend"><span><i class="g-A"></i>A &mdash; fair</span><span><i class="g-B"></i>B</span><span><i class="g-C"></i>C</span><span><i class="g-D"></i>D &mdash; restrictive</span><span><i class="g-F"></i>F &mdash; a shareholder has little standing</span></div>
   </section>
 
+  <section id="deal" class="dealtest">
+    <p class="k">The sixth test &middot; added September 28, 2026</p>
+    <h2>Can you challenge a deal the company makes with its controller?</h2>
+    <p>The deal that hurts a small holder most is the one a company makes with its own insiders: the controlling holder, a director on both sides, the financier who owns the paper. The question is whether a shareholder can still take that deal to a judge &mdash; or whether the state&rsquo;s law lets a committee or a vote wave it through.</p>
+    <p>In 2025 the states competed to make these deals harder to challenge. <b>Delaware</b> (SB 21) gave controller deals a safe harbor when an independent committee or the disinterested holders approve them. <b>Texas</b> rewrote its code the same year to draw companies away from Delaware. <b>Nevada</b> was already the most protective of insiders. Each state&rsquo;s answer, with its section number, is in the sixth column below.</p>
+    <p class="dealcta"><b>Which of these deals has your company made, and on what terms?</b> That is in its own filings, and it is what the report reads. <a class="btn" href="/company.html">Look up your company &rarr;</a></p>
+  </section>
+
   <section id="rank">
     <h2>The ranking, and why.</h2>
-    <p class="fine">Five questions, each scored 0&ndash;2 from the statute; ten points at most. Warrant Wire&rsquo;s reading as of September 2026, with the section numbers.</p>
+    <p class="fine">Six questions, each scored 0&ndash;2 from the statute; twelve points at most. The sixth is highlighted. Warrant Wire&rsquo;s reading as of September 2026, with the section numbers.</p>
     <div class="tblwrap"><table class="rank" id="ranktbl">
-      <thead><tr><th>State</th><th>Grade</th><th>Hold a director to account?</th><th>Open the books?</th><th>Reverse split needs your vote?</th><th>Minimum stake to sue?</th><th>Jury waiver?</th></tr></thead>
+      <thead><tr><th>State</th><th>Grade</th><th>Hold a director to account?</th><th>Open the books?</th><th>Reverse split needs your vote?</th><th>Minimum stake to sue?</th><th>Jury waiver?</th><th class="t6">Can you challenge a deal with a controller?<small>the sixth test, added 2026-09-28</small></th></tr></thead>
       <tbody id="rankrows"></tbody>
     </table></div>
   </section>
@@ -175,8 +185,8 @@ details.stl .why{padding:0 16px 10px;font-size:14px;color:var(--ink2)}
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]; }); }
 
   /* ⚠ THE GRADES. Each row: the five answers (0–2) with the citation, and one
-     line on what it means for a shareholder. Grade from the total: 9–10 A,
-     7–8 B, 5–6 C, 3–4 D, 0–2 F. */
+     line on what it means for a shareholder. Grade from the total of six tests (12 points, 2026-09-28): 11–12 A,
+     9–10 B, 6–8 C, 3–5 D, 0–2 F. (Five tests before; 9–10 A, 7–8 B, 5–6 C, 3–4 D, 0–2 F.) */
   var LAW = {
     DE: { name: "Delaware", pts: [2, 2, 2, 2, 1],
       duty: ["<span class='yes'>Yes.</span> Directors owe a duty of loyalty and good faith that a shareholder can sue on; only the duty of care can be exculpated.", "DGCL §102(b)(7); §141"],
@@ -250,8 +260,24 @@ details.stl .why{padding:0 16px 10px;font-size:14px;color:var(--ink2)}
       says: "Florida, Utah, Minnesota, New Jersey, Colorado, Washington, Georgia, Virginia and most of the rest: the Model Business Corporation Act, evenly balanced, with a universal demand requirement." }
   };
   var MODEL = ["FL","UT","MN","NJ","CO","WA","GA","VA","NC","OH","IN","WI","MI","AZ","OR","TN","MO","CT","IA","KY","SC","AL","MS","AR","NE","KS","ID","MT","ND","SD","NH","VT","ME","HI","AK","NM","OK","LA","WV","DC","RI","PA","IL","MA"];
+  /* ⚠ THE SIXTH TEST — his rule, 28 Sep 2026: can a shareholder challenge a deal the company makes with its
+     controlling holder or a conflicted director? Researched against the statute text (official sites) on
+     2026-09-28; where only a law-firm memo was read, the cell says the point is unsettled. Scored 0–2. */
+  var DEAL = {
+    DE:   [1, ["<span class='no'>Largely shielded since 2025.</span> Approval by a committee of disinterested directors, or by the disinterested holders, protects an ordinary controller deal; a buyout by the controller needs both. Upheld by the Delaware Supreme Court in February 2026.", "DGCL §144 (SB 21, 2025); Rutledge v. Clearway Energy (Del. 2026)"]],
+    NV:   [0, ["<span class='no'>Shielded.</span> Directors answer only for intentional misconduct, fraud or a knowing violation of law, and a committee's approval raises a presumption that the controller did nothing wrong.", "NRS 78.138; 78.140; 78.240 (AB 239, 2025)"]],
+    TX:   [0, ["<span class='no'>Shielded.</span> At a listed company a shareholder must plead fraud, intentional misconduct or a knowing violation of law in detail &mdash; and may be required to own 3% before filing. The business court can bless a committee in advance.", "TBOC §21.418, §21.419, §21.4161, §21.552 (SB 29, 2025)"]],
+    MD:   [1, ["Approval by disinterested directors or holders stands, and a court may not apply stricter scrutiny to these deals than to any other board decision. No statute on controlling holders.", "MGCL §2-419; §2-405.1"]],
+    NY:   [2, ["<span class='yes'>Yes.</span> A controller buyout gets a full fairness review unless it had both an independent committee and a majority-of-the-minority vote; an unapproved director deal must be shown fair and reasonable.", "BCL §713; Matter of Kenneth Cole Prods., 27 N.Y.3d 268 (2016)"]],
+    CA:   [2, ["<span class='yes'>Yes.</span> Board approval protects a conflicted deal only if the deal is also just and reasonable, so a court still looks at the terms.", "Corp. Code §310"]],
+    E9:   [1, ["Only with the court's leave, and only by showing a fraud on the minority by those in control; a winding-up petition on just-and-equitable grounds is the other road. Unsettled.", "Common law (Foss v Harbottle exceptions); Companies Act s.92(e), s.95"]],
+    D8:   [1, ["An interested director's deal stands if the members approved it or the company got fair value; a derivative claim needs the court's leave. Unsettled after the 2024 amendments.", "BVI Business Companies Act 2004 ss.124–125, 184C, 184I"]],
+    WY:   [1, ["Approval by qualified directors or qualified shares blocks a claim based on the conflict, but a suit for bad faith or an improper benefit survives.", "W.S. 17-16-861 to -863; -831"]],
+    MBCA: [1, ["Approval by disinterested directors or shares shields a director's conflicted deal from a conflict claim, with fairness as the fallback. The Model Act says nothing about controlling holders; that is left to the courts.", "MBCA §§8.60–8.63; Fla. Stat. §607.0832; RCW 23B.08.700–.730"]]
+  };
+  Object.keys(DEAL).forEach(function (k) { if (LAW[k]) { LAW[k].deal = DEAL[k][1]; LAW[k].pts = LAW[k].pts.concat(DEAL[k][0]); } });
   function lawOf(code) { return LAW[code] || (MODEL.indexOf(code) > -1 ? LAW.MBCA : null); }
-  function gradeOf(pts) { var t = pts.reduce(function (a, b) { return a + b; }, 0); return t >= 9 ? "A" : t >= 7 ? "B" : t >= 5 ? "C" : t >= 3 ? "D" : "F"; }
+  function gradeOf(pts) { var t = pts.reduce(function (a, b) { return a + b; }, 0); return t >= 11 ? "A" : t >= 9 ? "B" : t >= 6 ? "C" : t >= 3 ? "D" : "F"; }
   function total(pts) { return pts.reduce(function (a, b) { return a + b; }, 0); }
 
   /* the ranking table, from the law block, best first */
@@ -260,9 +286,9 @@ details.stl .why{padding:0 16px 10px;font-size:14px;color:var(--ink2)}
     var L = LAW[k], g = gradeOf(L.pts);
     var cell = function (pair) { return '<td>' + pair[0] + (pair[1] ? '<span class="cite">' + esc(pair[1]) + '</span>' : '') + '</td>'; };
     return '<tr><td class="s">' + esc(L.name) + '<small>' + (k === "MBCA" ? "FL, UT, MN, NJ, CO, WA…" : k) + '</small></td>'
-      + '<td><span class="grade g-' + g + '">' + g + '</span><span class="pt">' + total(L.pts) + ' / 10</span></td>'
-      + cell(L.duty) + cell(L.books) + cell(L.split) + cell(L.stake) + cell(L.jury) + '</tr>'
-      + '<tr><td></td><td colspan="6" style="padding-top:0;font-size:13.5px;color:var(--ink2)"><b>What it means:</b> ' + L.says + '</td></tr>';
+      + '<td><span class="grade g-' + g + '">' + g + '</span><span class="pt">' + total(L.pts) + ' / 12</span></td>'
+      + cell(L.duty) + cell(L.books) + cell(L.split) + cell(L.stake) + cell(L.jury) + (L.deal ? cell(L.deal).replace("<td>", "<td class=\"t6\">") : "<td class=\"t6\">Being verified</td>") + '</tr>'
+      + '<tr><td></td><td colspan="7" style="padding-top:0;font-size:13.5px;color:var(--ink2)"><b>What it means:</b> ' + L.says + '</td></tr>';
   }).join("");
 
   /* the chart and the lists, from the wire */
