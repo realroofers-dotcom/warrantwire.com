@@ -1,4 +1,4 @@
-<!-- BUILT 2026-09-20 · warrantwire company-1i (1i: the state and the agent for service on the summary, a flag when none is disclosed; 1h: the red-flag strip, free, only when there are flags; the split and merger lists behind the report; 1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
+<!-- BUILT 2026-09-28 · warrantwire company-1j (1j: less given away free — the verdict tags, the filing dates and the 12-filing table are for buyers; free adds the current price and what the company does, from 8K10Q; 1i: the state and the agent for service on the summary, a flag when none is disclosed; 1h: the red-flag strip, free, only when there are flags; the split and merger lists behind the report; 1g: STOP banner for a name change, W11; reverse split box, W12) · earlier: 2026-09-12 · warrantwire company-1b · the company page: the verdict, who arranged it, the people who signed — and WHAT COULD HAPPEN: what the paper permits, the word salad, where these people have been -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -136,6 +136,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .trail .tiss li.off b{color:var(--hot)}
 .trail .tiss .none{font-size:13px;color:var(--ink3)}
 .could .limit{font-size:12.5px;color:var(--ink3);margin:12px 0 0;max-width:70ch}
+.epick{margin:10px 0 0}.epick summary{cursor:pointer;font-weight:700;color:var(--hot);padding:6px 0}.epick[open] summary{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -198,7 +199,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   verdict and readers&rsquo; verdicts are opinions under a name, not advice, unless marked as advice by a
   registered licensed professional. Nothing here is a recommendation to buy or sell any security, and
   nothing here alleges that anyone broke any law.
-  <p class="stamp">Built 2026-09-20 &middot; warrantwire company-1i &middot; rules version 4</p>
+  <p class="stamp">Built 2026-09-28 &middot; warrantwire company-1j &middot; rules version 4</p>
 </footer></div>
 
 <script src="/wire.js?v=2a"></script>
@@ -259,6 +260,10 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<h1>' + esc(nm) + '</h1>'
       + '<div class="who"><span class="tick">' + esc(c.ticker || T) + '</span>'
       + (bits.length ? '<span class="tick"><i>&middot;</i>' + bits.join("<i>&middot;</i>") + '</span>' : '')
+      /* ⚠ FREE: WHAT IT DOES AND WHAT IT COSTS. His rule, 28 Sep 2026: "I like the company description and
+         current price" free — and no more than that plus the name changes and reverse splits. Both come from
+         8K10Q (the company profile and the delayed quote) and are filled in after the page draws. */
+      + '<p class="biz" id="wwpx" hidden></p><p class="biz" id="wwdesc" hidden></p>'
       + ((c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
       /* old tickers are always shown — his rule, 20 Sep: they are kept and searchable */
       /* the state and the agent for service — his rule, 21 Sep: on the summary, free, and a red flag when none is disclosed */
@@ -305,7 +310,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     return '<section class="verdict edgar" id="edgar"><p class="lbl"><b>Everything on file</b><span>since ' + esc(String(e.since || "2001").slice(0, 4)) + ', from the SEC</span><span class="kind">read at 8K10Q</span></p>'
       + '<p class="vlead"><b>' + Number(e.filings).toLocaleString("en-US") + ' filings.</b> Warrant Wire reads the warrant paper. <a href="https://8k10q.com">8K10Q</a>, the sister site, reads any filing in plain English &mdash; every section, not only the warrants &mdash; for $20. Pick one below; you pay here and read it there.</p>'
       + '<div class="eforms">' + forms + '</div>'
-      + '<ol class="elist">' + rows + '</ol>'
+      /* folded by default: the list is for choosing a filing to buy a read of, not free reading */
+      + '<details class="epick"><summary>Choose a filing to read at 8K10Q &middot; $20</summary><ol class="elist">' + rows + '</ol></details>'
       + '<p class="fine">The latest ' + Math.min(12, (e.recent || []).length) + ' of ' + Number(e.filings).toLocaleString("en-US") + '. Kept here so the SEC is asked once, not on every search.</p>'
       + '</section>';
   }
@@ -910,6 +916,24 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     }).catch(function () { msg.textContent = "Could not reach the pay desk."; });
   });
 
+  /* ---- free: the current price and what the company does, from 8K10Q ---- */
+  function pxAndDesc(tk) {
+    var m = function (v) { return v == null ? "" : "$" + (Math.abs(v) < 1 ? v.toFixed(4) : v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })); };
+    fetch("https://8k10q.com/api/quote?t=" + encodeURIComponent(tk)).then(function (r) { return r.json(); }).then(function (q) {
+      var el = document.getElementById("wwpx"); if (!el || !q || !q.ok || q.price == null) return;
+      var ch = q.change_pct != null ? ' <span style="color:' + (q.change_pct < 0 ? 'var(--hot)' : '#0B6B49') + '">' + (q.change_pct > 0 ? '+' : '') + q.change_pct.toFixed(2) + '% today</span>' : '';
+      var at = q.as_of ? new Date(q.as_of).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET" : "";
+      el.innerHTML = '<b>Price:</b> <b style="font-size:1.15em">' + m(q.price) + '</b>' + ch + (at ? ' <span style="color:var(--ink3)">&middot; ' + esc(at) + ', delayed</span>' : '')
+        + ' &middot; <a href="https://8k10q.com/room?t=' + encodeURIComponent(tk) + '">its room at 8K10Q &rarr;</a>';
+      el.hidden = false;
+    }).catch(function () {});
+    fetch("https://triggeredshort-room.realroofers.workers.dev/api/company/" + encodeURIComponent(tk)).then(function (r) { return r.json(); }).then(function (c) {
+      var el = document.getElementById("wwdesc"), p = c && c.profile; if (!el || !p || !p.description) return;
+      el.innerHTML = '<b>What it does:</b> ' + esc(p.description) + (p.employees != null ? ' <span style="color:var(--ink3)">' + esc(p.employees) + ' employees, from its own reports.</span>' : '');
+      el.hidden = false;
+    }).catch(function () {});
+  }
+
   /* ---- go ---------------------------------------------------------------------- */
   fetch(withEmail(WW.API + "?wire=1&q=" + encodeURIComponent(T)))
     .then(function (r) { return r.json(); })
@@ -943,9 +967,11 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + '<div class="tk">' + esc(tk) + '</div>'
         + '<div><p class="co">' + esc(c.name || a.company || T) + '</p>'
         + (c.business || c.sector ? '<p class="ind">' + esc(c.business || c.sector) + '</p>' : '')
-        + '<div class="marks">' + WW.marks((d.rows || []).reduce(function (acc, r) { return acc.concat(WW.split(r.labels)); }, []), 8) + '</div>'
+        /* ⚠ THE TAGS ARE THE GOODS. His rule, 28 Sep 2026: we were giving too much away. What the paper does
+           (sold into the market, a floor on the price, better terms later) and when, is what the report sells. */
+        + (open ? '<div class="marks">' + WW.marks((d.rows || []).reduce(function (acc, r) { return acc.concat(WW.split(r.labels)); }, []), 8) + '</div>' : '')
         + (a.filings ? '<p class="found">' + a.filings + ' filing' + (a.filings === 1 ? '' : 's') + ' on the wire'
-        + (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '') + (a.first ? ', ' + esc(a.first) + ' to ' + esc(a.latest) : '') + '.</p>' : '')
+        + (open ? (a.heavy ? ', ' + a.heavy + ' carrying the heavier terms' : '') + (a.first ? ', ' + esc(a.first) + ' to ' + esc(a.latest) : '') : '') + '.' + (open ? '' : ' What they permit, and when, is in the report.') + '</p>' : '')
         + edgarLine(d.edgar, a.filings)
         + '</div><div class="go">'
         + (a.filings
@@ -987,6 +1013,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
          that the report carries it, without saying whether this company does. */
       if (open) concern(tk);
       grade421(tk);
+      pxAndDesc(tk);
       WW.clips.reveal();
     })
     .catch(function () {
