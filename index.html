@@ -139,11 +139,12 @@ html.light .edgar .ehd{background:#dfeaf6}
 <main><div class="wrapn">
 
   <!-- ═══ THE SCREW — first, before anything ═══ -->
+  <!-- CORRECTED 2026-10-11 (counter-2b): the old "$13.3 trillion / Bagholders lost that much" figure was wrong and is gone. Mark: "I do not want to lie." -->
   <section class="screw" aria-live="off">
-    <span class="k">The screw</span>
-    <div class="odo"><i>$</i><span id="odo">13,288,659,808,368</span></div>
-    <p><b>Bagholders lost that much.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
-    <small id="rate"><span id="fell">1,359</span> companies, <span id="yrs">2016&ndash;2026</span>, at the decade&rsquo;s rate. <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
+    <span class="k">The count</span>
+    <div class="odo"><span id="pctSerial">61</span><i>%</i> <span style="font-size:.45em;color:var(--ink2)">vs</span> <span id="pctClean">34</span><i>%</i></div>
+    <p><b>Of companies that filed heavy warrant terms in 10 or more filings, <span id="pctSerial2">61</span>% ended up worth less, the typical one <span id="medSerial">&minus;38.6%</span>. Of companies with none, <span id="pctClean2">34</span>% did, and the typical one gained <span id="medClean">+83.9%</span>.</b> <a href="#q" id="checkme">Is your company one of them? &darr;</a></p>
+    <small id="rate">From each company&rsquo;s own SEC filings, <span id="yrs">2010&ndash;2026</span>. Corrected October 11, 2026. <a href="/counter.html" style="color:var(--ink3)">How it is counted, and the correction</a></small>
   </section>
 
   <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
@@ -262,19 +263,15 @@ html.light .edgar .ehd{background:#dfeaf6}
   "use strict";
   /* white is the default now (his call, 12 Sep); ?dark=1 shows the black one to compare */
   if (new URLSearchParams(location.search).get("dark") === "1") document.documentElement.classList.remove("light");
-  /* THE SCREW: the same number and the same rate as /counter.html — what the
-     fallers among the warrant-paper companies lost, ticking at the decade's
-     average rate from the moment the page opens */
-  function commas(n) { return Math.floor(Number(n) || 0).toLocaleString("en-US"); }
+  /* THE COUNT (corrected 2026-10-11): share that fell and the typical change, from the same worker as /counter.html. No running dollar odometer. */
+  function pct(v) { v = Number(v) || 0; return (v > 0 ? "+" : v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(1) + "%"; }
   fetch("https://counter.realroofers.workers.dev/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
-    if (!d || !d.ok || !d.warrant) return;
-    var years = Math.max(1, d.to_year - d.from_year);
-    var lost = d.warrant.lost_by_fallers, perSec = lost / (years * 31557600), t0 = Date.now();
-    document.getElementById("fell").textContent = commas(d.warrant.fell);
-    document.getElementById("yrs").textContent = d.from_year + "–" + d.to_year;
-    var odo = document.getElementById("odo");
-    function tick() { odo.textContent = commas(lost + perSec * (Date.now() - t0) / 1000); }
-    tick(); if (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(tick, 200);
+    if (!d || !d.ok || !d.serial || !d.clean) return;
+    ["pctSerial", "pctSerial2"].forEach(function (id) { document.getElementById(id).textContent = d.serial.pct_fell; });
+    ["pctClean", "pctClean2"].forEach(function (id) { document.getElementById(id).textContent = d.clean.pct_fell; });
+    document.getElementById("medSerial").textContent = pct(d.serial.median_change_pct);
+    document.getElementById("medClean").textContent = pct(d.clean.median_change_pct);
+    document.getElementById("yrs").textContent = d.from_year + "\u2013" + d.to_year;
   }).catch(function () {});
   var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
   document.getElementById("checkme").addEventListener("click", toBox);
