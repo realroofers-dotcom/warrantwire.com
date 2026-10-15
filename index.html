@@ -46,6 +46,11 @@ html.light .edgar .ehd{background:#dfeaf6}
 @media(max-width:860px){.three{grid-template-columns:1fr;gap:26px;padding-top:30px}}
 .three h1{font:700 clamp(30px,4.2vw,46px)/1.08 var(--serif);color:var(--ink);margin:0 0 14px;letter-spacing:-.01em}
 .three h1 em{font-style:normal;color:var(--hot)}
+/* headline-2l: the headline spans the full width, one sentence per line */
+.three{grid-template-columns:1fr}
+.three h1.two{font-size:clamp(14px,4.1vw,54px);line-height:1.12;max-width:none}
+.three h1.two span{display:block}
+.three h1.two span{white-space:nowrap}
 .three .sub{font-size:17px;color:var(--ink2);margin:0 0 6px;max-width:48ch;line-height:1.55}
 .three .finder{max-width:520px}
 .three .finder input{font-size:17px;padding:14px 16px}
@@ -154,7 +159,8 @@ html.light .edgar .ehd{background:#dfeaf6}
        lead to. ═══ -->
   <section class="three">
     <div>
-      <h1>Getting screwed in the market? <em>It&rsquo;s in your company&rsquo;s filings.</em> We read them.</h1>
+      <!-- headline-2l · 2026-10-15 · Mark: "two sentences on two lines stretching across. The site looks sloppy." -->
+      <h1 class="two"><span>Getting screwed in the market?</span><span><em>It&rsquo;s in your company&rsquo;s filings.</em> We read them.</span></h1>
       <p class="sub" style="font-family:var(--serif);font-size:21px;color:var(--ink);margin:0 0 6px">You can still win. <em style="color:var(--hot);font-style:normal;font-weight:700">If <s style="color:var(--ink3);text-decoration-color:var(--hot);text-decoration-thickness:2px">you</s> we help you read.</em></p>
       <div class="finder">
         <input id="q" type="text" placeholder="YOUR TICKER" maxlength="40" autocapitalize="characters" autocorrect="off" spellcheck="false">
