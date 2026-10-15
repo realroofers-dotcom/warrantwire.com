@@ -140,11 +140,13 @@ html.light .edgar .ehd{background:#dfeaf6}
 
   <!-- ═══ THE SCREW — first, before anything ═══ -->
   <!-- CORRECTED 2026-10-11 (counter-2b): the old "$13.3 trillion / Bagholders lost that much" figure was wrong and is gone. Mark: "I do not want to lie." -->
+  <!-- home-count-3a · 2026-10-15 · Mark: "put the real number up and note that we are double checking more years back to 2001 so keep watching". $ = lost_by_fallers from the same counter-2a run (market value lost by companies whose shares fell). -->
   <section class="screw" aria-live="off">
     <span class="k">The count</span>
-    <div class="odo"><span id="pctSerial">61</span><i>%</i> <span style="font-size:.45em;color:var(--ink2)">vs</span> <span id="pctClean">34</span><i>%</i></div>
-    <p><b>Of companies that filed heavy warrant terms in 10 or more filings, <span id="pctSerial2">61</span>% ended up worth less, the typical one <span id="medSerial">&minus;38.6%</span>. Of companies with none, <span id="pctClean2">34</span>% did, and the typical one gained <span id="medClean">+83.9%</span>.</b> <a href="#q" id="checkme">Is your company one of them? &darr;</a></p>
-    <small id="rate">From each company&rsquo;s own SEC filings, <span id="yrs">2010&ndash;2026</span>. Corrected October 11, 2026. <a href="/counter.html" style="color:var(--ink3)">How it is counted, and the correction</a></small>
+    <div class="odo"><i>$</i><span id="lostAll">3.56</span> <span style="font-size:.5em">trillion</span></div>
+    <p><b>Lost in market value by the <span id="fellAll">2,007</span> public companies whose shares fell, <span id="yrs0">2010&ndash;2026</span>. Companies that used warrants: <span id="lostW">$1.45 trillion</span>.</b></p>
+    <p style="margin-top:10px"><b>Of companies that filed heavy warrant terms in 10 or more filings, <span id="pctSerial2">61</span>% ended up worth less, the typical one <span id="medSerial">&minus;38.6%</span>. Of companies with none, <span id="pctClean2">34</span>% did, and the typical one gained <span id="medClean">+83.9%</span>.</b> <a href="#q" id="checkme">Is your company one of them? &darr;</a></p>
+    <small id="rate">From each company&rsquo;s own SEC filings, <span id="yrs">2010&ndash;2026</span>. <b style="color:var(--hot)">We are now reading every annual report back to 2001 to double-check this count and add the earlier years. Keep watching.</b> Posted October 15, 2026. <a href="/counter.html" style="color:var(--ink3)">How it is counted, and the correction</a></small>
   </section>
 
   <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
@@ -283,6 +285,12 @@ html.light .edgar .ehd{background:#dfeaf6}
     document.getElementById("medSerial").textContent = pct(d.serial.median_change_pct);
     document.getElementById("medClean").textContent = pct(d.clean.median_change_pct);
     document.getElementById("yrs").textContent = d.from_year + "\u2013" + d.to_year;
+    document.getElementById("yrs0").textContent = d.from_year + "\u2013" + d.to_year;
+    if (d.market && d.market.lost_by_fallers) {
+      document.getElementById("lostAll").textContent = (d.market.lost_by_fallers / 1e12).toFixed(2);
+      document.getElementById("fellAll").textContent = Number(d.market.fell).toLocaleString("en-US");
+    }
+    if (d.warrant && d.warrant.lost_by_fallers) document.getElementById("lostW").textContent = "$" + (d.warrant.lost_by_fallers / 1e12).toFixed(2) + " trillion";
   }).catch(function () {});
   var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
   document.getElementById("checkme").addEventListener("click", toBox);
