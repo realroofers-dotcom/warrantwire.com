@@ -144,7 +144,9 @@ html.light .edgar .ehd{background:#dfeaf6}
   <section class="screw" aria-live="off">
     <span class="k">The count</span>
     <div class="odo"><i>$</i><span id="lostAll">3.56</span> <span style="font-size:.5em">trillion</span></div>
-    <p><b>Lost in market value by the <span id="fellAll">2,007</span> public companies whose shares fell, <span id="yrs0">2010&ndash;2026</span>. Companies that used warrants: <span id="lostW">$1.45 trillion</span>.</b></p>
+    <p><b>Lost in market value by the <span id="fellAll">2,007</span> public companies whose shares fell, <span id="yrs0">2010&ndash;2026</span> (<span id="coAll">4,533</span> companies counted). Companies that used warrants: <span id="lostW">$1.45 trillion</span>.</b></p>
+    <!-- running-1a · 2026-10-15 · Mark: "make it a running total and show we looked at this many companies and we have these many more to go or years to go". Live from reader ?status=1 / ?count=1. -->
+    <p id="run" style="margin-top:10px;font:600 13px var(--mono);color:var(--ink)">Reading every annual report back to 2001: <span id="rdRead">8,696</span> of <span id="rdAll">201,297</span> read (<span id="rdPct">4.3</span>%) &middot; <span id="rdLeft">192,601</span> to go &middot; now reading <span id="rdYear">2001</span>, <span id="rdYrsLeft">25</span> more years to go.<br><span id="rdFound" style="color:var(--hot)"></span></p>
     <p style="margin-top:10px"><b>Of companies that filed heavy warrant terms in 10 or more filings, <span id="pctSerial2">61</span>% ended up worth less, the typical one <span id="medSerial">&minus;38.6%</span>. Of companies with none, <span id="pctClean2">34</span>% did, and the typical one gained <span id="medClean">+83.9%</span>.</b> <a href="#q" id="checkme">Is your company one of them? &darr;</a></p>
     <small id="rate">From each company&rsquo;s own SEC filings, <span id="yrs">2010&ndash;2026</span>. <b style="color:var(--hot)">We are now reading every annual report back to 2001 to double-check this count and add the earlier years. Keep watching.</b> Posted October 15, 2026. <a href="/counter.html" style="color:var(--ink3)">How it is counted, and the correction</a></small>
   </section>
@@ -291,6 +293,25 @@ html.light .edgar .ehd{background:#dfeaf6}
       document.getElementById("fellAll").textContent = Number(d.market.fell).toLocaleString("en-US");
     }
     if (d.warrant && d.warrant.lost_by_fallers) document.getElementById("lostW").textContent = "$" + (d.warrant.lost_by_fallers / 1e12).toFixed(2) + " trillion";
+    if (d.market && d.market.companies) document.getElementById("coAll").textContent = Number(d.market.companies).toLocaleString("en-US");
+  }).catch(function () {});
+  /* running-1a: the reader's progress, live, and what it has found so far (its own daily count) */
+  var RD = "https://reader.realroofers.workers.dev/";
+  function fmt(n) { return Number(n).toLocaleString("en-US"); }
+  fetch(RD + "?status=1").then(function (r) { return r.json(); }).then(function (s) {
+    if (!s || !s.by_year) return;
+    var all = 0, read = 0, cur = null, left = 0;
+    s.by_year.forEach(function (y) { all += +y.filings; read += +y.read; if (cur === null && +y.read < +y.filings) cur = y.year; });
+    s.by_year.forEach(function (y) { if (cur !== null && +y.year > +cur) left++; });
+    document.getElementById("rdRead").textContent = fmt(read);
+    document.getElementById("rdAll").textContent = fmt(all);
+    document.getElementById("rdPct").textContent = (100 * read / all).toFixed(1);
+    document.getElementById("rdLeft").textContent = fmt(all - read);
+    if (cur !== null) { document.getElementById("rdYear").textContent = cur; document.getElementById("rdYrsLeft").textContent = left; }
+  }).catch(function () {});
+  fetch(RD + "?count=1").then(function (r) { return r.json(); }).then(function (c) {
+    var h = c && c.headline; if (!h || !h.companies) return;
+    document.getElementById("rdFound").textContent = "Found so far in the reports read: " + fmt(h.companies) + " companies, " + fmt(h.lost_money) + " lost investors money, $" + (h.lost / 1e9).toFixed(2) + " billion. Not final until reading reaches 100%.";
   }).catch(function () {});
   var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
   document.getElementById("checkme").addEventListener("click", toBox);
