@@ -141,14 +141,12 @@ html.light .edgar .ehd{background:#dfeaf6}
   <!-- ═══ THE SCREW — first, before anything ═══ -->
   <!-- CORRECTED 2026-10-11 (counter-2b): the old "$13.3 trillion / Bagholders lost that much" figure was wrong and is gone. Mark: "I do not want to lie." -->
   <!-- home-count-3a · 2026-10-15 · Mark: "put the real number up and note that we are double checking more years back to 2001 so keep watching". $ = lost_by_fallers from the same counter-2a run (market value lost by companies whose shares fell). -->
+  <!-- home-compact-3b · 2026-10-15 · Mark: "cut this to one sentence small letters with a ...More link so the site can sell some reports" + "move the getting screwed up the way it used to be". Full detail (61% vs 34%, warrant $, reading progress) lives on /counter.html. -->
   <section class="screw" aria-live="off">
-    <span class="k">The count</span>
+    <span class="k">The screw</span>
     <div class="odo"><i>$</i><span id="lostAll">3.56</span> <span style="font-size:.5em">trillion</span></div>
-    <p><b>Lost in market value by the <span id="fellAll">2,007</span> public companies whose shares fell, <span id="yrs0">2010&ndash;2026</span> (<span id="coAll">4,533</span> companies counted). Companies that used warrants: <span id="lostW">$1.45 trillion</span>.</b></p>
-    <!-- running-1a · 2026-10-15 · Mark: "make it a running total and show we looked at this many companies and we have these many more to go or years to go". Live from reader ?status=1 / ?count=1. -->
-    <p id="run" style="margin-top:10px;font:600 13px var(--mono);color:var(--ink)">Reading every annual report back to 2001: <span id="rdRead">8,696</span> of <span id="rdAll">201,297</span> read (<span id="rdPct">4.3</span>%) &middot; <span id="rdLeft">192,601</span> to go &middot; now reading <span id="rdYear">2001</span>, <span id="rdYrsLeft">25</span> more years to go.<br><span id="rdFound" style="color:var(--hot)"></span></p>
-    <p style="margin-top:10px"><b>Of companies that filed heavy warrant terms in 10 or more filings, <span id="pctSerial2">61</span>% ended up worth less, the typical one <span id="medSerial">&minus;38.6%</span>. Of companies with none, <span id="pctClean2">34</span>% did, and the typical one gained <span id="medClean">+83.9%</span>.</b> <a href="#q" id="checkme">Is your company one of them? &darr;</a></p>
-    <small id="rate">From each company&rsquo;s own SEC filings, <span id="yrs">2010&ndash;2026</span>. <b style="color:var(--hot)">We are now reading every annual report back to 2001 to double-check this count and add the earlier years. Keep watching.</b> Posted October 15, 2026. <a href="/counter.html" style="color:var(--ink3)">How it is counted, and the correction</a></small>
+    <p><a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
+    <small id="rate">Lost in market value by <span id="fellAll">2,007</span> companies whose shares fell, <span id="yrs0">2010&ndash;2026</span>; still reading every report back to 2001 (<span id="rdPct">4.3</span>% done)&hellip; <a href="/counter.html" style="color:var(--hot)">More</a></small>
   </section>
 
   <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
@@ -278,40 +276,21 @@ html.light .edgar .ehd{background:#dfeaf6}
   "use strict";
   /* white is the default now (his call, 12 Sep); ?dark=1 shows the black one to compare */
   if (new URLSearchParams(location.search).get("dark") === "1") document.documentElement.classList.remove("light");
-  /* THE COUNT (corrected 2026-10-11): share that fell and the typical change, from the same worker as /counter.html. No running dollar odometer. */
-  function pct(v) { v = Number(v) || 0; return (v > 0 ? "+" : v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(1) + "%"; }
+  /* home-compact-3b (2026-10-15): the compact screw - $ lost by fallers (counter-2a) + the reader's % done. Every write is null-safe. */
+  function set(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
   fetch("https://counter.realroofers.workers.dev/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
-    if (!d || !d.ok || !d.serial || !d.clean) return;
-    ["pctSerial", "pctSerial2"].forEach(function (id) { document.getElementById(id).textContent = d.serial.pct_fell; });
-    ["pctClean", "pctClean2"].forEach(function (id) { document.getElementById(id).textContent = d.clean.pct_fell; });
-    document.getElementById("medSerial").textContent = pct(d.serial.median_change_pct);
-    document.getElementById("medClean").textContent = pct(d.clean.median_change_pct);
-    document.getElementById("yrs").textContent = d.from_year + "\u2013" + d.to_year;
-    document.getElementById("yrs0").textContent = d.from_year + "\u2013" + d.to_year;
+    if (!d || !d.ok) return;
+    set("yrs0", d.from_year + "\u2013" + d.to_year);
     if (d.market && d.market.lost_by_fallers) {
-      document.getElementById("lostAll").textContent = (d.market.lost_by_fallers / 1e12).toFixed(2);
-      document.getElementById("fellAll").textContent = Number(d.market.fell).toLocaleString("en-US");
+      set("lostAll", (d.market.lost_by_fallers / 1e12).toFixed(2));
+      set("fellAll", Number(d.market.fell).toLocaleString("en-US"));
     }
-    if (d.warrant && d.warrant.lost_by_fallers) document.getElementById("lostW").textContent = "$" + (d.warrant.lost_by_fallers / 1e12).toFixed(2) + " trillion";
-    if (d.market && d.market.companies) document.getElementById("coAll").textContent = Number(d.market.companies).toLocaleString("en-US");
   }).catch(function () {});
-  /* running-1a: the reader's progress, live, and what it has found so far (its own daily count) */
-  var RD = "https://reader.realroofers.workers.dev/";
-  function fmt(n) { return Number(n).toLocaleString("en-US"); }
-  fetch(RD + "?status=1").then(function (r) { return r.json(); }).then(function (s) {
+  fetch("https://reader.realroofers.workers.dev/?status=1").then(function (r) { return r.json(); }).then(function (s) {
     if (!s || !s.by_year) return;
-    var all = 0, read = 0, cur = null, left = 0;
-    s.by_year.forEach(function (y) { all += +y.filings; read += +y.read; if (cur === null && +y.read < +y.filings) cur = y.year; });
-    s.by_year.forEach(function (y) { if (cur !== null && +y.year > +cur) left++; });
-    document.getElementById("rdRead").textContent = fmt(read);
-    document.getElementById("rdAll").textContent = fmt(all);
-    document.getElementById("rdPct").textContent = (100 * read / all).toFixed(1);
-    document.getElementById("rdLeft").textContent = fmt(all - read);
-    if (cur !== null) { document.getElementById("rdYear").textContent = cur; document.getElementById("rdYrsLeft").textContent = left; }
-  }).catch(function () {});
-  fetch(RD + "?count=1").then(function (r) { return r.json(); }).then(function (c) {
-    var h = c && c.headline; if (!h || !h.companies) return;
-    document.getElementById("rdFound").textContent = "Found so far in the reports read: " + fmt(h.companies) + " companies, " + fmt(h.lost_money) + " lost investors money, $" + (h.lost / 1e9).toFixed(2) + " billion. Not final until reading reaches 100%.";
+    var all = 0, read = 0;
+    s.by_year.forEach(function (y) { all += +y.filings; read += +y.read; });
+    if (all) set("rdPct", (100 * read / all).toFixed(1));
   }).catch(function () {});
   var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
   document.getElementById("checkme").addEventListener("click", toBox);
