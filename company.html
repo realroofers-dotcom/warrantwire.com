@@ -43,6 +43,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
 .flags .chip{font:600 13px var(--sans);border-radius:999px;padding:4px 11px;background:#fbeeec;color:var(--hot);border:1px solid #f0c9c4}
 .flags p{margin:0;font-size:15px;color:var(--ink2)}
 .flags .go{white-space:nowrap}
+/* urgent-1a: the warning reads as a warning */
+.flags.urgent{border-width:3px;background:#fff5f4}.flags.urgent .k{font-size:13px;letter-spacing:.08em}
 .stop{border:3px solid var(--hot);border-radius:12px;padding:16px 20px;margin:14px 0 0;background:var(--hot);color:#fff}
 .stop .k{display:block;font:800 12px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:#fff;margin:0 0 8px}
 .stop p{color:#fff;margin:0 0 8px;max-width:none}.stop b{color:#fff}.stop a{color:#fff}
@@ -349,15 +351,19 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   function flagsBox(d, open, tk) {
     var s = d.signals || {}, a = d.about || {};
     var said = (s.merger || []).map(function (x) { return String(x.said || ""); }).join(",");
+    /* urgent-1a (2026-10-20). Mark: "the company name comes up and the company information and an urgent message
+       that says get this report there are warrants and ..." Same words-only rule (no counts, no dates): each flag
+       is now said as a plain sentence, and "There are warrants" leads whenever the wire holds warrant filings. */
     var flags = [];
-    if (s.splits && s.splits.length) flags.push("Reverse split");
-    if (/reverse merger/i.test(said)) flags.push("Reverse merger mentioned");
-    else if (s.merger && s.merger.length) flags.push(/liquidation|dissolution|wind/i.test(said) ? "Wind-down mentioned" : /strategic/i.test(said) ? "Sale of the company mentioned" : "Merger mentioned");
-    if (Number(a.filings || 0)) flags.push("Dilution");
-    if (s.renamed && s.renamed.former && s.renamed.former.length) flags.push("Name change");
-    if (d.company && !d.company.agent) flags.push("No agent for service");
+    if (Number(a.filings || 0)) flags.push("There are warrants");
+    if (s.splits && s.splits.length) flags.push("There are reverse splits");
+    if (/reverse merger/i.test(said)) flags.push("A reverse merger is mentioned");
+    else if (s.merger && s.merger.length) flags.push(/liquidation|dissolution|wind/i.test(said) ? "A wind-down is mentioned" : /strategic/i.test(said) ? "A sale of the company is mentioned" : "A merger is mentioned");
+    if (Number(a.filings || 0)) flags.push("There is dilution");
+    if (s.renamed && s.renamed.former && s.renamed.former.length) flags.push("There is a name change");
+    if (d.company && !d.company.agent) flags.push("There is no agent for service");
     if (!flags.length) return "";
-    return '<div class="flags" id="flags"><div><span class="k">Red flags on ' + esc((d.company && d.company.name) || tk) + '</span>'
+    return '<div class="flags urgent" id="flags"><div><span class="k">&#9888; Urgent: get this report before you buy or sell &mdash; ' + esc((d.company && d.company.name) || tk) + '</span>'
       + '<p class="fwords">' + flags.map(function (f) { return '<b>' + f + '</b>'; }).join('<i>&middot;</i>') + '</p>'
       + (open ? '' : '<p>What each one is, when it happened and what the company&rsquo;s own filings say is in the report.</p>') + '</div>'
       + (open ? '<a class="go verdict" href="#auto" style="font:700 15px var(--sans);color:var(--hot)">The report is below &darr;</a>' : '<button class="wbuy gold go readnow" data-sku="wire_search" data-t="' + esc(tk) + '">READ IT NOW &middot; $12</button>')
