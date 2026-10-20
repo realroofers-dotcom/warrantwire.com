@@ -149,9 +149,10 @@ html.light .edgar .ehd{background:#dfeaf6}
   <!-- home-compact-3b · 2026-10-15 · Mark: "cut this to one sentence small letters with a ...More link so the site can sell some reports" + "move the getting screwed up the way it used to be". Full detail (61% vs 34%, warrant $, reading progress) lives on /counter.html. -->
   <section class="screw" aria-live="off">
     <span class="k">The screw</span>
-    <div class="odo"><i>$</i><span id="lostAll">3.56</span> <span style="font-size:.5em">trillion</span></div>
-    <p><a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
-    <small id="rate">Lost in market value by <span id="fellAll">2,007</span> companies whose shares fell, <span id="yrs0">2010&ndash;2026</span>; still reading every report back to 2001 (<span id="rdPct">4.3</span>% done)&hellip; <a href="/counter.html" style="color:var(--hot)">More</a></small>
+    <!-- screw-4a · 2026-10-20 · Mark: "The big number is important ... show the number growing and note the period ... we search x # of companies from year 2001 to 2019 and here is the loss." Sept 28 look restored; the figure is the reader's own count (?count=1 headline), straight from the filings, no hand changes. -->
+    <div class="odo"><i>$</i><span id="odo">3,210,115,689,615</span></div>
+    <p><b>Lost by <span id="lostN">4,771</span> small companies that used warrants.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
+    <small id="rate">We have read every annual report filed from <span id="yrsDone">2001 to 2020</span> (<span id="rdN">160,803</span> reports, <span id="coN">7,058</span> companies). <span id="still">Still reading 2021&ndash;2026: <span id="rdPct">79.9</span>% done<span id="eta"></span>, so the number grows every day.</span> <span id="asof"></span> <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
   </section>
 
   <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
@@ -284,20 +285,67 @@ html.light .edgar .ehd{background:#dfeaf6}
   if (new URLSearchParams(location.search).get("dark") === "1") document.documentElement.classList.remove("light");
   /* home-compact-3b (2026-10-15): the compact screw - $ lost by fallers (counter-2a) + the reader's % done. Every write is null-safe. */
   function set(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
-  fetch("https://counter.realroofers.workers.dev/?screw=1").then(function (r) { return r.json(); }).then(function (d) {
-    if (!d || !d.ok) return;
-    set("yrs0", d.from_year + "\u2013" + d.to_year);
-    if (d.market && d.market.lost_by_fallers) {
-      set("lostAll", (d.market.lost_by_fallers / 1e12).toFixed(2));
-      set("fellAll", Number(d.market.fell).toLocaleString("en-US"));
-    }
-  }).catch(function () {});
-  fetch("https://reader.realroofers.workers.dev/?status=1").then(function (r) { return r.json(); }).then(function (s) {
-    if (!s || !s.by_year) return;
-    var all = 0, read = 0;
-    s.by_year.forEach(function (y) { all += +y.filings; read += +y.read; });
-    if (all) set("rdPct", (100 * read / all).toFixed(1));
-  }).catch(function () {});
+  /* screw-4a (2026-10-20): THE SCREW is the reader's count, as it stands today. The years
+     named are the years read in full; the number counts up once when the page opens. */
+  /* screw-4b (2026-10-20): everything in the box moves live. Mark: "i want this running number
+     and the numbers to move as well as the date completed live".
+     - reports read, % done, years read: from the reader's progress, asked every minute
+     - the finish date: from the pace actually measured on this page, never guessed
+     - the dollar figure: the reader's own count (recalculated hourly), asked every 5 minutes;
+       the odometer rolls up to each new figure */
+  var READER = "https://reader.realroofers.workers.dev";
+  function commas(n) { return Math.floor(Number(n) || 0).toLocaleString("en-US"); }
+  function et(t, o) { return new Date(t).toLocaleString("en-US", Object.assign({ timeZone: "America/New_York" }, o)); }
+  var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var odo = document.getElementById("odo"), shown = 0;
+  function roll(to) {
+    var from = shown, t0 = Date.now(), ms = from ? 4000 : 2500;
+    if (calm || !odo) { shown = to; if (odo) odo.textContent = commas(to); return; }
+    /* the first frame is asked for, not drawn at once: a tab that never paints keeps the real figure on screen, never $0 */
+    function up() { var k = Math.min(1, (Date.now() - t0) / ms); shown = from + (to - from) * (1 - Math.pow(1 - k, 3)); odo.textContent = commas(shown); if (k < 1) requestAnimationFrame(up); else { shown = to; odo.textContent = commas(to); } }
+    requestAnimationFrame(up);
+  }
+  function count() {
+    fetch(READER + "/?count=1").then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.ok || !d.headline) return;
+      set("lostN", commas(d.headline.lost_money));
+      set("coN", commas(d.headline.companies));
+      if (d.headline.lost && Math.floor(d.headline.lost) !== Math.floor(shown)) roll(d.headline.lost);
+    }).catch(function () {});
+  }
+  var first = null;
+  function progress() {
+    fetch(READER + "/?status=1").then(function (r) { return r.json(); }).then(function (s) {
+      if (!s || !s.by_year || !s.by_year.length) return;
+      var ys = s.by_year, all = 0, read = 0, full = [];
+      ys.forEach(function (y) { all += +y.filings; read += +y.read; if (+y.filings > 0 && +y.read >= +y.filings) full.push(+y.year); });
+      var y0 = +ys[0].year, yN = +ys[ys.length - 1].year, last = full.length ? Math.max.apply(null, full) : y0;
+      var pct = all ? 100 * read / all : 0, now = Date.now();
+      set("rdN", commas(read));
+      set("yrsDone", y0 + " to " + last);
+      set("asof", "Updated " + et(now, { hour: "numeric", minute: "2-digit" }) + " ET.");
+      var st = document.getElementById("still");
+      if (read >= all) { if (st) st.textContent = "Every year read, " + y0 + " to " + yN + "."; return; }
+      if (st && st.firstChild) st.firstChild.textContent = "Still reading " + (last + 1) + "\u2013" + yN + ": ";
+      set("rdPct", pct.toFixed(1));
+      if (!first) first = { t: now, read: read };
+      var rate = (read - first.read) / Math.max(1, now - first.t);          /* reports per ms, measured here */
+      /* until this page has watched a minute, the pace comes from the reader's own last runs */
+      var runs = (s.last_runs || []).map(function (r) { var m = /^read (\d+)/.exec(r.what || ""); return { t: Date.parse(String(r.at).replace(" ", "T") + "Z"), n: m ? +m[1] : 0 }; }).filter(function (r) { return r.t; });
+      if (now - first.t < 50000 && runs.length >= 3) {
+        var span = runs[0].t - runs[runs.length - 1].t, n = 0;
+        for (var i = 0; i < runs.length - 1; i++) n += runs[i].n;
+        if (span > 0) rate = n / span;
+      }
+      if (rate > 0) {
+        var done = now + (all - read) / rate;
+        set("eta", " (done about " + et(done, { weekday: "short", month: "short", day: "numeric", hour: "numeric" }) + " ET at today\u2019s pace)");
+      }
+    }).catch(function () {});
+  }
+  count(); progress();
+  setInterval(progress, 60000);
+  setInterval(count, 300000);
   var toBox = function (e) { e.preventDefault(); var q = document.getElementById("q"); q.scrollIntoView({ behavior: "smooth", block: "center" }); q.focus(); };
   document.getElementById("checkme").addEventListener("click", toBox);
   document.getElementById("door-search").addEventListener("click", toBox);
