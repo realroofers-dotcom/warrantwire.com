@@ -57,6 +57,18 @@ html.light .edgar .ehd{background:#dfeaf6}
 .three .finder button{font-size:16px;padding:0 22px;white-space:nowrap;transition:background .2s}
 .three .finder button.found{background:var(--warm)}
 .three .freenote{font-size:14px;color:var(--ink3)}
+/* whole-market-1a 2026-10-22 */
+.whole{max-width:880px;margin:6px auto 26px;padding:18px 18px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.whole h2{margin:0 0 10px;font:700 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hot)}
+.whole table{width:100%;border-collapse:collapse;font-size:15px}
+.whole th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:4px 6px;border-bottom:1px solid var(--line)}
+.whole td{padding:8px 6px;border-bottom:1px solid var(--line2);color:var(--ink);vertical-align:top}
+.whole td small{display:block;font-size:12px;color:var(--ink3)}
+.whole tr.all td{font-weight:700}
+.whole .thread{margin:12px 0 6px;font-size:16px;color:var(--ink)}
+.whole .how{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.5}
+.whole .cta{display:inline-block;font-weight:700;color:var(--cool);text-decoration:none}
+@media (max-width:560px){.whole table{font-size:13.5px}.whole td,.whole th{padding:6px 4px}}
 .three .freenote a{color:var(--cool)}
 /* ONE CLAUSE, AS EDGAR SHOWS IT — the light-blue filing header a shareholder
    actually meets, one sentence of the salad, and what it means. Small. */
@@ -153,6 +165,22 @@ html.light .edgar .ehd{background:#dfeaf6}
     <div class="odo"><i>$</i><span id="odo">3,210,115,689,615</span></div>
     <p><b>Lost by <span id="lostN">4,771</span> small companies that used warrants.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
     <small id="rate">We have read every annual report filed from <span id="yrsDone">2001 to 2020</span> (<span id="rdN">160,803</span> reports, <span id="coN">7,058</span> companies). <span id="still">Still reading 2021&ndash;2026: <span id="rdPct">79.9</span>% done<span id="eta"></span>, so the number grows every day.</span> <span id="asof"></span> <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
+  </section>
+
+  <!-- whole-market-1a · 2026-10-22 · Mark (10/21): "its only fair to show and i think we need a combined number as well ... Maybe we just need to explain it better"; (10/22) "yes on big companies warrantwire". Live from the reader's all_companies count (every annual report 2001-2026). -->
+  <section class="whole" aria-label="Where investors' money went">
+    <h2>Where investors&rsquo; money went, 2001 to today</h2>
+    <table>
+      <thead><tr><th></th><th>Lost their investors money</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Small companies (under $500 million)</td><td><span id="wSmN">7,122</span> of <span id="wSmT">11,015</span></td><td>$<span id="wSmL">7.57</span> trillion</td></tr>
+        <tr><td>Big companies ($500 million and up)</td><td><span id="wBgN">1,074</span> of <span id="wBgT">2,530</span></td><td>$<span id="wBgL">14.27</span> trillion</td></tr>
+        <tr class="all"><td>All companies combined<small>includes banks and shell companies</small></td><td><span id="wAlN">10,606</span> of <span id="wAlT">17,857</span></td><td>$<span id="wAlL">31.28</span> trillion</td></tr>
+      </tbody>
+    </table>
+    <p class="thread"><b>The common thread is warrants.</b> Companies that used warrants lost their investors money <b><span id="wWp">65</span>%</b> of the time. Companies that didn&rsquo;t: <b><span id="wNp">49</span>%</b>.</p>
+    <p class="how"><b>How we count:</b> from each company&rsquo;s own annual reports filed with the SEC since 2001: what its stock was worth when it first appeared, plus the money it raised selling stock and warrants, minus what is left today. A change in market value; nothing here says anyone did anything wrong.</p>
+    <a class="cta" href="#q">Does your company use warrants? Check your ticker &rarr;</a>
   </section>
 
   <!-- ═══ THE HEADLINE AND THE BOX. Nothing else. His ruling, 12 Sep: people
@@ -310,6 +338,14 @@ html.light .edgar .ehd{background:#dfeaf6}
       if (!d || !d.ok || !d.headline) return;
       set("lostN", commas(d.headline.lost_money));
       set("coN", commas(d.headline.companies));
+      /* whole-market-1a: the whole-market table, same count */
+      var A = d.all_companies, tn = function (x) { return (Number(x) / 1e12).toFixed(2); };
+      if (A && A.small && A.large && A.headline) {
+        set("wSmN", commas(A.small.lost_money)); set("wSmT", commas(A.small.companies)); set("wSmL", tn(A.small.lost_by_those));
+        set("wBgN", commas(A.large.lost_money)); set("wBgT", commas(A.large.companies)); set("wBgL", tn(A.large.lost_by_those));
+        set("wAlN", commas(A.headline.lost_money)); set("wAlT", commas(A.headline.companies)); set("wAlL", tn(A.headline.lost));
+        set("wWp", A.headline.warrant_pct_lost_money); set("wNp", A.headline.no_warrants_pct_lost_money);
+      }
       if (d.headline.lost && Math.floor(d.headline.lost) !== Math.floor(shown)) roll(d.headline.lost);
     }).catch(function () {});
   }
