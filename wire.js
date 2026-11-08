@@ -147,10 +147,56 @@
     try { var r = localStorage.getItem(WW.BASKET); var l = r ? JSON.parse(r) : [];
           return Array.isArray(l) ? l : []; } catch (e) { return []; }
   }
+  /* ⚠ THE BUTTON HAS TO ANSWER WHERE HE IS STANDING — 8 Nov 2026.
+     This said "Added, the button is at the top right" into #wbuymsg and stopped
+     there. On the company page #wbuymsg sits 4,379 pixels down the page, so the
+     man who pressed Buy saw NOTHING happen, and the checkout button it pointed
+     him to was not at the top right and did not appear at all until he loaded
+     another page. Thirty-three thousand searches, not one sale. A button that
+     looks broken is a button nobody presses twice.
+     So: keep writing the line where the page wants it, and ALSO put a bar in
+     front of him that says what went in and offers the checkout in one click. */
   WW.wmsg = function (t, bad) {
     var m = document.getElementById("wbuymsg");
-    if (!m) return;
-    m.textContent = t; m.className = bad ? "bad" : "";
+    if (m) { m.textContent = t; m.className = bad ? "bad" : ""; }
+    WW.toast(t, bad);
+  };
+
+  var TOAST = null, TOASTT = null;
+  WW.toast = function (t, bad) {
+    if (!document.body) return;
+    if (!document.getElementById("wwtoastcss")) {
+      var css = document.createElement("style");
+      css.id = "wwtoastcss";
+      css.textContent =
+        "#wwtoast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:10000;" +
+        "max-width:min(560px,calc(100vw - 24px));display:flex;align-items:center;gap:14px;" +
+        "background:#15202b;color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:8px;" +
+        "padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,.45);" +
+        "font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}" +
+        "#wwtoast.bad{background:#7a2318}" +
+        "#wwtoast span{flex:1;min-width:0}" +
+        "#wwtoast a{flex:none;background:#e8b230;color:#15202b;text-decoration:none;" +
+        "border-radius:6px;padding:9px 14px;font-weight:700;white-space:nowrap}" +
+        "#wwtoast a:hover{background:#f3c24a}" +
+        "@media(max-width:520px){#wwtoast{flex-direction:column;align-items:stretch;gap:9px;" +
+        "left:12px;right:12px;transform:none;max-width:none}#wwtoast a{text-align:center}}";
+      document.head.appendChild(css);
+    }
+    if (!TOAST) {
+      TOAST = document.createElement("div");
+      TOAST.id = "wwtoast";
+      document.body.appendChild(TOAST);
+    }
+    TOAST.className = bad ? "bad" : "";
+    TOAST.innerHTML = '<span></span>' +
+      (bad ? '' : '<a href="/checkout.html">Go to the checkout &rarr;</a>');
+    TOAST.firstChild.textContent = t;
+    TOAST.style.display = "flex";
+    if (TOASTT) clearTimeout(TOASTT);
+    /* ⚠ IT STAYS. A message about money that fades in three seconds is the same
+       as no message; he looks up from the price and it has gone. */
+    TOASTT = setTimeout(function () { if (TOAST) TOAST.style.display = "none"; }, 20000);
   };
   WW.wbuy = function (sku, ticker, accession, reader) {
     if (!sku) return;
@@ -167,7 +213,12 @@
     }
     if (!done) { var line = { sku: sku, ticker: t, acc: acc }; if (reader) line.reader = reader; l.push(line); }
     try { localStorage.setItem(WW.BASKET, JSON.stringify(l)); } catch (e) {}
-    WW.wmsg("Added. " + l.length + " on the checkout — the button is at the top right.");
+    /* ⚠ DO NOT SEND HIM LOOKING FOR A BUTTON. This used to say "the button is
+       at the top right"; the checkout pill sits half way down the right edge
+       and is not drawn at all until the next page load. Say what went in, and
+       hand him the checkout in the bar itself. */
+    WW.wmsg("Added" + (t ? " — " + t : "") + ". " + l.length +
+            (l.length === 1 ? " item" : " items") + " on the checkout.");
     if (window.wwRefreshCart) try { window.wwRefreshCart(); } catch (e) {}
   };
 
