@@ -161,7 +161,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   <a href="/counter.html">The screw<small>What the whole market put in, and what is left</small></a>
   <a href="/grades.html">Company grades<small>Every filing marked against the SEC's plain English rule</small></a>
   <a href="https://triggeredshort.com/glossary.html">What the words mean<small>Every term in plain English</small></a>
-  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $20</small></a>
+  <a href="https://8k10q.com">Read a filing<small>Any filing, in plain English, $12</small></a>
   <a href="/about.html">Who runs the wire<small>Mark Nejmeh</small></a>
 </nav>
 
@@ -303,7 +303,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
      losing people because a company with no warrant paper looked like
      "nothing". Warrant Wire serves the warrants; 8K10Q reads everything
      else; and the wire SAYS how much everything else is — the count since
-     2001, the latest filings, and a $20 read of any of them, bought here. */
+     2001, the latest filings, and a $12 read of any of them, bought here. */
   function edgarLine(e, wireN) {
     if (!e || !e.filings) return "";
     return '<p class="found">' + Number(e.filings).toLocaleString("en-US") + ' filings on EDGAR since ' + esc(String(e.since || "2001").slice(0, 4))
@@ -317,13 +317,13 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     var rows = (e.recent || []).slice(0, 12).map(function (r) {
       return '<li><span class="ef">' + esc(r.form) + '</span><span class="ed">' + esc(r.filed_on) + '</span>'
         + (r.url ? '<a class="el" href="' + esc(r.url) + '" target="_blank" rel="noopener">EDGAR</a>' : '<span></span>')
-        + '<button class="wbuy readk8" data-sku="wire_read" data-t="' + esc(tk) + '" data-acc="' + esc(r.accession) + '">Read it at 8K10Q &middot; $20</button></li>';
+        + '<button class="wbuy readk8" data-sku="wire_read" data-t="' + esc(tk) + '" data-acc="' + esc(r.accession) + '">Read it at 8K10Q &middot; $12</button></li>';
     }).join("");
     return '<section class="verdict edgar" id="edgar"><p class="lbl"><b>Everything on file</b><span>since ' + esc(String(e.since || "2001").slice(0, 4)) + ', from the SEC</span><span class="kind">read at 8K10Q</span></p>'
       + '<p class="vlead"><b>' + Number(e.filings).toLocaleString("en-US") + ' filings.</b> Warrant Wire reads the warrant paper. <a href="https://8k10q.com">8K10Q</a>, the sister site, reads any filing in plain English &mdash; every section, not only the warrants &mdash; for $20. Pick one below; you pay here and read it there.</p>'
       + '<div class="eforms">' + forms + '</div>'
       /* folded by default: the list is for choosing a filing to buy a read of, not free reading */
-      + '<details class="epick"><summary>Choose a filing to read at 8K10Q &middot; $20</summary><ol class="elist">' + rows + '</ol></details>'
+      + '<details class="epick"><summary>Choose a filing to read at 8K10Q &middot; $12</summary><ol class="elist">' + rows + '</ol></details>'
       + '<p class="fine">The latest ' + Math.min(12, (e.recent || []).length) + ' of ' + Number(e.filings).toLocaleString("en-US") + '. Kept here so the SEC is asked once, not on every search.</p>'
       + '</section>';
   }
@@ -462,6 +462,20 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + (w10 ? '<p class="vlead"><b>W10 &mdash; ' + esc(w10.name) + '.</b> ' + esc(w10.text) + '</p>' : '')
         + '<p class="clean"><b>No warrant language on the wire.</b> ' + esc(w0.text) + '</p>'
         + '<p>The wire watches for warrant language and nothing else. This is not a clean bill of health &mdash; it means no verdict can be rendered from the wire alone. Everything the company <i>has</i> filed is below, and any of it can be read.</p>'
+        /* ⚠ 8 Nov 2026 — DO NOT LEAVE HIM WITH NOTHING. Mark: "we should offer
+           them a read on 8k10q at the same price". This page used to end here:
+           no warrant language, so nothing to sell but the founder's verdict at
+           $200 — the wrong ask to a stranger who has just been told his company
+           looks quiet. The wire found nothing because the wire only reads
+           warrant paper. 8K10Q reads the whole filing, and that is exactly the
+           man who needs it. Same $12 as the report. */
+        + '<div class="noneoffer">'
+        +   '<p><b>The wire read the warrant paper. It did not read the rest.</b> '
+        +   'Everything this company filed is still on record &mdash; the 8-K, the 10-Q and the exhibit '
+        +   'almost nobody opens. 8K10Q reads any one of them in full, in plain English, every section.</p>'
+        +   '<p class="pick">Pick a filing below and read it &mdash; <b>$12</b>, the same as the report. '
+        +   'One payment, nothing recurring.</p>'
+        + '</div>'
         + '</section>';
     }
     if (open) {
@@ -511,7 +525,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   /* ---- the list of filings: the $12 product, shown only to a paid buyer ----
      Every warrant filing on record for this company — date, form, the terms
      in it — with two ways into the document: EDGAR (free, always) and a full
-     read in plain English at 8K10Q, the sister site, $20. His ruling: 8K10Q
+     read in plain English at 8K10Q, the sister site, $12 (was $20 until 8 Nov 2026). His ruling: 8K10Q
      products take the reader TO 8K10Q for the deeper read; they are not
      bought here. */
   function filings(rows, tk, cik) {
@@ -525,7 +539,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
           var k8 = "https://8k10q.com/?ticker=" + encodeURIComponent(tk) + "&acc=" + encodeURIComponent(f.accession);
           return '<tr' + (f.heavy ? ' class="heavy"' : '') + '><td class="m">' + esc(f.filed_on || "") + '</td><td class="m">' + esc(f.form || "") + '</td>'
             + '<td><div class="marks">' + WW.marks(f.labels) + '</div></td>'
-            + '<td class="m"><a href="' + edgar + '" target="_blank" rel="noopener">EDGAR</a> &middot; <a class="k8" href="' + k8 + '" target="_blank" rel="noopener">Read it in full at 8K10Q &middot; $20</a></td></tr>';
+            + '<td class="m"><a href="' + edgar + '" target="_blank" rel="noopener">EDGAR</a> &middot; <a class="k8" href="' + k8 + '" target="_blank" rel="noopener">Read it in full at 8K10Q &middot; $12</a></td></tr>';
         }).join("")
       + '</tbody></table></div>'
       + '<p class="vgap">EDGAR is the document itself, free, always. The read at 8K10Q is the sister site&rsquo;s product: the whole filing in plain English, every section, not only the warrants.</p>'

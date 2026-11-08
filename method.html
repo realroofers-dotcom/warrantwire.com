@@ -306,7 +306,7 @@ page(<var>T</var>) is then decided by these tests, in this order:</div>
   <div class="tblwrap"><table class="dec">
     <thead><tr><th>Test</th><th>Condition</th><th>What the page does</th></tr></thead>
     <tbody>
-      <tr><td>real company?</td><td>the ticker or name resolves to a CIK</td><td>If not: "type a ticker or a company name." Otherwise the page never comes up empty: it shows the EDGAR count since 2001 and the latest readable filings, each with a $20 read at 8K10Q.</td></tr>
+      <tr><td>real company?</td><td>the ticker or name resolves to a CIK</td><td>If not: "type a ticker or a company name." Otherwise the page never comes up empty: it shows the EDGAR count since 2001 and the latest readable filings, each with a $12 read at 8K10Q.</td></tr>
       <tr><td>merger or sale?</td><td>|signals(<var>T</var>)| ≥ 1</td><td>The warning at the top of the page, free, for every company: the form, the date, the words. W10 fires in the verdict. Which document it is sits in the report.</td></tr>
       <tr><td>on the wire?</td><td><var>n</var> = 0</td><td>W0: "No warrant language on the wire" &mdash; and the EDGAR record beneath it. Not a clean bill of health.</td></tr>
       <tr><td>open?</td><td><var>T</var> ∈ {TOVX, MRVL, GOOG} ∨ the reader&rsquo;s email holds an entitlement for <var>T</var></td><td>Everything is shown. Otherwise: the counts, the company, the terms and the number of rules fired are free; which document, which date, and the verdict sentence are the report.</td></tr>

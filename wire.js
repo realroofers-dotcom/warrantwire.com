@@ -116,7 +116,7 @@
       +   (f.sector ? '<p class="ind">' + WW.esc(f.sector) + '</p>' : '')
       +   '<div class="marks">' + WW.marks(f.labels) + '</div></div>'
       /* ⚠ ONE PRICE ON A FREE ROW, AND IT IS THE COMPANY'S. His ruling, 11 Sep:
-         the $20 read is an 8K10Q product for one FILING and it is not shown
+         the $12 read is an 8K10Q product for one FILING and it is not shown
          beside the company as if it were a second price for the same thing.
          It is offered inside the paid report, beside each filing. */
       + '<div class="go">'
