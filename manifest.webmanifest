@@ -1,0 +1,14 @@
+{
+  "name": "Warrant Wire - keep up with the action",
+  "short_name": "Warrant Wire",
+  "description": "Every warrant financing, as it is filed - and a notice when it is yours.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#eeece7",
+  "theme_color": "#14181d",
+  "icons": [
+    { "src": "/favicon-32.png",      "sizes": "32x32",   "type": "image/png" },
+    { "src": "/apple-touch-icon.png","sizes": "180x180", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

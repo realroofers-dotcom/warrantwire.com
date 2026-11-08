@@ -21,6 +21,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#14181d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Warrant Wire">
+<script src="/action.js" defer></script>
 <title>Warrant Wire — getting screwed in the market? It's in the filings.</title>
 <meta name="description" content="Type your ticker. We read your company's SEC filings, exhibits included, and tell you in plain English what its warrant paper permits — and who is behind it.">
 <link rel="canonical" href="https://warrantwire.com/">
@@ -156,6 +161,85 @@ html.light .edgar .ehd{background:#dfeaf6}
   <span class="live"><span class="dot" aria-hidden="true"></span><span id="live">Wire is live</span></span>
   <span id="nyc"></span>
 </div></div></header>
+<!-- ⚠ 8 Nov 2026 - RIGHT UNDER THE MASTHEAD, AND SLIM. Mark: "it should be right under the words
+     below the logo", "responsive", "keep it reasonable size dont mess up the beautiful page".
+     It was first put in a side panel, which on a phone is one tap away and therefore never seen.
+     One quiet line in the site's own soft-navy, a small pill, no shouting. Note the class is
+     wwact and NOT actbar - actbar is already the fixed bottom bar on this page.
+     ONE SWITCH FOR THE WHOLE WIRE, not per room: a man who plays momentum will not pre-join forty
+     rooms on the chance one wakes up. No name, no email, no login. -->
+<div class="wwact" id="wwactbox">
+  <div class="wrap">
+    <button id="wwactbtn" type="button">Keep up with the action</button>
+    <span id="wwactnote">A notice on your phone the moment a company you follow files warrant paper. No name, no email.</span>
+  </div>
+</div>
+<style>
+  .wwact{background:#FFF1EA;border-bottom:1px solid #E4E6EC}
+  .wwact .wrap{display:flex;align-items:center;gap:10px;padding:7px 16px;flex-wrap:wrap}
+  .wwact button{flex:0 0 auto;padding:6px 14px;border-radius:999px;border:1px solid #FF4A00;
+    cursor:pointer;background:#FF4A00;color:#fff;font:600 13px/1.2 inherit}
+  .wwact button:hover{background:#C23A00}
+  .wwact button[disabled]{opacity:.55;cursor:default}
+  .wwact #wwactnote{flex:1 1 200px;min-width:0;font:400 12.5px/1.35 inherit;color:#51576A}
+  .wwact.on button{background:#0E8A5F;border-color:#0E8A5F}
+  /* a phone: the pill first and full width, the words wrapping under it */
+  @media (max-width:560px){
+    .wwact .wrap{flex-direction:column;align-items:stretch;gap:5px;padding:8px 12px}
+    .wwact button{width:100%;padding:9px 14px;font-size:14px}
+    .wwact #wwactnote{flex:none;font-size:11.5px}
+  }
+</style>
+<script>
+(function () {
+  var btn = document.getElementById('wwactbtn'),
+      note = document.getElementById('wwactnote'),
+      box = document.getElementById('wwactbox');
+  if (!btn) return;
+  function say(t) { note.textContent = t; }
+  function paint() {
+    if (!window.WWAction) { box.hidden = true; return; }
+    var s = WWAction.state();
+    /* never offer what cannot work */
+    if (s === 'unsupported') { box.hidden = true; return; }
+    if (s === 'ios-install') {
+      btn.textContent = 'Add to home screen first';
+      btn.disabled = true;
+      say('On an iPhone: Share, then Add to Home Screen. Open it from there and this turns on. Apple\u2019s rule, not ours.');
+      return;
+    }
+    if (s === 'granted') {
+      box.classList.add('on');
+      btn.textContent = 'You are on \u00b7 tap to stop';
+      say('You will be told when warrant paper is filed - the ticker, the form, and what the rules found in it.');
+      btn.onclick = function () {
+        btn.disabled = true; say('Switching off\u2026');
+        WWAction.off().then(function () {
+          box.classList.remove('on'); btn.disabled = false; btn.onclick = null;
+          btn.textContent = 'Keep up with the action';
+          say('Switched off. Nothing of yours is kept.');
+          paint();
+        });
+      };
+      return;
+    }
+    btn.onclick = function () {
+      btn.disabled = true; say('Asking your phone\u2026');
+      WWAction.on().then(function (d) {
+        btn.disabled = false; paint();
+        if (d && d.watching) say('You are on. ' + d.watching + (d.watching === 1 ? ' phone is' : ' phones are') + ' watching the wire.');
+      }).catch(function (e) {
+        btn.disabled = false;
+        say(e && e.message === 'ios-install'
+          ? 'Add 8K10Q to your home screen first, then open it from there.'
+          : (e && e.message) || 'Your phone would not turn it on.');
+      });
+    };
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint);
+  else paint();
+})();
+</script>
 
 <main><div class="wrapn">
 
