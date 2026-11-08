@@ -64,8 +64,18 @@
   .foot{color:var(--faint);font-size:13px;margin:38px 0 50px;border-top:1px solid var(--line);padding-top:16px}
   .foot a{color:var(--dim)}
   a{color:var(--cut)}
+  /* ⚠ 8 Nov 2026 — DO NOT HIDE THE THIRD COLUMN ON A PHONE. It was set to
+     display:none under 560px, which meant the one line a man most needs —
+     Android yes, iPhone no — vanished on the very device he is holding while
+     he reads it. The table stacks instead: each row becomes a block, and the
+     "Works on" answer sits under the description where it can be seen. */
   @media(max-width:560px){
-    .tiers th:nth-child(3),.tiers td:nth-child(3){display:none}
+    .tiers thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    .tiers,.tiers tbody,.tiers tr,.tiers td{display:block;width:100%}
+    .tiers tr{border-bottom:1px solid var(--line);padding:4px 0 12px}
+    .tiers td{border:0;padding:4px 0}
+    .tiers td.w{font-size:16px}
+    .tiers td:last-child{margin-top:6px;padding-top:8px;border-top:1px dashed var(--line)}
   }
 </style>
 </head>
