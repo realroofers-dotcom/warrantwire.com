@@ -162,6 +162,11 @@
     WW.toast(t, bad);
   };
 
+  /* ⚠ ONE ANSWER, NEVER TWO. The cart worker carries the same bar, because it
+     ships in a minute and this file ships when Mark pushes. This flag tells it
+     to stand down the moment this page is live. */
+  window.WW_OWNS_TOAST = true;
+
   var TOAST = null, TOASTT = null;
   WW.toast = function (t, bad) {
     if (!document.body) return;
