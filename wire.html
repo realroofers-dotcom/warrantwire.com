@@ -120,9 +120,9 @@
     /* never offer what cannot work */
     if (s === 'unsupported') { box.hidden = true; return; }
     if (s === 'ios-install') {
-      btn.textContent = 'Add to home screen first';
+      btn.textContent = 'iPhone? Add to Home Screen first';
       btn.disabled = true;
-      say('On an iPhone: Share, then Add to Home Screen. Open it from there and this turns on. Apple\u2019s rule, not ours.');
+      say('On an iPhone, Apple only allows this from the home screen: tap Share, then Add to Home Screen, then open 8K10Q from that icon and press this again. Android works straight away.');
       return;
     }
     if (s === 'granted') {

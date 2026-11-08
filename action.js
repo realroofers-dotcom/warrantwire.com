@@ -48,8 +48,17 @@
     supported: can,
     iosNeedsInstall: iosNeedsInstall,
     state: function () {
-      if (!can()) return 'unsupported';
+      /* ⚠ ORDER MATTERS, AND GETTING IT WRONG HID THE WHOLE BAR ON EVERY
+         iPHONE. 8 Nov 2026: Mark turned it on and said "does not show on
+         either iphone".
+         iOS Safari does not put PushManager on the window AT ALL until the
+         site has been added to the home screen. So the capability test said
+         "this browser cannot do push", the bar hid itself, and the man never
+         saw the one line telling him what to do about it. The iPhone check
+         has to come FIRST: it is not an incapable browser, it is a capable
+         one that has not been installed yet. */
       if (iosNeedsInstall()) return 'ios-install';
+      if (!can()) return 'unsupported';
       return Notification.permission;     // 'granted' | 'denied' | 'default'
     },
     on: function () {
