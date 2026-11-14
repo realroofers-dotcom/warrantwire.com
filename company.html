@@ -408,7 +408,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
         + '<button class="wbuy readk8" data-sku="wire_read" data-t="' + esc(tk) + '" data-acc="' + esc(r.accession) + '">Read it at 8K10Q &middot; $12</button></li>';
     }).join("");
     return '<section class="verdict edgar" id="edgar"><p class="lbl"><b>Everything on file</b><span>since ' + esc(String(e.since || "2001").slice(0, 4)) + ', from the SEC</span><span class="kind">read at 8K10Q</span></p>'
-      + '<p class="vlead"><b>' + Number(e.filings).toLocaleString("en-US") + ' filings.</b> Warrant Wire reads the warrant paper. <a href="https://8k10q.com">8K10Q</a>, the sister site, reads any filing in plain English &mdash; every section, not only the warrants &mdash; for $20. Pick one below; you pay here and read it there.</p>'
+      + '<p class="vlead"><b>' + Number(e.filings).toLocaleString("en-US") + ' filings.</b> Warrant Wire reads the warrant paper. <a href="https://8k10q.com">8K10Q</a>, the sister site, reads any filing in plain English &mdash; every section, not only the warrants &mdash; for $12. Pick one below; you pay here and read it there.</p>'
       + '<div class="eforms">' + forms + '</div>'
       /* folded by default: the list is for choosing a filing to buy a read of, not free reading */
       + '<details class="epick"><summary>Choose a filing to read at 8K10Q &middot; $12</summary><ol class="elist">' + rows + '</ol></details>'
@@ -452,7 +452,8 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
     if (d.company && !d.company.agent) flags.push("There is no agent for service");
     if (!flags.length) return "";
     return '<div class="flags urgent" id="flags"><div><span class="k">&#9888; Urgent: get this report before you buy or sell &mdash; ' + esc((d.company && d.company.name) || tk) + '</span>'
-      + '<p class="fwords">' + flags.map(function (f) { return '<b>' + f + '</b>'; }).join('<i>&middot;</i>') + '</p>'
+      /* count-only-1a (Mark 2026-11-14: 'you are still giving things away free' / 'the whole purpose of the site is to read for them'): free = HOW MANY red flags; the words come with the read */
+      + (open ? '<p class="fwords">' + flags.map(function (f) { return '<b>' + f + '</b>'; }).join('<i>&middot;</i>') + '</p>' : '<p class="fwords"><b>' + flags.length + ' red flag' + (flags.length === 1 ? '' : 's') + '</b> in this company&rsquo;s own filings</p>')
       + (open ? '' : '<p>What each one is, when it happened and what the company&rsquo;s own filings say is in the report.</p>') + '</div>'
       + (open ? '<a class="go verdict" href="#auto" style="font:700 15px var(--sans);color:var(--hot)">The report is below &darr;</a>' : '<button class="wbuy gold go readnow" data-sku="wire_search" data-t="' + esc(tk) + '">READ IT NOW &middot; $12</button>')
       + '</div>';
@@ -579,7 +580,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       + '<p class="vlead locked">The rules have fired on this company&rsquo;s paper. The verdict is one sentence long.</p>'
       + '<div class="vlock"><p><b>The verdict, the rules that fired, and every filing &mdash; $12.</b> '
       + 'One company, every year on record. Any going concern notice on file is in it, highlighted as an urgent warning. '
-      + 'And <b>what could happen</b>: what its warrant paper permits, read against that notice, and where its officers and directors have been before &mdash; which other companies, what those companies were renamed, and what their filings show happened. One payment, nothing recurring.</p>'
+      + 'And <b>what could happen</b>: what its warrant paper permits, read against that notice, and, where its officers and directors file US insider reports, where they have been before &mdash; which other companies, what those companies were renamed, and what their filings show happened. One payment, nothing recurring.</p>'
       + '<button class="wbuy gold" data-sku="wire_search" data-t="' + esc(T) + '">Buy the verdict &mdash; $12</button></div>'
       + '<p class="vgap">Rules version ' + v.version + '. <a href="/rules.html" style="color:var(--cool)">Read how it is rendered</a> before you buy.</p>'
       + '</section>';
