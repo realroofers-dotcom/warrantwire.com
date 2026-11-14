@@ -29,13 +29,20 @@
     /* 2026-10-11 (Mark): "it should be a separate icon for special studies market crashes" */
     ["crash",  "/warrant-history.html",      "M3 4v16h18M6 8l4 5 3-3 7 8M20 14v4h-4", "Special study: market crashes"],
     /* 2026-10-11 (Mark): page for Nevada's securities-fraud victims fund */
-    ["gold",   "/nevada-securities-fraud-victims-fund.html", "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM12 8v8M14.5 9.5c-.4-.9-1.4-1.4-2.5-1.4-1.4 0-2.5.8-2.5 1.9s1 1.6 2.5 1.9 2.5.8 2.5 1.9-1.1 1.9-2.5 1.9c-1.1 0-2.1-.5-2.5-1.4", "NV fraud fund"]
+    ["gold",   "/nevada-securities-fraud-victims-fund.html", "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM12 8v8M14.5 9.5c-.4-.9-1.4-1.4-2.5-1.4-1.4 0-2.5.8-2.5 1.9s1 1.6 2.5 1.9 2.5.8 2.5 1.9-1.1 1.9-2.5 1.9c-1.1 0-2.1-.5-2.5-1.4", "NV fraud fund"],
+    /* ⚠ 2026-11-14: the comma above was MISSING from 8 Nov to 14 Nov 2026. Without it the gold
+       door and the asked door collapsed into one undefined entry, draw() threw ("Cannot read
+       properties of undefined (reading '1')") and NO PAGE showed the icon nav for six days.
+       Every entry ends with a comma. */
     /* 2026-11-08 (Mark): "we have to have a faq page that explains the difference"
        and the week-old searches page. Icon driven, same as every other door. */
     ["sky",    "/asked.html",                "M3 20V9M9 20V4M15 20v-8M21 20v-5M2 20h20", "Asked last week"],
     ["slate",  "/faq.html",                  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.5 9.5a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.9.8-.9 1.4v.6M12 17v.5", "Questions answered"],
+    /* 2026-11-14 (Mark): "we need to have the file a tip to sec on 8k10q.com site and
+       warrantwire.com as well as triggeredshort.co and stockfraudaudit.com". One page here. */
+    ["sec",    "/sec-tip",                   "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4", "Tip the SEC"],
   ];
-  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0", coral:"#f08a7e", slate:"#a9b7c8", crash:"#e8796f", gold:"#d9c25a" };
+  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0", coral:"#f08a7e", slate:"#a9b7c8", crash:"#e8796f", gold:"#d9c25a", sec:"#8fb3ee" };
 
   var CSS = ''
     + '.wwnav{border-bottom:1px solid var(--line,#dcdad0);background:var(--paper,#fff)}'
