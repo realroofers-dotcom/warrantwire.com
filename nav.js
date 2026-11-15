@@ -95,4 +95,6 @@
     }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", draw); else draw();
+  /* the house ads, rotated by AdHotBox (2026-11-15, Mark: "gigapoo is on all finance sites as an ad") */
+  var ha = document.createElement("script"); ha.src = "https://adhotbox.com/house.js"; ha.defer = true; document.head.appendChild(ha);
 })();
