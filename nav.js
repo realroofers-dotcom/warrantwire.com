@@ -1,4 +1,4 @@
-/* UPDATED 2026-10-11 · nav 1d · two doors added (special study: market crashes; NV fraud fund) · BUILT 2026-09-12 · warrantwire nav.js 1c · the label is always black (three pages use --ink as their paper) · on a phone the doors are a grid at the foot of the page, scrolled to
+/* UPDATED 2026-11-15 · nav 1f · Meetings door · UPDATED 2026-10-11 · nav 1d · two doors added (special study: market crashes; NV fraud fund) · BUILT 2026-09-12 · warrantwire nav.js 1c · the label is always black (three pages use --ink as their paper) · on a phone the doors are a grid at the foot of the page, scrolled to
    ============================================================================
    THE ICON NAV — the nine doors from the home page, on every page, in one
    row under the masthead. His ruling, 12 Sep: navigation should be icon
@@ -40,9 +40,11 @@
     ["slate",  "/faq.html",                  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.5 9.5a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.9.8-.9 1.4v.6M12 17v.5", "Questions answered"],
     /* 2026-11-14 (Mark): "we need to have the file a tip to sec on 8k10q.com site and
        warrantwire.com as well as triggeredshort.co and stockfraudaudit.com". One page here. */
+    /* 2026-11-15 (Mark): "you can have the same meetings page on warrantwire with the warrantwire styling" - the 8K10Q master, dressed by meetings-sync */
+    ["cal",    "/meetings.html",             "M3 5h18v16H3zM3 10h18M8 3v4M16 3v4", "Meetings: calendar + map"],
     ["sec",    "/sec-tip",                   "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4", "Tip the SEC"],
   ];
-  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0", coral:"#f08a7e", slate:"#a9b7c8", crash:"#e8796f", gold:"#d9c25a", sec:"#8fb3ee" };
+  var COLOR = { lime:"#a6f542", rose:"#f28cb1", amber:"#e5b83a", orange:"#f0904a", violet:"#b48be6", green:"#63c48f", teal:"#4fd1c5", sky:"#7cc7f5", blue:"#6fa8e0", coral:"#f08a7e", slate:"#a9b7c8", crash:"#e8796f", gold:"#d9c25a", sec:"#8fb3ee", cal:"#f2c14e" };
 
   var CSS = ''
     + '.wwnav{border-bottom:1px solid var(--line,#dcdad0);background:var(--paper,#fff)}'
