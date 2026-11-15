@@ -385,7 +385,11 @@ if (!list.length) {
   var card = PAY + "/?go=" + encodeURIComponent(list.map(function(x){ return x.sku; }).join(","))
            + (list[0].ticker ? "&ticker=" + encodeURIComponent(list[0].ticker) : "")
            + (list[0].acc    ? "&ref="    + encodeURIComponent(list[0].acc) : "")
-           + "&on=wire";
+           + "&on=wire"
+           /* ret-1a, 14 Nov 2026, Mark: "auto link to the company after payment" -
+              one company bought = straight back to that company's page, unlocked. */
+           + (list.length === 1 && list[0].sku === "wire_search" && /^[A-Z0-9.\-]{1,10}$/.test(String(list[0].ticker || "").toUpperCase())
+              ? "&ret=" + encodeURIComponent("/company.html?t=" + String(list[0].ticker).toUpperCase()) : "");
 
   document.getElementById("out").innerHTML =
     /* ⚠ CANCEL SITS AT THE TOP, WHERE HE IS LOOKING. It was small underlined

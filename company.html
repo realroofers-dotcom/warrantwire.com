@@ -325,6 +325,25 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
   if (qe && qe.indexOf("@") > 0) { EMAIL = qe.trim().toLowerCase(); try { localStorage.setItem("ww.email", EMAIL); } catch (e) {} }
   function withEmail(url) { return EMAIL ? url + "&email=" + encodeURIComponent(EMAIL) : url; }
   var PAYDESK = "https://pay.realroofers.workers.dev";
+  /* ret-1a, 14 Nov 2026, Mark: "auto link to the company after payment".
+     Stripe sends the buyer back here with ?paid=<session>; the desk says which
+     email paid, it is remembered, and the page opens unlocked. */
+  var PAIDS = new URLSearchParams(location.search).get("paid") || "";
+  if (T && /^cs_(live|test)_/.test(PAIDS)) {
+    page.innerHTML = '<div class="quiet">Payment received. Opening your report&hellip;</div>';
+    var ptries = 0;
+    var toThanks = function () { location.replace("/thanks.html?s=" + encodeURIComponent(PAIDS)); };
+    var poll = function () {
+      fetch(PAYDESK + "/?paid=" + encodeURIComponent(PAIDS)).then(function (r) { return r.json(); }).then(function (d) {
+        if (d && d.paid && d.email) {
+          try { localStorage.setItem("ww.email", String(d.email).trim().toLowerCase()); } catch (e) { return toThanks(); }
+          location.replace("/company.html?t=" + encodeURIComponent(T));
+        } else if (ptries++ < 10) setTimeout(poll, 1500); else toThanks();
+      }).catch(function () { if (ptries++ < 10) setTimeout(poll, 1500); else toThanks(); });
+    };
+    poll();
+    return;
+  }
   if (!T) { page.innerHTML = '<div class="quiet">Type a ticker or a company name above.</div>'; return; }
   document.getElementById("q").value = T;
   document.title = T + " — the verdict — Warrant Wire";
