@@ -1,4 +1,4 @@
-/* BUILT 2026-11-15 · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
+/* BUILT 2026-11-15 · story-1c (cards-home-1a: 'Their cards, on 8K10Q') · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
    (Mark: "what we just did on warrantwire on PEOPLE and Universities all goes on 8k10q because it is pertinent").
    Mark, 15 Nov 2026: "BRANDING and urgency" / "chart the stock movements" / "THE PEOPLE ... which SCHOOLS" / "the salaries
    are my point, and that is a sell sign" / "if a company came from a shell it should have that shell logo" / "if there is a
@@ -129,7 +129,9 @@
         var ppl = ((d && d.officers) || []).map(function (x) { return [x, x.title || "Officer"]; }).concat(((d && d.directors) || []).map(function (x) { return [x, "Director"]; }));
         if (!ppl.length) return;
         var last = function (s) { return String(s || "").split(/\s+/)[0].toLowerCase(); };
-        var h = '<div class="sh3">The people who ran it</div><p class="chartcap">Schools quoted from the company&rsquo;s own proxy biography. Other companies from each person&rsquo;s SEC insider record. Pay from each year&rsquo;s 10-K or proxy.</p>';
+        /* cards-home-1a (Mark 15 Nov: 'the cards belong to 8k10q.com'): the cards live in the company's 8K10Q room; every site sends people there */
+        var cardsBtn = '<a href="https://8k10q.com/room?t=' + encodeURIComponent(tk) + '#cards" style="display:inline-block;margin:2px 0 8px;background:#1d5fa8;color:#fff;border-radius:9px;padding:7px 14px;font-weight:700;text-decoration:none">Their cards, on 8K10Q &rarr;</a>';
+        var h = '<div class="sh3">The people who ran it</div>' + cardsBtn + '<p class="chartcap">Schools quoted from the company&rsquo;s own proxy biography. Other companies from each person&rsquo;s SEC insider record. Pay from each year&rsquo;s 10-K or proxy.</p>';
         ppl.forEach(function (pr) {
           var x = pr[0], nm = personName(x.name), mine = sc.filter(function (s) { return s.person === x.name; });
           var cr = ca.filter(function (c) { return c.name === x.name; })[0], others = cr ? cr.elsewhere || [] : [];
