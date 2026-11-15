@@ -1,4 +1,4 @@
-<!-- GENERATED 2026-11-15 10:33 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
+<!-- GENERATED 2026-11-15 10:36 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
 <!-- BUILT 2026-10-01 · 8k10q meetings-1a · WHERE AND WHEN IS THE MEETING. His rules, 1 Oct 2026: tell users where, when and the details of every stockholder meeting, in person or broadcast, "a critical way to evaluate a company". Virtual only = red mark. Hard to reach or in another country = bad mark. Broadcast + questions open to everyone = very positive, only if the company ALSO meets in person. 8K10Q will attend any meeting for anyone at cost (service page: /attend) (travel + hotel: about $500-700 domestic, $1,500-2,000 overseas) and ask the shareholders' questions. First case: Theriva (TOVX), every line from its own proxies and 8-Ks. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -158,6 +158,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
   <button type="button" data-v="list"><svg class="ic"><use href="#i-list"/></svg>List</button>
   <a href="https://8k10q.com/redline" class="rl"><svg class="ic"><use href="#i-screen"/></svg>Redline: virtual</a>
 </div>
+<p class="note"><a href="webcal://meetings.realroofers.workers.dev/?ics=1&amp;inperson=1" style="font-weight:700"><svg class="ic" style="vertical-align:-4px"><use href="#i-cal"/></svg> Every in-person meeting on your phone</a> &mdash; subscribe once; it updates itself, with alerts 7, 3 and 1 day before, the exact time, the address and what it takes to get in.</p>
 <p class="note" id="calnote">Loading the calendar&hellip;</p>
 <div class="view" id="v-cal"><div class="mhead"><button type="button" id="mprev" aria-label="Previous month">&lsaquo;</button><b id="mname"></b><button type="button" id="mnext" aria-label="Next month">&rsaquo;</button></div><div class="grid" id="grid"></div><div id="dayl"></div></div>
 <div class="view" id="v-map" hidden><div id="map"></div><p class="note">Heat = how many in-person meetings are held there. Click a pin for the full address. Online-only meetings have no place on the map; they are on the <a href="https://8k10q.com/redline">Redline</a>.</p></div>
@@ -233,6 +234,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
         fact("i-cast", "Broadcast", yn(m.broadcast, "Yes", "No")) +
         fact("i-ask", "Questions", m.questions ? "Yes, per the proxy" : "Not stated in the proxy") +
       '</div>' +
+        (m.in_person && m.place ? '<p style="margin:4px 0 0"><a href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(m.place) + '" target="_blank" rel="noopener" style="font-weight:700">' + ic("i-pin") + ' Directions &rarr;</a> &nbsp; <a href="webcal://meetings.realroofers.workers.dev/?ics=1&amp;tickers=' + encodeURIComponent(m.ticker || d.symbol) + '" style="font-weight:700">' + ic("i-cal") + ' Add to my phone calendar (alerts 7, 3 and 1 day before)</a></p><div id="admitbox"></div>' : '') +
       (m.quote ? '<div class="says"><b>The proxy says:</b> \u201c' + esc(m.quote) + '\u201d</div>' : "") +
       '<p class="note">' + ic("i-doc") + ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Read the proxy (' + esc(m.form) + ', filed ' + esc(m.filed) + ')</a> on SEC EDGAR.</p>' +
     '</div>';
@@ -253,6 +255,11 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
     h += '<div id="voice"></div>';
     out.innerHTML = h;
     voiceBox(d.symbol, d.meetings[0] && d.meetings[0].date_iso);
+    /* ics-1a: what it takes to get in, quoted from the proxy */
+    fetch(VAPI + '?admit=1&ticker=' + encodeURIComponent(d.symbol)).then(function (r) { return r.json(); }).then(function (a) {
+      var el = document.getElementById('admitbox'); if (!el || !a.ok || !a.to_get_in || !a.to_get_in.length) return;
+      el.innerHTML = '<div class="says" style="margin-top:8px"><b>' + (a.must_register_in_advance ? 'REGISTER IN ADVANCE. ' : '') + 'To get in, the proxy says:</b><ul style="margin:6px 0 0;padding-left:18px">' + a.to_get_in.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul><p class="note" style="margin:6px 0 0">If unsure, call the company&rsquo;s investor relations line before you travel.</p></div>';
+    }).catch(function () {});
   }
   /* voice-1a (15 Nov 2026), Mark: "if we can get people to these meetings and get feedback its powerful" / "we should
      rate the conditions and the comfort ... a good company would make it with snacks and welcoming". Before the meeting:
@@ -377,7 +384,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
       pts.push([m.lat, m.lon, 1]); bounds.push([m.lat, m.lon]);
       L.circleMarker([m.lat, m.lon], { radius: 7, color: ({ A: "#1f6b3a", B: "#2678d6", D: "#d98a00", F: "#b23a2b" })[m.grade] || "#1a1f6b", weight: 2, fillOpacity: .8 })
         .bindPopup("<b>" + esc(m.ticker) + "</b> " + esc(m.company || "") + "<br>" + esc(m.date || m.date_iso) + (m.time ? ", " + esc(m.time) : "") +
-          "<br><b>Address:</b> " + esc(m.address || m.place) + (m.matched_address ? '<br><small>Map: ' + esc(m.matched_address) + "</small>" : "") +
+          "<br><b>Grade " + esc(m.grade || "?") + "</b> &middot; " + esc(m.grade_words || "") + "<br><b>Address:</b> " + esc(m.address || m.place) + (m.matched_address ? '<br><small>Map: ' + esc(m.matched_address) + "</small>" : "") + '<br><a href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(m.matched_address || m.address || m.place) + '" target="_blank" rel="noopener"><b>Directions &rarr;</b></a>' +
           '<br><a href="https://8k10q.com/attend?s=' + encodeURIComponent(m.ticker) + '">Send us</a> &middot; <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Proxy</a>').addTo(map);
     });
     if (L.heatLayer && pts.length) L.heatLayer(pts, { radius: 28, blur: 22, maxZoom: 8 }).addTo(map);
