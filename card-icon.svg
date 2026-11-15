@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Trading card">
+<!-- BUILT 2026-11-15 · card-icon-1a. Mark: "make a baseball card looking icon and place it as a link to the cards, i want the cards to become powerful and tradeable". A tilted trading card: gold edge, the player's window, the name banner, the stat lines, a star. -->
+<g transform="rotate(-8 24 24)">
+<rect x="9" y="4" width="30" height="40" rx="3.5" fill="#fffaf0" stroke="#c99a2e" stroke-width="2.6"/>
+<rect x="12.5" y="7.5" width="23" height="20" rx="1.5" fill="#1d5fa8"/>
+<circle cx="24" cy="15" r="4.2" fill="#fffaf0"/>
+<path d="M15.5 27.5c.6-4.6 4.1-7.4 8.5-7.4s7.9 2.8 8.5 7.4z" fill="#fffaf0"/>
+<rect x="11" y="25.5" width="26" height="5.5" rx="1" fill="#c0392b"/>
+<path d="M14 34.5h20M14 38h14" stroke="#15160f" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M33.5 35.2l1.1 2.2 2.4.3-1.75 1.7.42 2.4-2.17-1.15-2.17 1.15.42-2.4-1.75-1.7 2.4-.3z" fill="#c99a2e"/>
+</g>
+</svg>

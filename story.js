@@ -1,4 +1,4 @@
-/* BUILT 2026-11-15 · story-1c (cards-home-1a: 'Their cards, on 8K10Q') · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
+/* BUILT 2026-11-15 · story-1d (card icon on the cards link) · story-1c (cards-home-1a: 'Their cards, on 8K10Q') · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
    (Mark: "what we just did on warrantwire on PEOPLE and Universities all goes on 8k10q because it is pertinent").
    Mark, 15 Nov 2026: "BRANDING and urgency" / "chart the stock movements" / "THE PEOPLE ... which SCHOOLS" / "the salaries
    are my point, and that is a sell sign" / "if a company came from a shell it should have that shell logo" / "if there is a
@@ -43,6 +43,8 @@
   function fd(d) { return d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""; }
   function J(u) { return fetch(u).then(function (r) { return r.json(); }).catch(function () { return null; }); }
   function yearEnd(p, y) { var w = (p.weekly || []).filter(function (x) { return x[0].slice(0, 4) === String(y); }); return w.length ? w[w.length - 1][1] : null; }
+  /* card-icon-1a (Mark 15 Nov: 'make a baseball card looking icon and place it as a link to the cards, i want the cards to become powerful and tradeable'); also warrantwire.com/card-icon.svg */
+  var CARD_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true" style="width:26px;height:26px;flex:0 0 auto"><g transform="rotate(-8 24 24)"><rect x="9" y="4" width="30" height="40" rx="3.5" fill="#fffaf0" stroke="#c99a2e" stroke-width="2.6"/><rect x="12.5" y="7.5" width="23" height="20" rx="1.5" fill="#1d5fa8"/><circle cx="24" cy="15" r="4.2" fill="#fffaf0"/><path d="M15.5 27.5c.6-4.6 4.1-7.4 8.5-7.4s7.9 2.8 8.5 7.4z" fill="#fffaf0"/><rect x="11" y="25.5" width="26" height="5.5" rx="1" fill="#c0392b"/><path d="M14 34.5h20M14 38h14" stroke="#15160f" stroke-width="1.8" stroke-linecap="round"/><path d="M33.5 35.2l1.1 2.2 2.4.3-1.75 1.7.42 2.4-2.17-1.15-2.17 1.15.42-2.4-1.75-1.7 2.4-.3z" fill="#c99a2e"/></g></svg>';
   var SHELL_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-9 0-16 8-16 18 0 6 3 11 7 14h18c4-3 7-8 7-14C40 14 33 6 24 6z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M24 8v28M16 12l5 24M32 12l-5 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M14 40h20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
 
   function chartSVG(p) {
@@ -130,7 +132,7 @@
         if (!ppl.length) return;
         var last = function (s) { return String(s || "").split(/\s+/)[0].toLowerCase(); };
         /* cards-home-1a (Mark 15 Nov: 'the cards belong to 8k10q.com'): the cards live in the company's 8K10Q room; every site sends people there */
-        var cardsBtn = '<a href="https://8k10q.com/room?t=' + encodeURIComponent(tk) + '#cards" style="display:inline-block;margin:2px 0 8px;background:#1d5fa8;color:#fff;border-radius:9px;padding:7px 14px;font-weight:700;text-decoration:none">Their cards, on 8K10Q &rarr;</a>';
+        var cardsBtn = '<a href="https://8k10q.com/room?t=' + encodeURIComponent(tk) + '#cards" style="display:inline-flex;align-items:center;gap:8px;margin:2px 0 8px;background:#1d5fa8;color:#fff;border-radius:9px;padding:6px 14px 6px 8px;font-weight:700;text-decoration:none">' + CARD_SVG + 'Their cards, on 8K10Q &rarr;</a>';
         var h = '<div class="sh3">The people who ran it</div>' + cardsBtn + '<p class="chartcap">Schools quoted from the company&rsquo;s own proxy biography. Other companies from each person&rsquo;s SEC insider record. Pay from each year&rsquo;s 10-K or proxy.</p>';
         ppl.forEach(function (pr) {
           var x = pr[0], nm = personName(x.name), mine = sc.filter(function (s) { return s.person === x.name; });
