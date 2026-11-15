@@ -1,4 +1,4 @@
-<!-- GENERATED 2026-11-15 10:19 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
+<!-- GENERATED 2026-11-15 10:33 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
 <!-- BUILT 2026-10-01 · 8k10q meetings-1a · WHERE AND WHEN IS THE MEETING. His rules, 1 Oct 2026: tell users where, when and the details of every stockholder meeting, in person or broadcast, "a critical way to evaluate a company". Virtual only = red mark. Hard to reach or in another country = bad mark. Broadcast + questions open to everyone = very positive, only if the company ALSO meets in person. 8K10Q will attend any meeting for anyone at cost (service page: /attend) (travel + hotel: about $500-700 domestic, $1,500-2,000 overseas) and ask the shareholders' questions. First case: Theriva (TOVX), every line from its own proxies and 8-Ks. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -250,7 +250,58 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
     }
     h += '<div class="tiles"><a class="tile" href="https://8k10q.com/attend?s=' + encodeURIComponent(d.symbol) + '">' + ic("i-case") + '<b>Can\u2019t get there? We go for you</b><small>At cost. We ask your questions.</small></a><a class="tile" href="https://8k10q.com/room?t=' + encodeURIComponent(d.symbol) + '">' + ic("i-chat") + '<b>Talk about it</b><small>' + esc(d.symbol) + ' chat</small></a></div>';
     h += '<p class="note">Read by our program from the company\u2019s proxy on ' + esc(d.checked_at.slice(0, 10)) + '. 8K10Q\u2019s opinion, not investment advice. If the proxy says something different, the proxy wins.</p>';
+    h += '<div id="voice"></div>';
     out.innerHTML = h;
+    voiceBox(d.symbol, d.meetings[0] && d.meetings[0].date_iso);
+  }
+  /* voice-1a (15 Nov 2026), Mark: "if we can get people to these meetings and get feedback its powerful" / "we should
+     rate the conditions and the comfort ... a good company would make it with snacks and welcoming". Before the meeting:
+     the questions owners want asked. After: the report from whoever was there, with the room rated. */
+  var VAPI = "https://meetings.realroofers.workers.dev/";
+  var CATS = [["welcome", "Welcome at the door"], ["room", "The room: seats, comfort"], ["getting_there", "Getting there: easy to find, parking"], ["refreshments", "Refreshments"], ["respect", "Respect: questions taken and answered"]];
+  function stars(v) { if (v == null) return '<span style="color:var(--ink3)">not rated</span>'; var s = ""; for (var i = 1; i <= 5; i++) s += i <= Math.round(v) ? "\u2605" : "\u2606"; return '<span style="color:#c99a2e;letter-spacing:1px">' + s + '</span> ' + v; }
+  function who3() { return '<input name="name" placeholder="Your full name" required style="flex:1 1 180px;padding:8px;border:1px solid var(--line);border-radius:8px">'
+    + '<input name="city" placeholder="Your city" required style="flex:1 1 120px;padding:8px;border:1px solid var(--line);border-radius:8px">'
+    + '<input name="email" type="email" placeholder="Email (never shown)" required style="flex:1 1 180px;padding:8px;border:1px solid var(--line);border-radius:8px">'; }
+  function voiceBox(sym, date) {
+    var el = document.getElementById("voice"); if (!el) return;
+    fetch(VAPI + "?voice=1&ticker=" + encodeURIComponent(sym)).then(function (r) { return r.json(); }).then(function (v) {
+      var q = v.questions || [], r = v.reports || [], a = v.ratings || {}, h = "";
+      h += '<h3 style="margin-top:22px">' + ic("i-ask") + ' Questions the owners want asked (' + q.length + ')</h3>';
+      h += q.length ? '<ul style="padding-left:18px">' + q.map(function (x) { return '<li style="margin:6px 0">' + esc(x.text) + ' <span style="color:var(--ink3);font-size:13px">&mdash; ' + esc(x.name) + ', ' + esc(x.city) + (x.verified ? '' : ' &middot; unverified') + '</span></li>'; }).join("") + '</ul>' : '<p class="note">None yet. Be the first: whoever attends for the 8K10Q Army asks them.</p>';
+      h += '<form id="askf" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px"><textarea name="text" required placeholder="Your question for the board" style="flex:1 1 100%;min-height:60px;padding:8px;border:1px solid var(--line);border-radius:8px"></textarea>' + who3()
+        + '<button style="padding:8px 16px;border:0;border-radius:8px;background:var(--navy);color:#fff;font-weight:700">Post the question</button><span id="askm" class="note"></span></form>';
+      h += '<h3 style="margin-top:22px">' + ic("i-people") + ' From the owners who were there (' + (a.reports || 0) + ' report' + (a.reports === 1 ? '' : 's') + ')</h3>';
+      if (a.reports) h += '<div class="facts">' + CATS.map(function (c) { return '<div class="fact"><div><b>' + c[1] + '</b><span>' + stars(a[c[0]]) + '</span></div></div>'; }).join("") + '</div>';
+      r.forEach(function (x) {
+        h += '<div class="mt" style="margin:8px 0"><p style="margin:0 0 4px"><b>' + esc(x.name) + '</b>, ' + esc(x.city) + (x.meeting ? ' &middot; meeting of ' + esc(x.meeting) : '') + (x.verified ? '' : ' &middot; <span style="color:var(--red)">unverified</span>') + '</p>'
+          + '<p style="margin:0;font-size:14px">Held in person: <b>' + esc(x.held_in_person) + '</b> &middot; Quorum: <b>' + esc(x.quorum) + '</b>' + (x.board_present ? ' &middot; Board there: ' + esc(x.board_present) : '') + '</p>'
+          + (x.asked ? '<p style="margin:4px 0 0;font-size:14px"><b>Asked:</b> ' + esc(x.asked) + '</p>' : '') + (x.answered ? '<p style="margin:2px 0 0;font-size:14px"><b>Answered:</b> ' + esc(x.answered) + '</p>' : '')
+          + (x.notes ? '<p style="margin:2px 0 0;font-size:14px">' + esc(x.notes) + '</p>' : '') + '</div>';
+      });
+      h += '<details style="margin:8px 0"><summary style="cursor:pointer;font-weight:700">Were you there? Report back and rate it</summary><form id="repf" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">'
+        + '<label style="flex:1 1 100%">Was it really held in person? <select name="held_in_person"><option value="unknown">Don&rsquo;t know</option><option>yes</option><option>no</option></select></label>'
+        + '<label style="flex:1 1 100%">Was there a quorum? <select name="quorum"><option value="unknown">Don&rsquo;t know</option><option>yes</option><option>no</option></select></label>'
+        + '<input name="board_present" placeholder="Who from the board was there?" style="flex:1 1 100%;padding:8px;border:1px solid var(--line);border-radius:8px">'
+        + CATS.map(function (c) { return '<label style="flex:1 1 45%">' + c[1] + ' <select name="' + c[0] + '"><option value="">-</option><option value="5">5 excellent</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1 poor</option></select></label>'; }).join("")
+        + '<textarea name="asked" placeholder="What did you (or others) ask?" style="flex:1 1 100%;min-height:50px;padding:8px;border:1px solid var(--line);border-radius:8px"></textarea>'
+        + '<textarea name="answered" placeholder="What did they answer?" style="flex:1 1 100%;min-height:50px;padding:8px;border:1px solid var(--line);border-radius:8px"></textarea>'
+        + '<textarea name="notes" placeholder="Anything else: the welcome, the snacks, who was there, how long it lasted" style="flex:1 1 100%;min-height:50px;padding:8px;border:1px solid var(--line);border-radius:8px"></textarea>'
+        + who3() + '<button style="padding:8px 16px;border:0;border-radius:8px;background:var(--navy);color:#fff;font-weight:700">Send the report</button><span id="repm" class="note"></span></form></details>'
+        + '<p class="note">Posted under your name and city; your email is never shown. Marked unverified until 8K10Q checks you. Ratings are the attendee&rsquo;s opinion.</p>';
+      el.innerHTML = h;
+      var send = function (fid, mid, path) {
+        document.getElementById(fid).addEventListener("submit", function (e) {
+          e.preventDefault(); var f = e.target, o = { ticker: sym, meeting: date || "" }, m = document.getElementById(mid);
+          Array.prototype.forEach.call(f.elements, function (x) { if (x.name) o[x.name] = x.value; });
+          m.textContent = "Sending\u2026";
+          fetch(VAPI + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(o) }).then(function (r) { return r.json(); })
+            .then(function (j) { m.textContent = j.ok ? j.note : (j.error || "Not saved."); if (j.ok) setTimeout(function () { voiceBox(sym, date); }, 1200); })
+            .catch(function () { m.textContent = "Could not reach 8K10Q. Try again."; });
+        });
+      };
+      send("askf", "askm", "?ask=1"); send("repf", "repm", "?report=1");
+    }).catch(function () {});
   }
   function go(s) {
     s = String(s || "").trim().toUpperCase(); if (!s) return;
