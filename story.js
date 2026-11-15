@@ -1,4 +1,4 @@
-/* BUILT 2026-11-15 · story-1d (card icon on the cards link) · story-1c (cards-home-1a: 'Their cards, on 8K10Q') · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
+/* BUILT 2026-11-15 · story-1e (Army link on in-person meetings) · story-1d (card icon on the cards link) · story-1c (cards-home-1a: 'Their cards, on 8K10Q') · story-1b · warrantwire.com/story.js - ONE COPY, used by Warrant Wire's and 8K10Q's company pages
    (Mark: "what we just did on warrantwire on PEOPLE and Universities all goes on 8k10q because it is pertinent").
    Mark, 15 Nov 2026: "BRANDING and urgency" / "chart the stock movements" / "THE PEOPLE ... which SCHOOLS" / "the salaries
    are my point, and that is a sell sign" / "if a company came from a shell it should have that shell logo" / "if there is a
@@ -104,7 +104,7 @@
       if (p.sleeping) cal += '<div class="calrow sleep"><b>SLEEPING</b><span>' + (p.sleeping.since ? 'No annual meeting since ' + esc(fd(p.sleeping.since)) + ', none scheduled.' : 'No annual-meeting proxy found in its filings.') + ' A company with no meeting is easier to take over.</span></div>';
       if (p.next_meeting) { var nm = p.next_meeting;
         cal += '<div class="calrow ' + (nm.in_person ? 'go' : 'red') + '"><b>' + (nm.kind === "special" ? "SPECIAL MEETING" : "ANNUAL MEETING") + '</b><span>' + esc(fd(nm.d)) + (nm.time ? ', ' + esc(nm.time) : '') + ' &middot; '
-          + (nm.in_person ? '<b>In person</b>' + (nm.place ? ' at ' + esc(nm.place) : '') + '. Shareholders of record can attend and speak.' : '<b>Virtual only</b> &mdash; no room, no faces.')
+          + (nm.in_person ? '<b>In person</b>' + (nm.place ? ' at ' + esc(nm.place) : '') + '. Shareholders of record can attend and speak. <a href="https://8k10q.com/army" style="font-weight:700">Join the 8K10Q Army: attend this meeting &rarr;</a>' : '<b>Virtual only</b> &mdash; no room, no faces.')
           + (nm.url ? ' <a href="' + esc(nm.url) + '" target="_blank" rel="noopener">The proxy</a>' : '') + '</span></div>'; }
       else if (p.last_annual) cal += '<div class="calrow"><b>LAST ANNUAL MEETING</b><span>' + esc(fd(p.last_annual.d)) + ' &middot; ' + (p.last_annual.in_person ? 'in person' + (p.last_annual.place ? ' at ' + esc(p.last_annual.place) : '') : 'virtual only') + '</span></div>';
       if (p.earnings) cal += '<div class="calrow"><b>EARNINGS</b><span>' + esc(fd(p.earnings.d)) + (p.earnings.when ? ', ' + esc(p.earnings.when) : '') + ' <small>(expected, per Nasdaq)</small></span></div>';
