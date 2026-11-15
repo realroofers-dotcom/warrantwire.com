@@ -250,8 +250,9 @@ html.light .edgar .ehd{background:#dfeaf6}
   <section class="screw" aria-live="off">
     <span class="k">The screw</span>
     <!-- screw-4a · 2026-10-20 · Mark: "The big number is important ... show the number growing and note the period ... we search x # of companies from year 2001 to 2019 and here is the loss." Sept 28 look restored; the figure is the reader's own count (?count=1 headline), straight from the filings, no hand changes. -->
-    <div class="odo"><i>$</i><span id="odo">3,210,115,689,615</span></div>
-    <p><b>Lost by <span id="lostN">4,771</span> small companies that used warrants.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
+    <!-- screw-5a · 2026-11-15 · Mark: "that number has to include big companies with warrants, i mean the change in the wealth gap is DEFINITELY related to these loses". The figure is now every company that used warrants, small and big (reader ?count=1 all_companies.warrant), no hand changes. Before: small companies only ($6.70 trillion, 5,615). -->
+    <div class="odo"><i>$</i><span id="odo">16,543,395,930,754</span></div>
+    <p><b>Lost by <span id="lostN">7,696</span> companies that used warrants, small and big.</b> <a href="#q" id="checkme">Was some of it yours? &darr;</a></p>
     <small id="rate">We have read every annual report filed from <span id="yrsDone">2001 to 2020</span> (<span id="rdN">160,803</span> reports, <span id="coN">7,058</span> companies). <span id="still">Still reading 2021&ndash;2026: <span id="rdPct">79.9</span>% done<span id="eta"></span>, so the number grows every day.</span> <span id="asof"></span> <a href="/counter.html" style="color:var(--ink3)">How it is counted</a></small>
   </section>
 
@@ -263,6 +264,7 @@ html.light .edgar .ehd{background:#dfeaf6}
       <tbody>
         <tr><td>Small companies (under $500 million)</td><td><span id="wSmN">7,122</span> of <span id="wSmT">11,015</span></td><td>$<span id="wSmL">7.57</span> trillion</td></tr>
         <tr><td>Big companies ($500 million and up)</td><td><span id="wBgN">1,074</span> of <span id="wBgT">2,530</span></td><td>$<span id="wBgL">14.27</span> trillion</td></tr>
+        <tr><td><b>Every company that used warrants</b><small>small and big</small></td><td><span id="wWrN">7,696</span> of <span id="wWrT">11,931</span></td><td>$<span id="wWrL">16.54</span> trillion</td></tr>
         <tr class="all"><td>All companies combined<small>includes banks and shell companies</small></td><td><span id="wAlN">10,606</span> of <span id="wAlT">17,857</span></td><td>$<span id="wAlL">31.28</span> trillion</td></tr>
       </tbody>
     </table>
@@ -467,17 +469,20 @@ html.light .edgar .ehd{background:#dfeaf6}
   function count() {
     fetch(READER + "/?count=1").then(function (r) { return r.json(); }).then(function (d) {
       if (!d || !d.ok || !d.headline) return;
-      set("lostN", commas(d.headline.lost_money));
-      set("coN", commas(d.headline.companies));
-      /* whole-market-1a: the whole-market table, same count */
+      /* screw-5a (15 Nov 2026): the headline is every company that used warrants, small and big */
       var A = d.all_companies, tn = function (x) { return (Number(x) / 1e12).toFixed(2); };
+      var WR = A && A.warrant;
+      set("lostN", commas(WR ? WR.lost_money : d.headline.lost_money));
+      set("coN", commas(A && A.headline ? A.headline.companies : d.headline.companies));
       if (A && A.small && A.large && A.headline) {
         set("wSmN", commas(A.small.lost_money)); set("wSmT", commas(A.small.companies)); set("wSmL", tn(A.small.lost_by_those));
         set("wBgN", commas(A.large.lost_money)); set("wBgT", commas(A.large.companies)); set("wBgL", tn(A.large.lost_by_those));
+        if (WR) { set("wWrN", commas(WR.lost_money)); set("wWrT", commas(WR.companies)); set("wWrL", tn(WR.lost_by_those)); }
         set("wAlN", commas(A.headline.lost_money)); set("wAlT", commas(A.headline.companies)); set("wAlL", tn(A.headline.lost));
         set("wWp", A.headline.warrant_pct_lost_money); set("wNp", A.headline.no_warrants_pct_lost_money);
       }
-      if (d.headline.lost && Math.floor(d.headline.lost) !== Math.floor(shown)) roll(d.headline.lost);
+      var big = WR ? WR.lost_by_those : d.headline.lost;
+      if (big && Math.floor(big) !== Math.floor(shown)) roll(big);
     }).catch(function () {});
   }
   var first = null;
