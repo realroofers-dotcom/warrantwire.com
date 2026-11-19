@@ -30,6 +30,8 @@
     ["crash",  "/warrant-history.html",      "M3 4v16h18M6 8l4 5 3-3 7 8M20 14v4h-4", "Special study: market crashes"],
     /* 2026-10-11 (Mark): page for Nevada's securities-fraud victims fund */
     ["gold",   "/nevada-securities-fraud-victims-fund.html", "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM12 8v8M14.5 9.5c-.4-.9-1.4-1.4-2.5-1.4-1.4 0-2.5.8-2.5 1.9s1 1.6 2.5 1.9 2.5.8 2.5 1.9-1.1 1.9-2.5 1.9c-1.1 0-2.1-.5-2.5-1.4", "NV fraud fund"],
+    /* 2026-11-19 (Mark): "yes I want both sites to link to the laws" - every state's fraud-fund law, archived, + companies by state */
+    ["gold",   "/laws.html",                 "M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0zM8 21h8", "Fraud laws by state"],
     /* ⚠ 2026-11-14: the comma above was MISSING from 8 Nov to 14 Nov 2026. Without it the gold
        door and the asked door collapsed into one undefined entry, draw() threw ("Cannot read
        properties of undefined (reading '1')") and NO PAGE showed the icon nav for six days.
