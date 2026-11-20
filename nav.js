@@ -1,4 +1,4 @@
-/* UPDATED 2026-11-15 · nav 1f · Meetings door · UPDATED 2026-10-11 · nav 1d · two doors added (special study: market crashes; NV fraud fund) · BUILT 2026-09-12 · warrantwire nav.js 1c · the label is always black (three pages use --ink as their paper) · on a phone the doors are a grid at the foot of the page, scrolled to
+/* UPDATED 2026-11-20 · nav 1h · Press releases door · UPDATED 2026-11-15 · nav 1f · Meetings door · UPDATED 2026-10-11 · nav 1d · two doors added (special study: market crashes; NV fraud fund) · BUILT 2026-09-12 · warrantwire nav.js 1c · the label is always black (three pages use --ink as their paper) · on a phone the doors are a grid at the foot of the page, scrolled to
    ============================================================================
    THE ICON NAV — the nine doors from the home page, on every page, in one
    row under the masthead. His ruling, 12 Sep: navigation should be icon
@@ -43,6 +43,8 @@
     /* 2026-11-14 (Mark): "we need to have the file a tip to sec on 8k10q.com site and
        warrantwire.com as well as triggeredshort.co and stockfraudaudit.com". One page here. */
     /* 2026-11-15 (Mark): "you can have the same meetings page on warrantwire with the warrantwire styling" - the 8K10Q master, dressed by meetings-sync */
+    /* 2026-11-20 (Mark: 'lets get it up on ... warrantwire'): press releases, word for word as sent */
+    ["rose",   "/press.html",                 "M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M7 9h7M7 13h7M7 16h4", "Press releases"],
     ["cal",    "/meetings.html",             "M3 5h18v16H3zM3 10h18M8 3v4M16 3v4", "Meetings: calendar + map"],
     ["sec",    "/sec-tip",                   "M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4", "Tip the SEC"],
   ];
