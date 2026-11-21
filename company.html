@@ -24,6 +24,10 @@
 /* loss-1a (2026-11-21, Mark: free running loss on every company; "a company losing constantly should be slightly blackish as bad like a shadow over them") */
 .chead.shadowed{background-image:linear-gradient(rgba(0,0,0,var(--shade,.12)),rgba(0,0,0,var(--shade,.12)));box-shadow:inset 0 0 28px rgba(0,0,0,var(--shade,.12));border-radius:10px;padding:12px 14px 18px}
 #wwloss b.lost{color:#8b0000}
+.coalert{margin:10px 0 2px;padding:10px 12px;border:1px solid #e0b4b4;border-left:4px solid #b71c1c;border-radius:8px;background:#fff6f6;font-size:13.5px;color:#222}
+.coalert h4{margin:0 0 6px;font-size:14.5px;color:#b71c1c}
+.coalert p{margin:0 0 6px}
+.coalert .alsrc{font-size:12px;color:#555}
 #wwloss .lossq{border:0;background:none;color:var(--ink3);cursor:help;font-size:12px;padding:0 2px}
 .rows{margin:14px 0 0}
 .rows .row{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
@@ -383,7 +387,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       /* ⚠ FREE: WHAT IT DOES AND WHAT IT COSTS. His rule, 28 Sep 2026: "I like the company description and
          current price" free — and no more than that plus the name changes and reverse splits. Both come from
          8K10Q (the company profile and the delayed quote) and are filled in after the page draws. */
-      + '<p class="biz" id="wwpx" hidden></p><p class="biz" id="wwloss" hidden></p><p class="biz" id="wwdesc" hidden></p>'
+      + '<p class="biz" id="wwpx" hidden></p><p class="biz" id="wwloss" hidden></p><p class="biz" id="wwdesc" hidden></p><div class="coalert" id="wwalert" role="note" hidden></div>'
       + ((open && c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
       /* old tickers are always shown — his rule, 20 Sep: they are kept and searchable */
       /* the state and the agent for service — his rule, 21 Sep: on the summary, free, and a red flag when none is disclosed */
@@ -1098,16 +1102,22 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       el.innerHTML = '<b>What it does:</b> ' + esc(p.description) + (p.employees != null ? ' <span style="color:var(--ink3)">' + esc(p.employees) + ' employees, from its own reports.</span>' : '');
       el.hidden = false;
     }).catch(function () {});
+    /* alert-1a (2026-11-21, Mark: "the split alert belongs where the company result and description is on both"): one master text in the reader worker */
+    fetch("https://reader.realroofers.workers.dev/?alert=" + encodeURIComponent(tk)).then(function (r) { return r.json(); }).then(function (d) {
+      var el = document.getElementById("wwalert"); if (!el || !d || !d.found || !d.alert) return;
+      el.innerHTML = '<h4>&#9888; ' + esc(d.alert.title) + '</h4>' + d.alert.body_html; el.hidden = false;
+    }).catch(function () {});
     /* loss-1a (2026-11-21): FREE - the company's running loss of shareholder value, the same arithmetic as the
        home-page headline (reader worker ?loss=); more than half of everything put in lost = a shadow over the header */
     fetch("https://reader.realroofers.workers.dev/?loss=" + encodeURIComponent(tk)).then(function (r) { return r.json(); }).then(function (d) {
       var el = document.getElementById("wwloss"); if (!el || !d || !d.found || !d.company) return;
       var c = d.company, put = (c.v0 || 0) + (c.money_in || 0), ratio = put > 0 ? c.lost / put : 0;
-      var mm = function (v) { var a = Math.abs(v); return '$' + (a >= 1e9 ? (a / 1e9).toFixed(2) + ' billion' : a >= 1e6 ? (a / 1e6).toFixed(1) + ' million' : Math.round(a).toLocaleString('en-US')); };
+      var mm = function (v) { var a = Math.abs(v); return '$' + (a >= 1e12 ? (a / 1e12).toFixed(2) + ' trillion' : a >= 1e9 ? (a / 1e9).toFixed(2) + ' billion' : a >= 1e6 ? (a / 1e6).toFixed(1) + ' million' : Math.round(a).toLocaleString('en-US')); };
       var how = 'Free: what ' + tk + ' was worth on its first annual report since ' + c.y0 + ' (' + mm(c.v0) + '), plus the money it raised selling stock and warrants after that (' + mm(c.money_in) + '), minus what is left (' + mm(c.end_value) + (c.how === 'listed' ? ', its last stated public float' : ', ' + c.how) + '). A change in market value from its own filings; it says nothing about anyone doing anything wrong.';
       el.title = how;
       el.innerHTML = (c.lost > 0 ? '<b>Shareholder value lost:</b> <b class="lost">' + mm(c.lost) + '</b> since ' + c.y0 + (ratio >= 0.5 ? ' &middot; ' + Math.round(100 * Math.min(ratio, 1)) + '% of everything put in' : '')
-                                 : '<b>Shareholder value:</b> no loss by our count since ' + c.y0)
+                                 : c.lost < 0 ? '<b>Made for shareholders:</b> <b style="color:#0B6B49">' + mm(-c.lost) + '</b> since ' + c.y0   /* made-1a (2026-11-21, Mark: "when someone searches a company they should know how much money it made for the shareholder or lost") */
+                                 : '<b>Shareholder value:</b> about even since ' + c.y0)
         + ' <button type="button" class="lossq" aria-label="How this is counted" onclick="alert(this.parentNode.title)">&#9432;</button>';
       el.hidden = false;
       var head = el.closest('.chead');
