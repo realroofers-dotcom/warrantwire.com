@@ -21,6 +21,10 @@
 .copbadge{display:inline-block;margin-left:10px;font:800 11px var(--mono);letter-spacing:.14em;border:2px solid #c99a2e;color:#a37a12;padding:2px 7px;border-radius:4px;vertical-align:middle}
 /* ⚠ ONLY WHAT THIS PAGE ALONE NEEDS. Everything else is wire.css. */
 .chead{padding:0 0 18px;border-bottom:1px solid var(--line)}
+/* loss-1a (2026-11-21, Mark: free running loss on every company; "a company losing constantly should be slightly blackish as bad like a shadow over them") */
+.chead.shadowed{background-image:linear-gradient(rgba(0,0,0,var(--shade,.12)),rgba(0,0,0,var(--shade,.12)));box-shadow:inset 0 0 28px rgba(0,0,0,var(--shade,.12));border-radius:10px;padding:12px 14px 18px}
+#wwloss b.lost{color:#8b0000}
+#wwloss .lossq{border:0;background:none;color:var(--ink3);cursor:help;font-size:12px;padding:0 2px}
 .rows{margin:14px 0 0}
 .rows .row{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
 .rows .row:hover{background:transparent}
@@ -379,7 +383,7 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       /* ⚠ FREE: WHAT IT DOES AND WHAT IT COSTS. His rule, 28 Sep 2026: "I like the company description and
          current price" free — and no more than that plus the name changes and reverse splits. Both come from
          8K10Q (the company profile and the delayed quote) and are filled in after the page draws. */
-      + '<p class="biz" id="wwpx" hidden></p><p class="biz" id="wwdesc" hidden></p>'
+      + '<p class="biz" id="wwpx" hidden></p><p class="biz" id="wwloss" hidden></p><p class="biz" id="wwdesc" hidden></p>'
       + ((open && c.former_names && c.former_names.length) ? '<p class="biz">Formerly ' + c.former_names.map(esc).join("; ") + '</p>' : '')
       /* old tickers are always shown — his rule, 20 Sep: they are kept and searchable */
       /* the state and the agent for service — his rule, 21 Sep: on the summary, free, and a red flag when none is disclosed */
@@ -1093,6 +1097,21 @@ time{font:400 11.5px var(--mono);color:var(--ink3)}
       var el = document.getElementById("wwdesc"), p = c && c.profile; if (!el || !p || !p.description) return;
       el.innerHTML = '<b>What it does:</b> ' + esc(p.description) + (p.employees != null ? ' <span style="color:var(--ink3)">' + esc(p.employees) + ' employees, from its own reports.</span>' : '');
       el.hidden = false;
+    }).catch(function () {});
+    /* loss-1a (2026-11-21): FREE - the company's running loss of shareholder value, the same arithmetic as the
+       home-page headline (reader worker ?loss=); more than half of everything put in lost = a shadow over the header */
+    fetch("https://reader.realroofers.workers.dev/?loss=" + encodeURIComponent(tk)).then(function (r) { return r.json(); }).then(function (d) {
+      var el = document.getElementById("wwloss"); if (!el || !d || !d.found || !d.company) return;
+      var c = d.company, put = (c.v0 || 0) + (c.money_in || 0), ratio = put > 0 ? c.lost / put : 0;
+      var mm = function (v) { var a = Math.abs(v); return '$' + (a >= 1e9 ? (a / 1e9).toFixed(2) + ' billion' : a >= 1e6 ? (a / 1e6).toFixed(1) + ' million' : Math.round(a).toLocaleString('en-US')); };
+      var how = 'Free: what ' + tk + ' was worth on its first annual report since ' + c.y0 + ' (' + mm(c.v0) + '), plus the money it raised selling stock and warrants after that (' + mm(c.money_in) + '), minus what is left (' + mm(c.end_value) + (c.how === 'listed' ? ', its last stated public float' : ', ' + c.how) + '). A change in market value from its own filings; it says nothing about anyone doing anything wrong.';
+      el.title = how;
+      el.innerHTML = (c.lost > 0 ? '<b>Shareholder value lost:</b> <b class="lost">' + mm(c.lost) + '</b> since ' + c.y0 + (ratio >= 0.5 ? ' &middot; ' + Math.round(100 * Math.min(ratio, 1)) + '% of everything put in' : '')
+                                 : '<b>Shareholder value:</b> no loss by our count since ' + c.y0)
+        + ' <button type="button" class="lossq" aria-label="How this is counted" onclick="alert(this.parentNode.title)">&#9432;</button>';
+      el.hidden = false;
+      var head = el.closest('.chead');
+      if (head && c.lost > 0 && ratio >= 0.5) { head.classList.add('shadowed'); head.style.setProperty('--shade', String(Math.min(0.32, 0.10 + 0.22 * (Math.min(ratio, 1) - 0.5) / 0.5).toFixed(3))); }
     }).catch(function () {});
   }
 
