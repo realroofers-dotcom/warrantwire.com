@@ -102,3 +102,5 @@
   /* the house ads, rotated by AdHotBox (2026-11-15, Mark: "gigapoo is on all finance sites as an ad") */
   var ha = document.createElement("script"); ha.src = "https://adhotbox.com/house.js"; ha.defer = true; document.head.appendChild(ha);
 })();
+/* army-band-1a (22 Nov 2026, Mark: 'introduce the joining of the 8k10q army in all those places and offer that we will attend'): the one 8K10Q Army band, from 8k10q.com */
+(function(){ if (document.querySelector('script[src*="army-band.js"]')) return; var s=document.createElement('script'); s.src='https://8k10q.com/army-band.js?v=1a'; s.defer=true; (document.body||document.head).appendChild(s); })();

@@ -1,4 +1,4 @@
-<!-- GENERATED 2026-11-15 10:49 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
+<!-- GENERATED 2026-11-22 08:05 by internal-notes\warrantwire.com\tools\meetings-sync.ps1 from 8k10q.com/meetings (triggeredshort.com\meetings.html). DO NOT EDIT THIS COPY - edit the master and run the tool. -->
 <!-- BUILT 2026-10-01 · 8k10q meetings-1a · WHERE AND WHEN IS THE MEETING. His rules, 1 Oct 2026: tell users where, when and the details of every stockholder meeting, in person or broadcast, "a critical way to evaluate a company". Virtual only = red mark. Hard to reach or in another country = bad mark. Broadcast + questions open to everyone = very positive, only if the company ALSO meets in person. 8K10Q will attend any meeting for anyone at cost (service page: /attend) (travel + hotel: about $500-700 domestic, $1,500-2,000 overseas) and ask the shareholders' questions. First case: Theriva (TOVX), every line from its own proxies and 8-Ks. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -210,6 +210,24 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
 <p class="k" style="font-size:11px">Built 2026-10-01 &middot; 8k10q meetings-1g (8K10Q brand: brand8k.js) &middot; meetings-1f (grades A/B/D/F, 2026-11-15) &middot; meetings-1e</p>
 </div>
 <script>
+/* noproxy-1a (2026-11-19, Mark: 'I notice we are giving away the 14a for the meetings, we should not even do that'):
+   no free link to the proxy any more - it is offered as an 8K10Q read ($12), the proxy read in plain English. */
+window.k8ProxyRead = function (url, ticker, form, filed) {
+  var m = String(url || "").match(/\/data\/\d+\/(\d{10})(\d{2})(\d{6})\//), t = String(ticker || "").toUpperCase().replace(/[^A-Z0-9.\-]/g, "");
+  if (!m || !t) return "";
+  var acc = m[1] + "-" + m[2] + "-" + m[3];
+  return "https://pay.realroofers.workers.dev/?go=wire_read&on=k8&collect_email=1&ticker=" + encodeURIComponent(t) + "&ref=" + encodeURIComponent(t + ":" + acc)
+    + "&desc=" + encodeURIComponent(t + " · proxy" + (form ? " (" + form + ")" : "") + (filed ? " filed " + filed : "")) + "&ret=" + encodeURIComponent("/read.html");
+};
+window.k8ProxyLink = function (url, ticker, form, filed, label) {
+  var h = window.k8ProxyRead(url, ticker, form, filed);
+  return h ? '<a href="' + h + '">' + (label || "Read the proxy &middot; $12") + '</a>' : "";
+};
+document.addEventListener("DOMContentLoaded", function () {   /* the Theriva table above: its proxy links become reads too */
+  Array.prototype.forEach.call(document.querySelectorAll('a[href*="def14a"],a[href*="DEF14A"]'), function (a) {
+    var h = window.k8ProxyRead(a.getAttribute("href"), "TOVX"); if (h) { a.href = h; a.textContent = "Read the proxy · $12"; a.removeAttribute("target"); }
+  });
+});
 /* meetings-1c: look up any company's stockholder meeting from its own proxy (meetings worker, 1 Oct 2026) */
 (function () {
   var API = "https://meetings.realroofers.workers.dev/?s=";
@@ -236,7 +254,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
       '</div>' +
         (m.in_person && m.place ? '<p style="margin:4px 0 0"><a href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(m.place) + '" target="_blank" rel="noopener" style="font-weight:700">' + ic("i-pin") + ' Directions &rarr;</a> &nbsp; <a href="webcal://meetings.realroofers.workers.dev/?ics=1&amp;tickers=' + encodeURIComponent(m.ticker || d.symbol) + '" style="font-weight:700">' + ic("i-cal") + ' Add to my phone calendar (alerts 7, 3 and 1 day before)</a></p><div id="admitbox"></div>' : '') +
       (m.quote ? '<div class="says"><b>The proxy says:</b> \u201c' + esc(m.quote) + '\u201d</div>' : "") +
-      '<p class="note">' + ic("i-doc") + ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Read the proxy (' + esc(m.form) + ', filed ' + esc(m.filed) + ')</a> on SEC EDGAR.</p>' +
+      (window.k8ProxyRead(m.url, m.ticker || d.symbol) ? '<p class="note">' + ic("i-doc") + ' ' + window.k8ProxyLink(m.url, m.ticker || d.symbol, m.form, m.filed, "Read the proxy in plain English (" + esc(m.form) + ", filed " + esc(m.filed) + ") &middot; $12") + '</p>' : '') +
     '</div>';
   }
   function show(d) {
@@ -246,7 +264,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
     if (d.meetings.length > 1) {
       h += '<p class="k">Earlier meetings</p><div class="tbl"><table class="older">';
       d.meetings.slice(1).forEach(function (m) {
-        h += '<tr><td><span class="dot ' + esc(m.mark) + '"></span>' + esc(m.date || m.filed) + '</td><td>' + esc(m.virtual_only ? "Online only" : (m.country || m.place || "")) + '</td><td><a href="' + esc(m.url) + '" target="_blank" rel="noopener">Proxy</a></td></tr>';
+        h += '<tr><td><span class="dot ' + esc(m.mark) + '"></span>' + esc(m.date || m.filed) + '</td><td>' + esc(m.virtual_only ? "Online only" : (m.country || m.place || "")) + '</td><td>' + (window.k8ProxyLink(m.url, m.ticker || d.symbol, m.form, m.filed) || esc(m.form || "Proxy")) + '</td></tr>';
       });
       h += '</table></div>';
     }
@@ -385,7 +403,7 @@ form{border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;g
       L.circleMarker([m.lat, m.lon], { radius: 7, color: ({ A: "#1f6b3a", B: "#2678d6", D: "#d98a00", F: "#b23a2b" })[m.grade] || "#1a1f6b", weight: 2, fillOpacity: .8 })
         .bindPopup("<b>" + esc(m.ticker) + "</b> " + esc(m.company || "") + "<br>" + esc(m.date || m.date_iso) + (m.time ? ", " + esc(m.time) : "") +
           "<br><b>Grade " + esc(m.grade || "?") + "</b> &middot; " + esc(m.grade_words || "") + "<br><b>Address:</b> " + esc(m.address || m.place) + (m.matched_address ? '<br><small>Map: ' + esc(m.matched_address) + "</small>" : "") + '<br><a href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(m.matched_address || m.address || m.place) + '" target="_blank" rel="noopener"><b>Directions &rarr;</b></a>' +
-          '<br><a href="https://8k10q.com/attend?s=' + encodeURIComponent(m.ticker) + '">Send us</a> &middot; <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Proxy</a>').addTo(map);
+          '<br><a href="https://8k10q.com/attend?s=' + encodeURIComponent(m.ticker) + '">Send us</a>' + (window.k8ProxyRead(m.url, m.ticker) ? ' &middot; ' + window.k8ProxyLink(m.url, m.ticker, m.form, m.filed) : '')).addTo(map);
     });
     if (L.heatLayer && pts.length) L.heatLayer(pts, { radius: 28, blur: 22, maxZoom: 8 }).addTo(map);
     if (bounds.length > 1) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 6 });
