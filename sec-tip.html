@@ -61,6 +61,15 @@
   .foot{color:var(--faint);font-size:13px;margin:38px 0 50px;border-top:1px solid var(--line);padding-top:16px}
   .foot a{color:var(--dim)}
   a{color:var(--cut)}
+  /* sec-letter-1a 2026-11-24 */
+  .lf label{display:block;font:700 13px var(--mono);color:var(--text);margin:12px 0 4px}
+  .lf input,.lf textarea{width:100%;font:16px/1.4 var(--serif);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text)}
+  .lf textarea{min-height:90px}
+  .lf .row{display:grid;grid-template-columns:1fr 1fr;gap:10px} @media(max-width:620px){.lf .row{grid-template-columns:1fr}}
+  .pbtn{display:inline-block;background:var(--cut);color:#fff;border:0;border-radius:10px;font:700 18px var(--serif);padding:12px 20px;cursor:pointer;margin-top:14px}
+  #letter{background:#fff;color:#000;border:1px solid #bbb;border-radius:6px;padding:26px 30px;font:11pt/1.4 "Times New Roman",Times,serif;margin-top:16px}
+  #letter p{margin:0 0 9pt;color:#000} .addr{white-space:pre-line}
+  @media print{body>*:not(.wrap){display:none!important} .wrap>*:not(#letter){display:none!important} .wrap{max-width:none;padding:0} #letter{border:0;padding:0;margin:0} @page{size:letter;margin:0.7in}}
 </style>
 </head>
 <body>
@@ -103,9 +112,45 @@
   <p>FINRA, which oversees brokerage firms, takes its own tips:
     <a href="https://www.finra.org/contact-finra/file-tip" target="_blank" rel="noopener">finra.org &rarr; file a tip</a>.</p>
 
-  <h2>Want help with the words?</h2>
-  <p>We draw a plain letter to the SEC from what a company filed, free:
-    <a href="/violations#letter">draw the letter</a>.</p>
+  <h2>Rather send a letter? Print one here</h2>
+  <!-- sec-letter-1a 2026-11-24, Mark: "you better fix warrantwire then also". Mailing address read on sec.gov 11/24/2026
+       (https://www.sec.gov/enforcement-litigation/whistleblower-program/information-about-submitting-whistleblower-tip, "Until further notice").
+       Built in the reader's browser; nothing is sent or stored. No company named (stockfraudaudit.com rule). -->
+  <p>The SEC says it prefers its online form, and it also takes tips by mail. Fill this in, click Print, sign it and mail it. What you type stays in your own browser; we do not see it.</p>
+  <div class="lf">
+    <div class="row"><div><label for="co">Company name</label><input id="co"></div><div><label for="tk">Ticker</label><input id="tk"></div></div>
+    <label for="wh">What happened, in your own words (dates if you have them)</label><textarea id="wh"></textarea>
+    <label for="fl">The filings that show it (SEC links or form, date and accession number)</label><textarea id="fl" style="min-height:70px"></textarea>
+    <div class="row"><div><label for="nm">Your full name</label><input id="nm" autocomplete="name"></div><div><label for="ph">Phone or email (optional)</label><input id="ph"></div></div>
+    <label for="ad">Your mailing address</label><textarea id="ad" style="min-height:60px" autocomplete="street-address"></textarea>
+    <button class="pbtn" onclick="window.print()">Print the letter</button>
+  </div>
+  <div id="letter">
+    <p class="addr" id="L-from"></p>
+    <p id="L-date"></p>
+    <p class="addr">SEC Office of the Whistleblower (c/o ENF-CPU)
+1604 Springhill Road, Suite 110
+Vienna, VA 22182
+ATTN: SEC TCR SUBMISSIONS</p>
+    <p><b id="L-re">Re: possible securities law violation</b></p>
+    <p>I ask the Commission to review the following.</p>
+    <p id="L-wh"></p>
+    <p id="L-fl"></p>
+    <p>Thank you.</p>
+    <p style="margin-top:28pt">______________________________<br><span id="L-nm"></span></p>
+  </div>
+  <p class="small">Mailing address read on sec.gov on 24 Nov 2026. We also draw a plain letter about hard-to-read filings: <a href="/violations#letter">Rule 421 letter</a>.</p>
+  <script>
+  (function(){var $=function(i){return document.getElementById(i)};function e(s){return String(s||'').replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  function u(){var co=$('co').value.trim(),tk=$('tk').value.trim().toUpperCase();
+   $('L-re').textContent='Re: '+(co?co:'possible securities law violation')+(tk?' ('+tk+')':'');
+   $('L-from').innerHTML=e($('nm').value.trim())+($('ad').value.trim()?'\n'+e($('ad').value.trim()):'')+($('ph').value.trim()?'\n'+e($('ph').value.trim()):'');
+   $('L-wh').innerHTML=$('wh').value.trim()?'<b>What happened:</b> '+e($('wh').value.trim()).replace(/\n/g,'<br>'):'';
+   $('L-fl').innerHTML=$('fl').value.trim()?'<b>The filings:</b> '+e($('fl').value.trim()).replace(/\n/g,'<br>'):'';
+   $('L-nm').textContent=$('nm').value.trim();}
+  $('L-date').textContent=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  ['co','tk','wh','fl','nm','ph','ad'].forEach(function(i){$(i).addEventListener('input',u)});u();})();
+  </script>
 
   <div class="box">
     <p><b>We are not the SEC.</b> The form above is on the SEC's own website. We do not see what
